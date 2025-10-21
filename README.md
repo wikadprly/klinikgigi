@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # flutter_klinik_gigi
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# klinikgigi
+>>>>>>> 08a5cc50645bbfa2606ca7d98be96db42f8cea62
