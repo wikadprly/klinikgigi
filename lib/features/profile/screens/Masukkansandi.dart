@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+
+// ✅ Import widgets yang sudah kamu pisahkan
+import 'package:flutter_klinik_gigi/features/profile/widgets/password_input_field.dart';
+import 'package:flutter_klinik_gigi/features/profile/widgets/tips_box.dart';
+import 'package:flutter_klinik_gigi/features/profile/widgets/custom_button.dart';
 
 class MasukKataSandiPage extends StatefulWidget {
   const MasukKataSandiPage({super.key});
@@ -9,22 +16,24 @@ class MasukKataSandiPage extends StatefulWidget {
 
 class _MasukKataSandiPageState extends State<MasukKataSandiPage> {
   final TextEditingController _passwordController = TextEditingController();
-  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1F1B24),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1F1B24),
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Ubah Kata Sandi",
-          style: TextStyle(color: Color(0xFFE1D07E), fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.gold,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -33,92 +42,36 @@ class _MasukKataSandiPageState extends State<MasukKataSandiPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Masukkan Kata Sandi",
-              style: TextStyle(fontSize: 16, color: Color(0xFFE1D07E), fontWeight: FontWeight.bold),
+              style: AppTextStyles.heading.copyWith(color: AppColors.gold),
             ),
             const SizedBox(height: 6),
             const Text(
               "Masukkan kata sandi lama untuk mengubah ke kata sandi baru",
-              style: TextStyle(fontSize: 13, color: Colors.white),
+              style: AppTextStyles.label,
             ),
             const SizedBox(height: 16),
 
-            // Input Password
-            TextField(
+            // ✅ pakai widget terpisah
+            PasswordInputField(
               controller: _passwordController,
-              obscureText: _isObscure,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: "Masukkan kata sandi lama",
-                suffixIcon: IconButton(
-                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () {
-                    setState(() {
-                      _isObscure = !_isObscure;
-                    });
-                  },
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              hintText: "Masukkan kata sandi lama",
             ),
 
             const SizedBox(height: 20),
 
-            // Tips Box
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFFE0C15A)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Tips bikin Kata Sandi yang aman",
-                    style: TextStyle(
-                      color: Color(0xFFE0C15A),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text("1. Hindari huruf/nomor berulang & berurutan, seperti 12345/abcde.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
-                  Text("2. Jangan gunakan nama, tanggal lahir, atau nomor HP agar sulit ditebak.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
-                  Text("3. Buat kata sandi unik & tidak pernah digunakan sebelumnya.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
-                ],
-              ),
-            ),
+            // ✅ Tips Box widget
+            const TipsBox(),
 
             const SizedBox(height: 30),
 
-            // Tombol Lanjut
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Aksi ketika klik tombol
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE0C15A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text(
-                  "Lanjut",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            // ✅ Custom Button widget
+            CustomButton(
+              text: "Lanjut",
+              onPressed: () {
+                // TODO: aksi lanjut
+              },
             ),
           ],
         ),

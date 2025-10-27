@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/profile/screens/konfirmasikatasandi.dart';
+import 'features/profile/screens/Masukkansandi.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -21,8 +21,8 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/konfirmasikatasandi.dart',
-      routes: {'/konfirmasikatasandi.dart': (context) => const UbahKataSandiPage()},
+      initialRoute: '/Masukkansandi.dart',
+      routes: {'/Masukkansandi.dart': (context) => const MasukKataSandiPage()},
     );
   }
 }
