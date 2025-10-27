@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'features/profile/screens/start.dart';
+import 'features/auth/screens/start.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
