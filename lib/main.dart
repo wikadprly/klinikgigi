@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/profile/screens/notif_setting.dart';
+import 'features/profile/screens/konfirmasikatasandi.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -21,8 +21,8 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/notif_setting.dart',
-      routes: {'/notif_setting.dart': (context) => const NotificationScreen()},
+      initialRoute: '/konfirmasikatasandi.dart',
+      routes: {'/konfirmasikatasandi.dart': (context) => const UbahKataSandiPage()},
     );
   }
 }
