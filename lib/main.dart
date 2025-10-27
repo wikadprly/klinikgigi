@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'features/profile/screens/Masukkansandi.dart';
+
+import 'features/profile/screens/notif_setting.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -19,8 +20,9 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'poppins',
       ),
-      initialRoute: '/Masukkansandi.dart',
-      routes: {'/Masukkansandi.dart': (context) => const MasukKataSandiPage()},
+
+      initialRoute: '/notif_setting.dart',
+      routes: {'/notif_setting.dart': (context) => const NotificationScreen()},
     );
   }
 }
