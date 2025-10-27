@@ -24,7 +24,7 @@ class _MasukKataSandiPageState extends State<MasukKataSandiPage> {
         ),
         title: const Text(
           "Ubah Kata Sandi",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFFE1D07E), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -35,12 +35,12 @@ class _MasukKataSandiPageState extends State<MasukKataSandiPage> {
           children: [
             const Text(
               "Masukkan Kata Sandi",
-              style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, color: Color(0xFFE1D07E), fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             const Text(
               "Masukkan kata sandi lama untuk mengubah ke kata sandi baru",
-              style: TextStyle(fontSize: 13, color: Colors.white70),
+              style: TextStyle(fontSize: 13, color: Colors.white),
             ),
             const SizedBox(height: 16),
 
@@ -88,9 +88,9 @@ class _MasukKataSandiPageState extends State<MasukKataSandiPage> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  Text("1. Hindari huruf/nomor berulang & berurutan, seperti 12345/abcde.", style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  Text("2. Jangan gunakan nama, tanggal lahir, atau nomor HP agar sulit ditebak.", style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  Text("3. Buat kata sandi unik & tidak pernah digunakan sebelumnya.", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text("1. Hindari huruf/nomor berulang & berurutan, seperti 12345/abcde.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
+                  Text("2. Jangan gunakan nama, tanggal lahir, atau nomor HP agar sulit ditebak.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
+                  Text("3. Buat kata sandi unik & tidak pernah digunakan sebelumnya.", style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13)),
                 ],
               ),
             ),
