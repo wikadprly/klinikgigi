@@ -36,23 +36,32 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tombol Back
+             // Header: Icon panah + teks judul di tengah
+          Row(
+            children: [
+              // Tombol panah kiri
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.amber),
-                onPressed: () {},
+                icon: const Icon(Icons.arrow_back, color: Color(0xFFE1D07E)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
-
-              const SizedBox(height: 10),
-
-              // Judul
-              const Text(
-                'Ubah Kata Sandi',
-                style: TextStyle(
-                  color: Colors.amber,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Ubah Kata Sandi',
+                    style: const TextStyle(
+                      color: Color(0xFFE1D07E),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+              // Spacer agar teks benar-benar di tengah
+              const SizedBox(width: 48), // lebar iconButton agar simetris
+            ],
+          ),
 
               const SizedBox(height: 20),
 
@@ -60,7 +69,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
               const Text(
                 'Buat Kata Sandi baru',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFFE1D07E),
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -68,7 +77,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
               const SizedBox(height: 8),
               const Text(
                 'Pilih Kata Sandi yang unik dan jangan dibagikan ke siapa pun',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 13),
               ),
 
               const SizedBox(height: 20),
@@ -97,7 +106,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
                 decoration: BoxDecoration(
                   color: Colors.black45,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber, width: 0.8),
+                  border: Border.all(color: const Color(0xFFE1D07E), width: 0.8),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +114,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
                     Text(
                       'Tips bikin Kata Sandi yang aman',
                       style: TextStyle(
-                        color: Colors.amber,
+                        color: Color(0xFFE1D07E),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -115,7 +124,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
                       '1. Hindari huruf/nomor berulang & berurut, contoh 123456/aaaa.\n'
                       '2. Jangan menggunakan nama, tanggal lahir, atau nomor HP.\n'
                       '3. Buat Kata Sandi yang unik.',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                      style: TextStyle(color: Color(0xFFE1D07E), fontSize: 13),
                     ),
                   ],
                 ),
@@ -135,7 +144,7 @@ class _UbahKataSandiPageState extends State<UbahKataSandiPage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: const Color(0xFFE1D07E),
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
