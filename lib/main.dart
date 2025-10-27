@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/auth/screens/start.dart';
+import 'features/profile/screens/notif_setting.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -21,8 +21,8 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/start.dart',
-      routes: {'/start.dart': (context) => const StartScreen()},
+      initialRoute: '/notif_setting.dart',
+      routes: {'/notif_setting.dart': (context) => const NotificationScreen()},
     );
   }
 }
