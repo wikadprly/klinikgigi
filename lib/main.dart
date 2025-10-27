@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/Masukkansandi.dart';
+import 'features/profile/screens/Masukkansandi.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
