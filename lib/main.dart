@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'features/profile/screens/Sandibaru.dart';
+
+import 'features/auth/screens/start.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -19,8 +20,9 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'poppins',
       ),
-      initialRoute: '/Sandibaru.dart',
-      routes: {'/Sandibaru.dart': (context) => const UbahKataSandiApp()},
+
+      initialRoute: '/start.dart',
+      routes: {'/start.dart': (context) => const StartScreen()},
     );
   }
 }
