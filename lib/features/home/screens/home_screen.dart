@@ -1,9 +1,9 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:klinikgigi/core/services/pasien_service.dart';
-import 'package:klinikgigi/core/models/pasien_model.dart';
-import 'package:klinikgigi/config/api.dart';
+import '../../../core/services/pasien_service.dart';
+import '../../../core/models/pasien_model.dart';
+import '../../../config/api.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userId;
