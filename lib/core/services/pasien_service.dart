@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/pasien_model.dart';
-import '../../config/api.dart';
+import '../../config/api_home.dart';
 
 class PasienService {
   Future<Pasien> getPasienByUserId(String userId) async {
