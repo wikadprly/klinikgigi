@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_bantuan.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/masuk.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_baru.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -57,14 +59,24 @@ class StartScreen extends StatelessWidget {
               // Tombol Masuk & Daftar
               AuthButton(
                 text: "Masuk",
-                onPressed: () {
-                  debugPrint("Tombol Masuk ditekan");
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
                 },
               ),
               AuthButton(
                 text: "Daftar",
-                onPressed: () {
-                  debugPrint("Tombol Daftar ditekan");
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DaftarPasienBaruScreen(),
+                    ),
+                  );
                 },
               ),
 
