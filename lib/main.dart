@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/auth/screens/start.dart';
+import 'features/auth/screens/masuk.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -21,8 +21,8 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/start.dart',
-      routes: {'/start.dart': (context) => const StartScreen()},
+      initialRoute: '/masuk.dart',
+      routes: {'/masuk.dart': (context) => const LoginScreen()},
     );
   }
 }
