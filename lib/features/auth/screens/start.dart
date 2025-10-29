@@ -1,6 +1,7 @@
-// lib/screens/start_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/auth_button.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_bantuan.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -8,78 +9,66 @@ class StartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1717), // warna gelap sesuai gambar
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          padding: const EdgeInsets.all(20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon Headphone kanan atas
+              // Tombol bantuan (headset)
+              AuthBantuan(
+                onTap: () {
+                  // Aksi ketika tombol bantuan ditekan
+                  debugPrint("Bantuan ditekan");
+                },
+              ),
+
+              const SizedBox(height: 175),
+
+              // Logo
               Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.headphones_rounded,
-                    color: Color(0xFFFFC947),
-                    size: 28,
-                  ),
-                  onPressed: () {},
+                alignment: Alignment.centerLeft,
+                child: Image.asset(
+                  'assets/images/logo_klinik_kecil.png', // Ganti dengan path logo kamu
+                  height: 150,
                 ),
               ),
 
-              // Logo + Text
-              Column(
-                children: [
-                  // Logo
-                  Image.asset(
-                    'assets/images/logo_klinik.png', // ganti sesuai nama asset kamu
-                    height: 120,
-                  ),
-                  const SizedBox(height: 24),
+              const SizedBox(height: 25),
 
-                  // Teks utama
-                  const Text(
-                    'Mulai',
-                    style: TextStyle(
-                      color: Color(0xFFFFC947),
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Teks deskripsi
-                  const Text(
-                    'Mulai dengan Daftar atau Masuk',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+              // Teks
+              const Text(
+                "Mulai",
+                style: TextStyle(
+                  color: AppColors.goldDark,
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "Mulai dengan Daftar atau Masuk",
+                style: TextStyle(color: AppColors.goldDark, fontSize: 16),
               ),
 
-              // Tombol Masuk dan Daftar
-              Column(
-                children: [
-                  AuthButton(
-                    text: 'Masuk',
-                    onPressed: () {
-                      // TODO: Tambahkan navigasi ke halaman login
-                      // Navigator.pushNamed(context, '/login');
-                    },
-                  ),
-                  AuthButton(
-                    text: 'Daftar',
-                    onPressed: () {
-                      // TODO: Tambahkan navigasi ke halaman register
-                      // Navigator.pushNamed(context, '/register');
-                    },
-                  ),
-                ],
+              const Spacer(),
+
+              // Tombol Masuk & Daftar
+              AuthButton(
+                text: "Masuk",
+                onPressed: () {
+                  debugPrint("Tombol Masuk ditekan");
+                },
               ),
+              AuthButton(
+                text: "Daftar",
+                onPressed: () {
+                  debugPrint("Tombol Daftar ditekan");
+                },
+              ),
+
+              const SizedBox(height: 45),
             ],
           ),
         ),
