@@ -6,6 +6,7 @@ import 'features/auth/providers/auth_provider.dart'; // ✅ pastikan path benar
 import 'features/auth/screens/daftar_pasien_lama.dart'; // ✅ untuk route tambahan nanti
 import 'features/auth/screens/daftar_pasien_baru.dart';
 import 'features/auth/screens/masuk.dart';
+import 'features/home/screens/home_screen.dart';
 
 void main() {
   runApp(
@@ -21,6 +22,9 @@ class KlinikGigiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // User ID contoh (sesuaikan nanti jika sudah login)
+    const String userId = '2';
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Klinik Gigi',
