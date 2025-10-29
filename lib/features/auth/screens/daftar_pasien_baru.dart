@@ -1,184 +1,270 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import '../widgets/auth_input_field.dart';
-import '../widgets/auth_button.dart';
-import '../widgets/auth_back.dart';
-import '../widgets/auth_input_centang.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_field.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
+import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 
-class DaftarPasienBaruScreen extends StatefulWidget {
-  const DaftarPasienBaruScreen({super.key});
+class DaftarPasienBaruPage extends StatefulWidget {
+  const DaftarPasienBaruPage({super.key});
 
   @override
-  State<DaftarPasienBaruScreen> createState() => _DaftarPasienBaruScreenState();
+  State<DaftarPasienBaruPage> createState() => _DaftarPasienBaruPageState();
 }
 
-class _DaftarPasienBaruScreenState extends State<DaftarPasienBaruScreen> {
+class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
   final TextEditingController namaController = TextEditingController();
   final TextEditingController nikController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController noHpController = TextEditingController();
   final TextEditingController tanggalLahirController = TextEditingController();
-  final TextEditingController jenisKelaminController = TextEditingController();
-  final TextEditingController kontakController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
+  String tipePasien = 'baru'; // default pasien baru
+  String? jenisKelamin;
   bool agree = false;
-  String selectedRole = 'Pasien Baru';
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 🔙 Tombol Back
-              Align(
-                alignment: Alignment.centerLeft,
-                child: BackButtonWidget(
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BackButtonWidget(onPressed: () => Navigator.pop(context)),
+                const SizedBox(height: 10),
 
-              const SizedBox(height: 16),
-
-              // 🦷 Logo Klinik (bisa diganti sesuai asset kamu)
-              Image.asset(
-                'assets/images/Logo_klinik.png',
-                height: 100,
-              ),
-
-              const SizedBox(height: 8),
-
-              // 🏷️ Judul
-              const Text(
-                "Daftar",
-                style: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // 🔽 Dropdown: Pasien Baru
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.goldDark, width: 1.2),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.transparent,
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedRole,
-                    iconEnabledColor: AppColors.goldDark,
-                    dropdownColor: AppColors.background,
-                    style: const TextStyle(color: AppColors.textLight, fontSize: 16),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Pasien Baru',
-                        child: Text('Pasien Baru'),
+                Center(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo_klinik_kecil.png',
+                        width: 90,
                       ),
-                      DropdownMenuItem(
-                        value: 'Pasien Lama',
-                        child: Text('Pasien Lama'),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Daftar Pasien",
+                        style: AppTextStyles.heading.copyWith(
+                          fontSize: 28,
+                          color: AppColors.gold,
+                        ),
                       ),
                     ],
-                    onChanged: (value) {
-                      setState(() => selectedRole = value!);
-                    },
                   ),
                 ),
-              ),
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 18),
-
-              // 🧾 Input Fields
-              AuthInputField(controller: namaController, hintText: "Nama Pengguna"),
-              const SizedBox(height: 12),
-              AuthInputField(controller: nikController, hintText: "NIK"),
-              const SizedBox(height: 12),
-              AuthInputField(controller: tanggalLahirController, hintText: "Tanggal Lahir"),
-              const SizedBox(height: 12),
-              AuthInputField(controller: jenisKelaminController, hintText: "Jenis Kelamin"),
-              const SizedBox(height: 12),
-              AuthInputField(controller: kontakController, hintText: "No.HP/Email"),
-              const SizedBox(height: 12),
-              AuthInputField(controller: passwordController, hintText: "Password", isPassword: true),
-              const SizedBox(height: 12),
-              AuthInputField(controller: confirmPasswordController, hintText: "Konfirmasi Password", isPassword: true),
-
-              const SizedBox(height: 16),
-
-              // 🟨 Checkbox “Setuju dan Lanjutkan”
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Setuju Dengan Terms & Condition?",
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 13,
-                      ),
+                // 🔹 Dropdown tipe pasien
+                DropdownButtonFormField<String>(
+                  value: tipePasien,
+                  dropdownColor: AppColors.background,
+                  decoration: InputDecoration(
+                    labelText: "Tipe Pasien",
+                    labelStyle: AppTextStyles.label,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldDark),
                     ),
-                    const SizedBox(height: 4),
-                    CustomAgreementCheckbox(
-                      label: "Setuju dan lanjutkan",
-                      onChanged: (value) {
-                        setState(() => agree = value);
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'baru', child: Text("Pasien Baru")),
+                    DropdownMenuItem(value: 'lama', child: Text("Pasien Lama")),
+                  ],
+                  onChanged: (val) {
+                    setState(() => tipePasien = val!);
+                    if (val == 'lama') {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/daftar_pasien_lama',
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 15),
+
+                // 🔹 Input Fields
+                AuthInputField(
+                  hintText: "Nama Pengguna",
+                  controller: namaController,
+                ),
+                AuthInputField(hintText: "NIK", controller: nikController),
+                AuthInputField(hintText: "Email", controller: emailController),
+                AuthInputField(hintText: "No. HP", controller: noHpController),
+
+                // 🔹 Tanggal Lahir
+                TextField(
+                  controller: tanggalLahirController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Tanggal Lahir",
+                    labelStyle: AppTextStyles.label,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldDark),
+                    ),
+                    suffixIcon: const Icon(
+                      Icons.calendar_month,
+                      color: AppColors.goldDark,
+                    ),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(2000, 1, 1),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: AppColors.goldDark,
+                              onPrimary: Colors.white,
+                              onSurface: AppColors.background,
+                            ),
+                          ),
+                          child: child!,
+                        );
                       },
+                    );
+                    if (picked != null) {
+                      final formatted = DateFormat('yyyy-MM-dd').format(picked);
+                      setState(() => tanggalLahirController.text = formatted);
+                    }
+                  },
+                ),
+                const SizedBox(height: 15),
+
+                // 🔹 Dropdown Jenis Kelamin
+                DropdownButtonFormField<String>(
+                  value: jenisKelamin,
+                  hint: const Text("Jenis Kelamin"),
+                  dropdownColor: AppColors.background,
+                  decoration: InputDecoration(
+                    labelStyle: AppTextStyles.label,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldDark),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'Laki-laki',
+                      child: Text("Laki-laki"),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Perempuan',
+                      child: Text("Perempuan"),
+                    ),
+                  ],
+                  onChanged: (val) => setState(() => jenisKelamin = val),
+                ),
+                const SizedBox(height: 15),
+
+                AuthInputField(
+                  hintText: "Password",
+                  controller: passwordController,
+                  obscureText: true,
+                ),
+                AuthInputField(
+                  hintText: "Konfirmasi Password",
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                ),
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    Checkbox(
+                      value: agree,
+                      onChanged: (val) => setState(() => agree = val!),
+                      activeColor: AppColors.goldDark,
+                    ),
+                    Expanded(
+                      child: Text(
+                        "Setuju dengan Terms & Condition?",
+                        style: AppTextStyles.label.copyWith(fontSize: 13),
+                      ),
                     ),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: 22),
+                // 🔹 Tombol daftar
+                AbsorbPointer(
+                  absorbing: authProvider.isLoading,
+                  child: Opacity(
+                    opacity: authProvider.isLoading ? 0.6 : 1,
+                    child: AuthButton(
+                      text: authProvider.isLoading
+                          ? "Memproses..."
+                          : "Daftar & Lanjutkan",
+                      textColor: AppColors.background,
+                      onPressed: () async {
+                        if (!agree) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Harap setujui Terms & Condition dulu.",
+                              ),
+                            ),
+                          );
+                          return;
+                        }
 
-              // 🟡 Tombol Daftar & Lanjutkan
-              AuthButton(
-                text: "Daftar & Lanjutkan",
-                onPressed: agree
-                    ? () {
-                        debugPrint("Mendaftar sebagai $selectedRole...");
-                      }
-                    : null, // disable kalau belum centang
-              ),
+                        final success = await authProvider.registerUser(
+                          tipePasien: tipePasien,
+                          namaPengguna: namaController.text.trim(),
+                          nik: nikController.text.trim(),
+                          email: emailController.text.trim(),
+                          noHp: noHpController.text.trim(),
+                          tanggalLahir: tanggalLahirController.text.trim(),
+                          jenisKelamin: jenisKelamin ?? '',
+                          password: passwordController.text.trim(),
+                          confirmPassword: confirmPasswordController.text
+                              .trim(),
+                        );
 
-              const SizedBox(height: 24),
-
-              // 🔵 Link Masuk
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Sudah punya akun? ",
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Registrasi berhasil!"),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Registrasi gagal.")),
+                          );
+                        }
+                      },
+                    ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      // pindah ke halaman login
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    child: const Text(
-                      "Masuk",
-                      style: TextStyle(
+                ),
+
+                const SizedBox(height: 20),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "Sudah punya akun? Masuk",
+                      style: AppTextStyles.label.copyWith(
                         color: AppColors.gold,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

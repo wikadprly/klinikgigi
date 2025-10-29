@@ -33,7 +33,7 @@ class KlinikGigiApp extends StatelessWidget {
       initialRoute: '/daftar_pasien_lama',
       routes: {
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
-        '/daftar_pasien_baru': (context) => const DaftarPasienBaruScreen(),
+        '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
       },
     );
   }
