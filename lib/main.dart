@@ -1,6 +1,7 @@
 // 🟢 main.dart (fix)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // ✅ penting untuk Provider
+import 'features/auth/screens/start.dart';
 import 'features/auth/providers/auth_provider.dart'; // ✅ pastikan path benar
 import 'features/auth/screens/daftar_pasien_lama.dart'; // ✅ untuk route tambahan nanti
 import 'features/auth/screens/daftar_pasien_baru.dart';
@@ -30,8 +31,9 @@ class KlinikGigiApp extends StatelessWidget {
       ),
 
       // 🟢 perbaikan route name — Flutter tidak pakai ekstensi .dart
-      initialRoute: '/daftar_pasien_lama',
+      initialRoute: '/start',
       routes: {
+        '/start': (context) => const StartScreen(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruScreen(),
       },
