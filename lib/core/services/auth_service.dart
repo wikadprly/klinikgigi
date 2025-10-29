@@ -6,19 +6,19 @@ class AuthService {
   static const String baseUrl = 'http://127.0.0.1:8000/api';
 
   // 🔹 LOGIN
-  Future<UserModel?> login(String email, String password) async {
+  Future<UserModel?> login(String identifier, String password) async {
     final url = Uri.parse('$baseUrl/login');
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({'identifier': identifier, 'password': password}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['user'] != null) {
-          return UserModel.fromJson(data['user']);
+        if (data['data'] != null) {
+          return UserModel.fromJson(data['data']);
         }
       }
       return null;

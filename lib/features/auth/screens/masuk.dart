@@ -1,167 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_field.dart';
-import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_centang.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
+import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController identifierController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   bool rememberMe = true;
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        top: false,
-        child: Stack(
-          children: [
-            // 🔹 Tombol Back di pojok atas kiri
-            Positioned(
-              top: 8,
-              left: 12,
-              child: BackButtonWidget(
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BackButtonWidget(onPressed: () => Navigator.pop(context)),
+                const SizedBox(height: 10),
 
-            // 🔹 Isi utama halaman login
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                Center(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo_klinik_kecil.png',
+                        width: 90,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Masuk Akun",
+                        style: AppTextStyles.heading.copyWith(
+                          fontSize: 28,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // 🔹 Input Identifier (bisa Email, NIK, atau RM)
+                AuthInputField(
+                  hintText: "Email / NIK / Nomor Rekam Medis",
+                  controller: identifierController,
+                ),
+                const SizedBox(height: 18),
+
+                // 🔹 Input Password
+                AuthInputField(
+                  hintText: "Kata Sandi",
+                  obscureText: true,
+                  controller: passwordController,
+                ),
+                const SizedBox(height: 22),
+
+                // 🔹 Checkbox Ingat Saya
+                Row(
                   children: [
-                    const SizedBox(height: 28),
-
-                    // 🔹 Logo + Judul
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 85, right: 5),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Image.asset(
-                              'assets/images/logo_klinik_kecil.png',
-                              height: 160,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        Text(
-                          'Masuk',
-                          style: AppTextStyles.heading.copyWith(
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 32,
-                          ),
-                        ),
-                      ],
+                    Checkbox(
+                      value: rememberMe,
+                      onChanged: (val) =>
+                          setState(() => rememberMe = val ?? false),
+                      activeColor: AppColors.goldDark,
                     ),
-
-                    const SizedBox(height: 40),
-
-                    // 🔹 Input No RM/NIK/Email
-                    AuthInputField(
-                      hintText: 'No RM/NIK/Email',
-                      controller: _emailController,
-                    ),
-                    const SizedBox(height: 18),
-
-                    // 🔹 Input Kata Sandi
-                    AuthInputField(
-                      hintText: 'Kata sandi',
-                      obscureText: true,
-                      controller: _passwordController,
-                    ),
-                    const SizedBox(height: 22),
-
-                    // 🔹 Info teks kecil
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: Text(
-                          'Akun Gmail anda harus memiliki akses ke rekam medis anda untuk melanjutkan.',
-                          style: AppTextStyles.label.copyWith(
-                            fontSize: 12,
-                            height: 1.5,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 🔹 Checkbox Custom
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: CustomAgreementCheckbox(
-                        label: 'Ingat saya di perangkat ini', // ✅ Tambahkan label
-                        onChanged: (val) {
-                          setState(() => rememberMe = val);
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // 🔹 Tombol Login
-                    AuthButton(
-                      text: 'Masuk & Lanjutkan',
-                      onPressed: () async {
-                        debugPrint(
-                          'Login attempt: ${_emailController.text} / ${_passwordController.text}',
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // 🔹 Teks bawah (daftar)
-                    RichText(
-                      text: TextSpan(
-                        style: AppTextStyles.label.copyWith(
-                          color: AppColors.textMuted,
-                          fontSize: 13,
-                        ),
-                        children: [
-                          const TextSpan(text: 'Belum punya akun? '),
-                          WidgetSpan(
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Navigasi ke halaman daftar
-                              },
-                              child: Text(
-                                'Daftar',
-                                style: AppTextStyles.label.copyWith(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Ingat saya di perangkat ini",
+                      style: AppTextStyles.label.copyWith(fontSize: 13),
                     ),
                   ],
                 ),
-              ),
+
+                const SizedBox(height: 32),
+
+                // 🔹 Tombol Login
+                AbsorbPointer(
+                  absorbing: authProvider.isLoading,
+                  child: Opacity(
+                    opacity: authProvider.isLoading ? 0.6 : 1,
+                    child: AuthButton(
+                      text: authProvider.isLoading
+                          ? "Memproses..."
+                          : "Masuk & Lanjutkan",
+                      textColor: AppColors.background,
+                      onPressed: () async {
+                        final identifier = identifierController.text.trim();
+                        final password = passwordController.text.trim();
+
+                        if (identifier.isEmpty || password.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Mohon isi Email/NIK/RM dan password.",
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        final success = await authProvider.login(
+                          identifier,
+                          password,
+                        );
+
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Login berhasil!")),
+                          );
+                          // TODO: arahkan ke dashboard
+                          // Navigator.pushReplacementNamed(context, '/dashboard');
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Login gagal. Periksa data Anda."),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 🔹 Teks bawah
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/daftar_pasien_baru',
+                      );
+                    },
+                    child: Text(
+                      "Belum punya akun? Daftar",
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.gold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
