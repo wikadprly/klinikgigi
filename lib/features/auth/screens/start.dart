@@ -74,7 +74,7 @@ class StartScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const DaftarPasienBaruScreen(),
+                      builder: (context) => const DaftarPasienBaruPage(),
                     ),
                   );
                 },
