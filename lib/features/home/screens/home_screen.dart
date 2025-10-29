@@ -1,218 +1,180 @@
-import 'package:flutter/material.dart';
-import '../../common/bottom_navbar.dart';
-import '../widgets/home_card.dart';
+// lib/screens/home_screen.dart
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:klinikgigi/core/services/pasien_service.dart';
+import 'package:klinikgigi/core/models/pasien_model.dart';
+import 'package:klinikgigi/config/api.dart';
+
+class HomeScreen extends StatefulWidget {
+  final String userId;
+  const HomeScreen({super.key, required this.userId});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<Pasien> _futurePasien;
+
+  @override
+  void initState() {
+    super.initState();
+    _futurePasien = PasienService().getPasienByUserId(widget.userId);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1C),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 8),
-              _buildProfileSection(),
-              const SizedBox(height: 16),
-              _buildBannerCarousel(context),
-              const SizedBox(height: 20),
-              _buildMenuGrid(),
-              const SizedBox(height: 16),
-              _buildPromoSection(context),
-              const SizedBox(height: 40),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavbar(currentIndex: 0, onTap: (index) {}),
-    );
-  }
-
-  // ------------------- HEADER -------------------
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Image.asset('assets/images/logo.png', height: 40),
-          const Icon(Icons.email_outlined, color: Colors.white, size: 28),
-        ],
-      ),
-    );
-  }
-
-  // ------------------- PROFILE SECTION -------------------
-  Widget _buildProfileSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 30,
-                backgroundImage: AssetImage('assets/images/user.jpg'),
+      backgroundColor: Colors.black,
+      body: FutureBuilder<Pasien>(
+        future: _futurePasien,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.amber),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.white),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Farel Sheva Basudewa',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            );
+          } else if (!snapshot.hasData) {
+            return const Center(
+              child: Text(
+                'Data tidak ditemukan',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+
+          final pasien = snapshot.data!;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      // FIX FOTO: Menambahkan timestamp dinamis untuk menghindari cache browser
+                      backgroundImage: NetworkImage(
+                        '${ApiConfig.baseUrl}/${pasien.foto}?t=${DateTime.now().millisecondsSinceEpoch}',
+                      ),
                     ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pasien.nama,
+                          style: const TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const Text(
+                          "Halo, Selamat Datang",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    infoCard('Umur', '${pasien.umur}', Colors.amber),
+                    infoCard(
+                      'Jenis Kelamin',
+                      pasien.jenisKelamin,
+                      Colors.amber,
+                    ),
+                    infoCard('Nomor RM', pasien.rekamMedis, Colors.amber),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.grey[900],
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Halo, Selamat Datang',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Menu Utama",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        children: [
+                          menuCard(Icons.calendar_today, 'Reservasi'),
+                          menuCard(Icons.home_filled, 'Home Dental Care'),
+                          menuCard(Icons.schedule, 'Jadwal Praktek'),
+                          menuCard(Icons.person_search, 'Dokter'),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              _InfoCard(title: 'Umur', value: '20'),
-              _InfoCard(title: 'Jenis Kelamin', value: 'Pria'),
-              _InfoCard(title: 'No. Rekam Medis', value: '3321029039'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ------------------- BANNER SLIDER -------------------
-  Widget _buildBannerCarousel(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.asset(
-          'assets/images/banner_dental_team.jpg',
-          width: MediaQuery.of(context).size.width,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  // ------------------- MENU GRID -------------------
-  Widget _buildMenuGrid() {
-    final List<Map<String, dynamic>> menuItems = [
-      {'icon': Icons.add_box_rounded, 'title': 'Reservasi'},
-      {'icon': Icons.home_filled, 'title': 'Home Dental Care'},
-      {'icon': Icons.calendar_month, 'title': 'Jadwal Praktek'},
-      {'icon': Icons.person, 'title': 'Dokter'},
-    ];
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFD65B), Color(0xFFB88E2F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: GridView.builder(
-        itemCount: menuItems.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemBuilder: (context, index) {
-          final item = menuItems[index];
-          return HomeCard(
-            icon: item['icon'],
-            title: item['title'],
-            onTap: () {
-              // TODO: tambahkan navigasi ke halaman terkait
-            },
+                ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  // ------------------- PROMO SECTION -------------------
-  Widget _buildPromoSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+  // Widget pembantu tetap sama
+  Widget infoCard(String title, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Promo Menarik',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          Text(
+            title,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              'assets/images/promo_banner.jpg',
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.cover,
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
         ],
       ),
     );
   }
-}
 
-// ------------------- INFO CARD WIDGET -------------------
-class _InfoCard extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _InfoCard({required this.title, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget menuCard(IconData icon, String title) {
     return Container(
-      width: 100,
-      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFD65B),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.amber,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12, color: Colors.black87),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Icon(icon, color: Colors.black, size: 30),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

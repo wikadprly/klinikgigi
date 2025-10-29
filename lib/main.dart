@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'features/auth/screens/masuk.dart';
+import 'features/home/screens/home_screen.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -11,6 +11,9 @@ class KlinikGigiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // User ID contoh (sesuaikan nanti jika sudah login)
+    const String userId = '2';
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Klinik Gigi',
@@ -21,8 +24,14 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/masuk.dart',
-      routes: {'/masuk.dart': (context) => const LoginScreen()},
+      // Halaman awal
+      initialRoute: '/login',
+
+      // Daftar route
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => HomeScreen(userId: userId),
+      },
     );
   }
 }
