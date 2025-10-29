@@ -3,6 +3,7 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_field.dart';
+import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart'; // 🟡 pastikan path sesuai
 
 class DaftarPasienLamaPage extends StatefulWidget {
   const DaftarPasienLamaPage({super.key});
@@ -29,15 +30,10 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.goldDark,
-                    size: 20,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
+                // 🔙 Ganti IconButton lama dengan widget custom kamu
+                BackButtonWidget(onPressed: () => Navigator.pop(context)),
                 const SizedBox(height: 10),
+
                 Center(
                   child: Column(
                     children: [
@@ -46,7 +42,6 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                         width: 90,
                       ),
                       const SizedBox(height: 10),
-                      // 🌟 Revisi: Warna teks Daftar jadi emas
                       Text(
                         "Daftar",
                         style: AppTextStyles.heading.copyWith(
@@ -59,7 +54,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                 ),
                 const SizedBox(height: 20),
 
-                // 🌟 Revisi: Panjang dropdown disamakan dengan input field
+                // 🔽 Dropdown Pasien Lama / Baru
                 SizedBox(
                   width: double.infinity,
                   child: Container(
@@ -74,8 +69,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: "Pasien Lama",
-                        isExpanded:
-                            true, // penting biar lebarnya ngikut container
+                        isExpanded: true,
                         items: const [
                           DropdownMenuItem(
                             value: "Pasien Lama",
@@ -119,6 +113,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 10),
+
                 Row(
                   children: [
                     Checkbox(
@@ -135,11 +130,9 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                   ],
                 ),
 
-                // 🌟 Revisi: Font di tombol putih
                 AuthButton(
                   text: "Daftar & Lanjutkan",
-                  textColor:
-                      AppColors.background, // tambah property ini di widget
+                  textColor: AppColors.background,
                   onPressed: () {
                     if (!agree) {
                       ScaffoldMessenger.of(context).showSnackBar(
