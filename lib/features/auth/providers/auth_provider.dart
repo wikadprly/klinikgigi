@@ -1,0 +1,73 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_klinik_gigi/core/models/user_model.dart';
+import 'package:flutter_klinik_gigi/core/services/auth_service.dart';
+
+class AuthProvider extends ChangeNotifier {
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  UserModel? _user;
+  UserModel? get user => _user;
+
+  // 🔹 Fungsi untuk register pasien lama
+  Future<bool> registerPasienLama({
+    required String rekamMedis,
+    required String password,
+    required String confirmPassword,
+  }) async {
+    if (password != confirmPassword) {
+      throw Exception("Password dan konfirmasi password tidak sama");
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // NOTE: rekam_medis_id dimasukkan, data lain bisa diset default (sementara)
+      final user = UserModel(
+        userId: 0,
+        namaPengguna: 'Pasien Lama',
+        nik: '0',
+        rekamMedisId: int.tryParse(rekamMedis),
+        tanggalLahir: '2000-01-01',
+        jenisKelamin: 'L',
+        noHp: '0000000000',
+        email: 'default@email.com',
+        password: password,
+      );
+
+      final success = await _authService.register(user);
+
+      _isLoading = false;
+      notifyListeners();
+
+      return success;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      debugPrint("Error register pasien lama: $e");
+      return false;
+    }
+  }
+
+  // 🔹 Fungsi login
+  Future<bool> login(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final user = await _authService.login(email, password);
+    _isLoading = false;
+
+    if (user != null) {
+      _user = user;
+      notifyListeners();
+      return true;
+    } else {
+      notifyListeners();
+      return false;
+    }
+  }
+}

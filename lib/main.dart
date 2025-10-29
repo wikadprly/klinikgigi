@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
-
-import 'features/auth/screens/start.dart';
+import 'package:provider/provider.dart';
+import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/screens/daftar_pasien_lama.dart';
 
 void main() {
-  runApp(const KlinikGigiApp());
+  WidgetsFlutterBinding.ensureInitialized(); // tambahin biar environment stabil
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+      ],
+      child: const KlinikGigiApp(),
+    ),
+  );
 }
 
 class KlinikGigiApp extends StatelessWidget {
@@ -18,11 +27,10 @@ class KlinikGigiApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: const Color(0xFFFFD700),
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
-        fontFamily: 'poppins',
+        fontFamily: 'Poppins',
       ),
-
-      initialRoute: '/start.dart',
-      routes: {'/start.dart': (context) => const StartScreen()},
+      home:
+          const DaftarPasienLamaPage(), // ✅ pakai home biar lebih stabil di dev mode
     );
   }
 }
