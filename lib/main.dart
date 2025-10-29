@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'features/auth/screens/start.dart';
+import 'features/auth/screens/daftar_pasien_baru.dart';
 
 void main() {
   runApp(const KlinikGigiApp());
@@ -21,8 +21,8 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'poppins',
       ),
 
-      initialRoute: '/start.dart',
-      routes: {'/start.dart': (context) => const StartScreen()},
+      initialRoute: '/daftar_pasien_baru.dart',
+      routes: {'/daftar_pasien_baru.dart': (context) => const DaftarPasienBaruScreen()},
     );
   }
 }

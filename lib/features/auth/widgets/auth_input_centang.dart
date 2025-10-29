@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/theme/colors.dart'; // pastikan path ini benar
+import 'package:flutter_klinik_gigi/theme/colors.dart';
 
 class CustomAgreementCheckbox extends StatefulWidget {
+  final String label; // Tambahkan properti label agar bisa digunakan di DaftarPasienBaruScreen
   final ValueChanged<bool>? onChanged;
-  const CustomAgreementCheckbox({super.key, this.onChanged});
+  final bool initialValue;
+
+  const CustomAgreementCheckbox({
+    super.key,
+    required this.label,
+    this.onChanged,
+    this.initialValue = false,
+  });
 
   @override
   State<CustomAgreementCheckbox> createState() =>
@@ -11,17 +19,29 @@ class CustomAgreementCheckbox extends StatefulWidget {
 }
 
 class _CustomAgreementCheckboxState extends State<CustomAgreementCheckbox> {
-  bool checked = false;
+  late bool checked;
+
+  @override
+  void initState() {
+    super.initState();
+    checked = widget.initialValue;
+  }
+
+  void toggleCheckbox() {
+    setState(() {
+      checked = !checked;
+    });
+    widget.onChanged?.call(checked);
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() => checked = !checked);
-        widget.onChanged?.call(checked);
-      },
+      onTap: toggleCheckbox,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Kotak centang custom
           AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             width: 22,
@@ -29,19 +49,26 @@ class _CustomAgreementCheckboxState extends State<CustomAgreementCheckbox> {
             decoration: BoxDecoration(
               color: checked ? AppColors.gold : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppColors.goldDark, width: 2),
+              border: Border.all(
+                color: checked ? AppColors.gold : AppColors.goldDark,
+                width: 2,
+              ),
             ),
             child: checked
                 ? const Icon(Icons.check, size: 16, color: AppColors.background)
                 : null,
           ),
           const SizedBox(width: 8),
-          Text(
-            "Setuju dan lanjutkan",
-            style: TextStyle(
-              color: AppColors.textLight,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+
+          // Label teks
+          Expanded(
+            child: Text(
+              widget.label,
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

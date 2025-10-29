@@ -6,12 +6,14 @@ class AuthInputField extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final TextEditingController? controller;
+  final bool isPassword; // <-- ini harus ada
 
   const AuthInputField({
     super.key,
     required this.hintText,
     this.obscureText = false,
     this.controller,
+    this.isPassword = false,
   });
 
   @override
