@@ -4,10 +4,10 @@ import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 
 class AuthService {
   // Ganti URL ini dengan base URL API Laravel kamu
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = 'http://127.0.0.1:8000/api'; 
   // 10.0.2.2 digunakan agar emulator bisa akses localhost di PC
 
-  // 🟢 Login user
+  //  Login user
   Future<UserModel?> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
     try {
@@ -31,7 +31,7 @@ class AuthService {
     }
   }
 
-  // 🟣 Register user baru
+  // Register user baru
   Future<bool> register(UserModel user) async {
     final url = Uri.parse('$baseUrl/register');
     try {
@@ -51,7 +51,7 @@ class AuthService {
     }
   }
 
-  // 🟡 Ambil profil user (misalnya setelah login)
+  //  Ambil profil user (misalnya setelah login)
   Future<UserModel?> getProfile(int userId) async {
     final url = Uri.parse('$baseUrl/user/$userId');
     try {
