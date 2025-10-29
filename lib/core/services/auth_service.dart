@@ -4,7 +4,7 @@ import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 
 class AuthService {
   // Ganti URL ini dengan base URL API Laravel kamu
-  static const String baseUrl = 'http://10.0.2.2:8000/api'; 
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
   // 10.0.2.2 digunakan agar emulator bisa akses localhost di PC
 
   // 🟢 Login user
