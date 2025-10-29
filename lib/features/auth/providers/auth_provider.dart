@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import 'package:flutter_klinik_gigi/core/services/auth_service.dart';
 
@@ -12,9 +12,16 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   UserModel? get user => _user;
 
-  // 🔹 Fungsi untuk register pasien lama
-  Future<bool> registerPasienLama({
-    required String rekamMedis,
+  // 🔹 Fungsi register pasien baru / lama
+  Future<bool> registerUser({
+    required String tipePasien,
+    String? rekamMedis,
+    String? namaPengguna,
+    String? nik,
+    String? email,
+    String? noHp,
+    String? tanggalLahir,
+    String? jenisKelamin,
     required String password,
     required String confirmPassword,
   }) async {
@@ -26,34 +33,31 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // NOTE: rekam_medis_id dimasukkan, data lain bisa diset default (sementara)
-      final user = UserModel(
-        userId: 0,
-        namaPengguna: 'Pasien Lama',
-        nik: '0',
-        rekamMedisId: int.tryParse(rekamMedis),
-        tanggalLahir: '2000-01-01',
-        jenisKelamin: 'L',
-        noHp: '0000000000',
-        email: 'default@email.com',
+      final success = await _authService.registerUser(
+        tipePasien: tipePasien,
+        rekamMedisId: rekamMedis,
+        namaPengguna: namaPengguna,
+        nik: nik,
+        email: email,
+        noHp: noHp,
+        tanggalLahir: tanggalLahir,
+        jenisKelamin: jenisKelamin,
         password: password,
+        confirmPassword: confirmPassword,
       );
-
-      final success = await _authService.register(user);
 
       _isLoading = false;
       notifyListeners();
-
       return success;
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      debugPrint("Error register pasien lama: $e");
+      debugPrint("Error register user: $e");
       return false;
     }
   }
 
-  // 🔹 Fungsi login
+  // 🔹 Login user
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();

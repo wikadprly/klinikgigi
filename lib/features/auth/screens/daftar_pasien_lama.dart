@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // ✅ penting biar Provider.of() dikenali
+import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_field.dart';
-<<<<<<< HEAD
-import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart'; // 🟡 pastikan path sesuai
-=======
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
->>>>>>> main
 
 class DaftarPasienLamaPage extends StatefulWidget {
   const DaftarPasienLamaPage({super.key});
@@ -20,18 +16,18 @@ class DaftarPasienLamaPage extends StatefulWidget {
 
 class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
   final TextEditingController rekamMedisController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController noHpController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
+  String tipePasien = 'lama'; // default
   bool agree = false;
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(
-      context,
-      listen: true,
-    ); // ✅ fix
+    final authProvider = Provider.of<AuthProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -42,10 +38,6 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-<<<<<<< HEAD
-                // 🔙 Ganti IconButton lama dengan widget custom kamu
-=======
->>>>>>> main
                 BackButtonWidget(onPressed: () => Navigator.pop(context)),
                 const SizedBox(height: 10),
 
@@ -58,7 +50,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Daftar Pasien Lama",
+                        "Daftar Pasien",
                         style: AppTextStyles.heading.copyWith(
                           fontSize: 28,
                           color: AppColors.gold,
@@ -69,58 +61,43 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                 ),
                 const SizedBox(height: 20),
 
-<<<<<<< HEAD
-                // 🔽 Dropdown Pasien Lama / Baru
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.inputBorder),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: "Pasien Lama",
-                        isExpanded: true,
-                        items: const [
-                          DropdownMenuItem(
-                            value: "Pasien Lama",
-                            child: Text(
-                              "Pasien Lama",
-                              style: AppTextStyles.input,
-                            ),
-                          ),
-                          DropdownMenuItem(
-                            value: "Pasien Baru",
-                            child: Text(
-                              "Pasien Baru",
-                              style: AppTextStyles.input,
-                            ),
-                          ),
-                        ],
-                        onChanged: (_) {},
-                        dropdownColor: AppColors.background,
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.goldDark,
-                        ),
-                      ),
+                // 🔹 Dropdown tipe pasien
+                DropdownButtonFormField<String>(
+                  value: tipePasien,
+                  dropdownColor: AppColors.background,
+                  decoration: InputDecoration(
+                    labelText: "Tipe Pasien",
+                    labelStyle: AppTextStyles.label,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldDark),
                     ),
                   ),
+                  items: const [
+                    DropdownMenuItem(value: 'lama', child: Text("Pasien Lama")),
+                    DropdownMenuItem(value: 'baru', child: Text("Pasien Baru")),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      tipePasien = val!;
+                    });
+                    if (val == 'baru') {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/daftar_pasien_baru',
+                      );
+                    }
+                  },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
 
-=======
-                // Input Fields
->>>>>>> main
+                // 🔹 Input Fields
                 AuthInputField(
                   hintText: "Rekam Medis",
                   controller: rekamMedisController,
                 ),
+                AuthInputField(hintText: "Email", controller: emailController),
+                AuthInputField(hintText: "No. HP", controller: noHpController),
                 AuthInputField(
                   hintText: "Password",
                   controller: passwordController,
@@ -149,27 +126,8 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                   ],
                 ),
 
-<<<<<<< HEAD
-                AuthButton(
-                  text: "Daftar & Lanjutkan",
-                  textColor: AppColors.background,
-                  onPressed: () {
-                    if (!agree) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Harap setujui Terms & Condition dulu.",
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-                    // TODO: Tambahkan fungsi register API di sini
-                  },
-=======
-                // Tombol daftar
+                // 🔹 Tombol daftar
                 AbsorbPointer(
-                  // ✅ cara aman "disable" GestureDetector tanpa error
                   absorbing: authProvider.isLoading,
                   child: Opacity(
                     opacity: authProvider.isLoading ? 0.6 : 1,
@@ -190,8 +148,11 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                           return;
                         }
 
-                        final success = await authProvider.registerPasienLama(
+                        final success = await authProvider.registerUser(
+                          tipePasien: tipePasien,
                           rekamMedis: rekamMedisController.text.trim(),
+                          email: emailController.text.trim(),
+                          noHp: noHpController.text.trim(),
                           password: passwordController.text.trim(),
                           confirmPassword: confirmPasswordController.text
                               .trim(),
@@ -212,7 +173,6 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                       },
                     ),
                   ),
->>>>>>> main
                 ),
 
                 const SizedBox(height: 20),
