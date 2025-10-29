@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // 🔹 Tombol Login
                     AuthButton(
                       text: 'Masuk & Lanjutkan',
-                      onPressed: () {
+                      onPressed: () async {
                         debugPrint(
                           'Login attempt: ${_emailController.text} / ${_passwordController.text}',
                         );
