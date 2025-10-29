@@ -5,6 +5,7 @@ import 'features/auth/screens/start.dart';
 import 'features/auth/providers/auth_provider.dart'; // ✅ pastikan path benar
 import 'features/auth/screens/daftar_pasien_lama.dart'; // ✅ untuk route tambahan nanti
 import 'features/auth/screens/daftar_pasien_baru.dart';
+import 'features/auth/screens/masuk.dart';
 
 void main() {
   runApp(
@@ -34,6 +35,7 @@ class KlinikGigiApp extends StatelessWidget {
       initialRoute: '/start',
       routes: {
         '/start': (context) => const StartScreen(),
+        '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
       },
