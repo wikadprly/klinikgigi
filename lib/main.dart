@@ -1,9 +1,17 @@
+// 🟢 main.dart (fix)
 import 'package:flutter/material.dart';
-
-import 'features/auth/screens/masuk.dart';
+import 'package:provider/provider.dart'; // ✅ penting untuk Provider
+import 'features/auth/providers/auth_provider.dart'; // ✅ pastikan path benar
+import 'features/auth/screens/daftar_pasien_lama.dart'; // ✅ untuk route tambahan nanti
+import 'features/auth/screens/daftar_pasien_baru.dart';
 
 void main() {
-  runApp(const KlinikGigiApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const KlinikGigiApp(),
+    ),
+  );
 }
 
 class KlinikGigiApp extends StatelessWidget {
@@ -18,11 +26,15 @@ class KlinikGigiApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: const Color(0xFFFFD700),
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
-        fontFamily: 'poppins',
+        fontFamily: 'Poppins', // 🟢 diseragamkan kapital awal
       ),
 
-      initialRoute: '/masuk.dart',
-      routes: {'/masuk.dart': (context) => const LoginScreen()},
+      // 🟢 perbaikan route name — Flutter tidak pakai ekstensi .dart
+      initialRoute: '/daftar_pasien_lama',
+      routes: {
+        '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
+        '/daftar_pasien_baru': (context) => const DaftarPasienBaruScreen(),
+      },
     );
   }
 }

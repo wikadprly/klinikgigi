@@ -3,11 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 
 class AuthService {
-  // Ganti URL ini dengan base URL API Laravel kamu
-  static const String baseUrl = 'http://127.0.0.1:8000/api'; 
-  // 10.0.2.2 digunakan agar emulator bisa akses localhost di PC
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
 
-  //  Login user
+  // 🔹 LOGIN
   Future<UserModel?> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
     try {
@@ -19,51 +17,55 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Pastikan respons Laravel berisi "user"
         if (data['user'] != null) {
           return UserModel.fromJson(data['user']);
         }
       }
-      return null; // gagal login
+      return null;
     } catch (e) {
       print('Error login: $e');
       return null;
     }
   }
 
-  // Register user baru
-  Future<bool> register(UserModel user) async {
+  // 🔹 REGISTER USER (baru/lama)
+  Future<bool> registerUser({
+    required String tipePasien,
+    String? rekamMedisId,
+    String? namaPengguna,
+    String? nik,
+    String? email,
+    String? noHp,
+    String? tanggalLahir,
+    String? jenisKelamin,
+    required String password,
+    required String confirmPassword,
+  }) async {
     final url = Uri.parse('$baseUrl/register');
+
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(user.toJson()),
+        body: jsonEncode({
+          'tipe_pasien': tipePasien,
+          'rekam_medis_id': rekamMedisId,
+          'nama_pengguna': namaPengguna,
+          'nik': nik,
+          'email': email,
+          'no_hp': noHp,
+          'tanggal_lahir': tanggalLahir,
+          'jenis_kelamin': jenisKelamin,
+          'password': password,
+          'password_confirmation': confirmPassword,
+        }),
       );
 
-      if (response.statusCode == 201) {
-        return true; // sukses register
-      }
-      return false;
+      print("Response register (${response.statusCode}): ${response.body}");
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('Error register: $e');
+      print('Error register user: $e');
       return false;
-    }
-  }
-
-  //  Ambil profil user (misalnya setelah login)
-  Future<UserModel?> getProfile(int userId) async {
-    final url = Uri.parse('$baseUrl/user/$userId');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return UserModel.fromJson(data['user']);
-      }
-      return null;
-    } catch (e) {
-      print('Error get profile: $e');
-      return null;
     }
   }
 }
