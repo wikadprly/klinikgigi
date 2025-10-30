@@ -463,13 +463,13 @@ class _HomeScreenState extends State<HomeScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          child: Center(
-            child: Text(
-              'Carousel Promo',
-              // Menggunakan style input dari theme
-              style: AppTextStyles.input,
-            ),
-          ),
+          // child: Center(
+          //   child: Text(
+          //     'Carousel Promo',
+          //     // Menggunakan style input dari theme
+          //     style: AppTextStyles.input,
+          //   ),
+          // ),
         ),
       ],
     );
