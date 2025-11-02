@@ -164,7 +164,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                               content: Text("Registrasi berhasil!"),
                             ),
                           );
-                          Navigator.pop(context);
+                          Navigator.pushReplacementNamed(context, '/dashboard');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Registrasi gagal.")),
@@ -179,7 +179,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/masuk');
                     },
                     child: Text(
                       "Sudah punya akun? Masuk",
