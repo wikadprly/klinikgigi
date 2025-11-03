@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import 'package:flutter_klinik_gigi/core/services/auth_service.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -12,7 +13,36 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   UserModel? get user => _user;
 
-  // 🔹 Fungsi register pasien baru / lama
+  bool get isLoggedIn => _user != null;
+
+  Future<void> loadUser() async {
+    _user = await SharedPrefsHelper.getUser();
+    notifyListeners();
+  }
+
+  Future<bool> login(String identifier, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final user = await _authService.login(identifier, password);
+    _isLoading = false;
+
+    if (user != null) {
+      _user = user;
+      notifyListeners();
+      return true;
+    } else {
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await SharedPrefsHelper.clearUser();
+    _user = null;
+    notifyListeners();
+  }
+
   Future<bool> registerUser({
     required String tipePasien,
     String? rekamMedis,
@@ -53,24 +83,6 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       debugPrint("Error register user: $e");
-      return false;
-    }
-  }
-
-  // 🔹 Login user
-  Future<bool> login(String identifier, String password) async {
-    _isLoading = true;
-    notifyListeners();
-
-    final user = await _authService.login(identifier, password);
-    _isLoading = false;
-
-    if (user != null) {
-      _user = user;
-      notifyListeners();
-      return true;
-    } else {
-      notifyListeners();
       return false;
     }
   }

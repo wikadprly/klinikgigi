@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_klinik_gigi/core/models/user_model.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class AuthService {
   static const String baseUrl = 'http://127.0.0.1:8000/api';
+  //ip sesuaikan kelen mau tes dimanaz, cek firewall mengijinkan port 8000
 
-  // 🔹 LOGIN
   Future<UserModel?> login(String identifier, String password) async {
     final url = Uri.parse('$baseUrl/login');
     try {
@@ -18,7 +19,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] != null) {
-          return UserModel.fromJson(data['data']);
+          final user = UserModel.fromJson(data['data']);
+          await SharedPrefsHelper.saveUser(user); // simpan user
+          return user;
         }
       }
       return null;
@@ -28,7 +31,6 @@ class AuthService {
     }
   }
 
-  // 🔹 REGISTER USER (baru/lama)
   Future<bool> registerUser({
     required String tipePasien,
     String? rekamMedisId,

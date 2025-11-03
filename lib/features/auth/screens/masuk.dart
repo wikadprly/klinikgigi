@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: true);
+    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -34,7 +34,6 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 BackButtonWidget(onPressed: () => Navigator.pop(context)),
                 const SizedBox(height: 10),
-
                 Center(
                   child: Column(
                     children: [
@@ -53,25 +52,18 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
-                // 🔹 Input Identifier (bisa Email, NIK, atau RM)
                 AuthInputField(
                   hintText: "Email / NIK / Nomor Rekam Medis",
                   controller: identifierController,
                 ),
                 const SizedBox(height: 18),
-
-                // 🔹 Input Password
                 AuthInputField(
                   hintText: "Kata Sandi",
                   obscureText: true,
                   controller: passwordController,
                 ),
                 const SizedBox(height: 22),
-
-                // 🔹 Checkbox Ingat Saya
                 Row(
                   children: [
                     Checkbox(
@@ -87,10 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 32),
-
-                // 🔹 Tombol Login
                 AbsorbPointer(
                   absorbing: authProvider.isLoading,
                   child: Opacity(
@@ -124,8 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Login berhasil!")),
                           );
-                          // TODO: arahkan ke dashboard
-                          // Navigator.pushReplacementNamed(context, '/dashboard');
+                          Navigator.pushReplacementNamed(context, '/dashboard');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -137,10 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // 🔹 Teks bawah
                 Center(
                   child: TextButton(
                     onPressed: () {
