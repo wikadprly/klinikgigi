@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                           );
                           Navigator.pushReplacementNamed(
                             context,
-                            '/home_screen',
+                            '/main_screen',
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

@@ -242,7 +242,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                           );
                           Navigator.pushReplacementNamed(
                             context,
-                            '/home_screen',
+                            '/main_screen',
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'features/auth/screens/start.dart';
 import 'features/auth/screens/masuk.dart';
-import 'features/home/screens/home_screen.dart';
+import 'features/home/screens/main_screen.dart';
 import 'features/auth/screens/daftar_pasien_lama.dart';
 import 'features/auth/screens/daftar_pasien_baru.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -38,24 +38,13 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/home_screen' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
-        '/home_screen': (context) {
-          final auth = Provider.of<AuthProvider>(context);
-          final userId = auth.user?.userId.toString() ?? '0';
-          return HomeScreen(
-            userId: userId,
-            onNavigate: (index) {
-              // Handle navigation berdasarkan index
-              // Contoh: index 1 = Reservasi, index 2 = Home Dental Care
-              // Implementasi sesuai kebutuhan
-            },
-          );
-        },
+        '/main_screen': (context) => const MainScreen(),
       },
     );
   }
