@@ -38,14 +38,24 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/dashboard' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/home_screen' : '/start',
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
-        '/dashboard': (context) =>
-            const Placeholder(), //kel 7 udah bisa dbuat home yang nampilin nama pengguna karna sudah pakai shared preference
+        '/home_screen': (context) {
+          final auth = Provider.of<AuthProvider>(context);
+          final userId = auth.user?.userId.toString() ?? '0';
+          return HomeScreen(
+            userId: userId,
+            onNavigate: (index) {
+              // Handle navigation berdasarkan index
+              // Contoh: index 1 = Reservasi, index 2 = Home Dental Care
+              // Implementasi sesuai kebutuhan
+            },
+          );
+        },
       },
     );
   }
