@@ -166,7 +166,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                           );
                           Navigator.pushReplacementNamed(
                             context,
-                            '/home_screen',
+                            '/main_screen',
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
