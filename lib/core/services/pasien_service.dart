@@ -22,23 +22,37 @@ class PasienService {
       try {
         final data = json.decode(response.body);
 
-        // Cek jika API mengembalikan respons error dalam format JSON (error logika)
+        // Jika API mengembalikan error logika dalam format JSON
         if (data is Map<String, dynamic> &&
             data.containsKey('status') &&
             data['status'] == 'error') {
-          // Melemparkan pesan error logika dari Laravel (misal: "Pasien tidak ditemukan")
           throw Exception(
             data['message'] ?? 'Gagal memuat data pasien dari API.',
           );
         }
 
-        // Asumsi: Jika 200, body tidak kosong, dan bukan error logika, itu adalah data pasien
-        return Pasien.fromJson(data);
+        // Beberapa API membungkus payload di dalam kunci 'data', contoh:
+        // { "status": "success", "data": { ... } }
+        // Jadi kita unwrap jika perlu.
+        dynamic payload = data;
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          payload = data['data'];
+        }
+
+        // Pastikan payload adalah Map sebelum memanggil fromJson
+        if (payload is Map<String, dynamic>) {
+          return Pasien.fromJson(payload);
+        }
+
+        // Jika payload bukan Map, berikan pesan yang jelas untuk debugging
+        throw FormatException(
+          'Payload dari server tidak memiliki format yang diharapkan (Map). Body: "${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}..."',
+        );
       } on FormatException catch (e) {
         // Tangani FormatException dan error JSON decoding lainnya
         // Menambahkan respons body ke pesan error untuk debugging di Flutter
         throw FormatException(
-          'Gagal memproses data dari server. Respon bukan JSON valid. Body: "${response.body.substring(0, response.body.length > 50 ? 50 : response.body.length)}..." Detail: $e',
+          'Gagal memproses data dari server. Respon bukan JSON valid. Body: "${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}..." Detail: $e',
         );
       } catch (e) {
         // Tangani error umum lainnya
