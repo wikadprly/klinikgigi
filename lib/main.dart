@@ -6,6 +6,7 @@ import 'features/home/screens/main_screen.dart';
 import 'features/auth/screens/daftar_pasien_lama.dart';
 import 'features/auth/screens/daftar_pasien_baru.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/riwayat/screens/riwayat_screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,7 @@ class KlinikGigiApp extends StatelessWidget {
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
         '/main_screen': (context) => const MainScreen(),
+        '/riwayat': (context) => const RiwayatScreen(),
       },
     );
   }
