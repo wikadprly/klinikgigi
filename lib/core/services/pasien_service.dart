@@ -1,69 +1,69 @@
-// lib/services/pasien_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import '../models/pasien_model.dart';
-import '../../config/api_home.dart';
+import '../../config/api.dart';
 
 class PasienService {
-  Future<Pasien> getPasienByUserId(String userId) async {
-    // Menggunakan URL yang sudah diperbaiki (sesuai PasienService sebelumnya)
-    final url = Uri.parse('${ApiConfig.baseUrl}/pasien/$userId');
-    final response = await http.get(url);
+  // FUNGSI BARU: Untuk mengambil data pasien yang sedang login
+  Future<Pasien> getPasienLogin() async {
+    // 3. UBAH LOGIKA PENGAMBILAN TOKEN
+    // Ambil data user lengkap dari SharedPreferences menggunakan helper
+    final UserModel? user = await SharedPrefsHelper.getUser();
 
+    // Cek apakah user ada dan punya token
+    // (Asumsi: UserModel Anda memiliki properti 'token')
+    if (user == null || user.token == null || user.token!.isEmpty) {
+      throw Exception('Token tidak ditemukan. Harap login kembali.');
+    }
+
+    // Ambil token dari UserModel
+    final String token = user.token!;
+
+    // menentukan URL (sesuai routes/api.php)
+    final url = Uri.parse('${ApiConfig.baseUrl}/pasien');
+
+    // 4. SISA KODE SAMA PERSIS (sudah benar)
+    // membuat request DENGAN authorization header
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    // Proses response
     if (response.statusCode == 200) {
-      // 💡 Perbaikan: Cek jika body kosong atau hanya spasi sebelum mencoba decode.
-      if (response.body.trim().isEmpty) {
-        throw Exception(
-          'Server mengembalikan Status Code 200 OK, tetapi body kosong (tidak ada data pasien).',
-        );
-      }
+      final data = json.decode(response.body);
 
-      try {
-        final data = json.decode(response.body);
-
-        // Jika API mengembalikan error logika dalam format JSON
-        if (data is Map<String, dynamic> &&
-            data.containsKey('status') &&
-            data['status'] == 'error') {
-          throw Exception(
-            data['message'] ?? 'Gagal memuat data pasien dari API.',
-          );
-        }
-
-        // Beberapa API membungkus payload di dalam kunci 'data', contoh:
-        // { "status": "success", "data": { ... } }
-        // Jadi kita unwrap jika perlu.
-        dynamic payload = data;
-        if (data is Map<String, dynamic> && data.containsKey('data')) {
-          payload = data['data'];
-        }
-
-        // Pastikan payload adalah Map sebelum memanggil fromJson
+      // mengecek apakah API bisa mengembalikan data sukses
+      if (data is Map<String, dynamic> && data['status'] == 'success') {
+        // mengambil data dari payload
+        final payload = data['data'];
         if (payload is Map<String, dynamic>) {
+          // model Pasien (pasien_model.dart) harus sesuai
+          // dengan data yang dikembalikan (yaitu dari tabel 'users' berdasarkan MpUser.php)
           return Pasien.fromJson(payload);
         }
-
-        // Jika payload bukan Map, berikan pesan yang jelas untuk debugging
-        throw FormatException(
-          'Payload dari server tidak memiliki format yang diharapkan (Map). Body: "${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}..."',
-        );
-      } on FormatException catch (e) {
-        // Tangani FormatException dan error JSON decoding lainnya
-        // Menambahkan respons body ke pesan error untuk debugging di Flutter
-        throw FormatException(
-          'Gagal memproses data dari server. Respon bukan JSON valid. Body: "${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}..." Detail: $e',
-        );
-      } catch (e) {
-        // Tangani error umum lainnya
-        throw Exception(
-          'Terjadi kesalahan tak terduga saat memproses data: $e',
-        );
       }
+
+      // mengecek jika API mengembalikan error
+      if (data is Map<String, dynamic> && data['status'] == 'error') {
+        throw Exception(data['message'] ?? 'Gagal memuat data pasien.');
+      }
+
+      // Jika format tidak terduga
+      throw FormatException('Format respon tidak terduga dari server.');
+    } else if (response.statusCode == 404) {
+      // Error 404 dari PasienController@index
+      final data = json.decode(response.body);
+      throw Exception(data['message'] ?? 'Data pasien tidak ditemukan (404).');
+    } else if (response.statusCode == 401) {
+      // Token tidak valid atau expired
+      throw Exception('Autentikasi gagal. Silakan login ulang (401).');
     } else {
-      // Tangani Status Code non-200 (seperti 404, 500, dll.)
+      // Error server lainnya
       throw Exception(
-        'Gagal memuat data pasien. Status Code: ${response.statusCode}',
+        'Gagal memuat data pasien. Status Code: ${response.statusCode}. Body: ${response.body}',
       );
     }
   }
