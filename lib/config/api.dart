@@ -8,6 +8,19 @@ class ApiEndpoint {
   static const register = "$baseUrl/register";
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
+
+  // 🔹 RESERVASI
+  static const reservasiCreate = "$baseUrl/reservasi/create";
+  static const reservasiGetPoli = "$baseUrl/reservasi/poli";
+  static const reservasiGetDokter = "$baseUrl/reservasi/dokter";
+  static const reservasiGetJadwal = "$baseUrl/reservasi/jadwal";
+  static const reservasiRiwayat = "$baseUrl/reservasi/riwayat";
+  static const reservasiPembayaran = "$baseUrl/reservasi/pembayaran";
+  static String riwayat(String rekamMedisId) =>
+      "$baseUrl/reservasi/riwayat/$rekamMedisId";
+
+  static String updatePembayaran(String noPemeriksaan) =>
+      "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
 }
 
 class ApiConfig {
