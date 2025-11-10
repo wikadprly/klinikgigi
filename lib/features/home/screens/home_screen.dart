@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pasien = _pasienService.getPasienByUserId(widget.userId);
+    _pasien = _pasienService.getPasienLogin();
   }
 
   @override
@@ -96,14 +96,17 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             IconButton(
               icon: GradientMask(
+                // Hapus 'const' dari sini
                 gradient: AppColors.goldGradient,
-                child: const Icon(
-                  Icons.mail_outline,
-                  color: Colors.white,
-                  size: 28,
+                child: SvgPicture.asset(
+                  'assets/icons/poin.svg',
+                  height: 28, // Sesuaikan ukuran
+                  width: 28, // Sesuaikan ukuran
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                // Tambahkan aksi saat ikon poin ditekan
+              },
             ),
           ],
         ),
