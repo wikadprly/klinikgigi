@@ -1,18 +1,24 @@
-// 🟢 main.dart (fix)
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // ✅ penting untuk Provider
-// import 'features/auth/screens/start.dart';
-import 'features/auth/providers/auth_provider.dart'; // ✅ pastikan path benar
-// import 'features/auth/screens/daftar_pasien_lama.dart'; // ✅ untuk route tambahan nanti
-// import 'features/auth/screens/daftar_pasien_baru.dart';
-// import 'features/auth/screens/masuk.dart';
-import 'features/home/screens/home_screen.dart';
+import 'package:provider/provider.dart';
+import 'features/auth/screens/start.dart';
+import 'features/auth/screens/masuk.dart';
 import 'features/home/screens/main_screen.dart';
+import 'features/auth/screens/daftar_pasien_lama.dart';
+import 'features/auth/screens/daftar_pasien_baru.dart';
+import 'features/auth/providers/auth_provider.dart';
+import 'features/riwayat/screens/riwayat_screens.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final authProvider = AuthProvider();
+  await authProvider.loadUser();
+
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [
+        ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+      ],
       child: const KlinikGigiApp(),
     ),
   );
@@ -23,9 +29,7 @@ class KlinikGigiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // User ID contoh (sesuaikan nanti jika sudah login)
-    const String userId = '2';
-
+    final authProvider = Provider.of<AuthProvider>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Klinik Gigi',
@@ -33,17 +37,16 @@ class KlinikGigiApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: const Color(0xFFFFD700),
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
-        fontFamily: 'Poppins', // 🟢 diseragamkan kapital awal
+        fontFamily: 'Poppins',
       ),
-
-      // 🟢 perbaikan route name — Flutter tidak pakai ekstensi .dart
-      initialRoute: '/home',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
-        '/home': (context) => MainScreen(),
-        // '/start': (context) => const StartScreen(),
-        // '/masuk': (context) => const LoginPage(),
-        // '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
-        // '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
+        '/start': (context) => const StartScreen(),
+        '/masuk': (context) => const LoginPage(),
+        '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
+        '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
+        '/main_screen': (context) => const MainScreen(),
+        '/riwayat': (context) => const RiwayatScreen(),
       },
     );
   }

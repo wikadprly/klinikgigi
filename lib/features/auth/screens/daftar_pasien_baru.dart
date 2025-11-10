@@ -240,7 +240,10 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                               content: Text("Registrasi berhasil!"),
                             ),
                           );
-                          Navigator.pushReplacementNamed(context, '/dashboard');
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/main_screen',
+                          );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Registrasi gagal.")),
