@@ -22,7 +22,7 @@ class PasienService {
     final String token = user.token!;
 
     // menentukan URL (sesuai routes/api.php)
-    final url = Uri.parse('${ApiConfig.baseUrl}/pasien');
+    final url = Uri.parse('$baseUrl/pasien');
 
     // 4. SISA KODE SAMA PERSIS (sudah benar)
     // membuat request DENGAN authorization header

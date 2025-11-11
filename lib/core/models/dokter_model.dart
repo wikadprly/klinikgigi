@@ -1,5 +1,5 @@
 class DokterModel {
-  final int dokterId;
+  final String dokterId;
   final String namaDokter;
   final String spesialisasi;
   final String? fotoProfil; // Path atau URL foto, bisa null
@@ -13,7 +13,7 @@ class DokterModel {
 
   factory DokterModel.fromJson(Map<String, dynamic> json) {
     return DokterModel(
-      dokterId: json['dokter_id'],
+      dokterId: json['dokter_id'].toString(),
       namaDokter: json['nama_dokter'],
       spesialisasi: json['spesialisasi'],
       fotoProfil: json['foto_profil'],
