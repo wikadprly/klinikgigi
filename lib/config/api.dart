@@ -8,9 +8,12 @@ class ApiEndpoint {
   static const register = "$baseUrl/register";
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
+
+  static const String pasien = "$baseUrl/pasien";
+  static const String dokter = "$baseUrl/dokter";
 }
 
-class ApiConfig {
-  // GANTI sesuai IP WiFi laptop kamu
-  static const String baseUrl = 'http://10.76.215.207/klinikgigi';
-}
+// class ApiConfig {
+//   // GANTI sesuai IP WiFi laptop kamu
+//   static const String baseUrl = 'http://127.0.0.1:8000/api';
+// }
