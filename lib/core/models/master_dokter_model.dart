@@ -74,4 +74,9 @@ class MasterDokterModel {
       'inisial': inisial,
     };
   }
+  @override
+  String toString() => gelar != null && gelar!.isNotEmpty
+      ? '$nama, $gelar'
+      : nama;
+
 }

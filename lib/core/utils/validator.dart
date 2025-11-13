@@ -66,4 +66,16 @@ class Validator {
     // Kamu bisa tambahkan pengecekan format (dd/mm/yyyy) kalau mau
     return null;
   }
+
+  // 🔹 Validasi Keluhan Pasien reservasi
+  static String? validateKeluhan(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Keluhan tidak boleh kosong';
+    }
+    if (value.length < 5) {
+      return 'Keluhan terlalu singkat';
+    }
+    return null;
+  }
+
 }
