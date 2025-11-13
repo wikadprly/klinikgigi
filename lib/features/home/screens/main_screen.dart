@@ -4,12 +4,15 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart';
-import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart';
+// IMPORT HALAMAN YANG BENAR
+import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart'; //
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart'; //
+import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/profil/screens/profil_screens.dart';
 
+// GradientMask class (tetap ada seperti di file asli Anda)
 class GradientMask extends StatelessWidget {
+  // ... (kode GradientMask Anda)
   const GradientMask({
     required this.child,
     required this.gradient,
@@ -43,20 +46,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _widgetOptions;
+  // Daftar halaman TIDAK PERLU 'late final' jika diinisialisasi di initState
+  late List<Widget> _pages;
 
-  @override
-  void initState() {
-    super.initState();
-    _widgetOptions = <Widget>[
-      HomeScreen(userId: '2', onNavigate: _onItemTapped),
-      PendaftaranScreen(),
-      DentalHomeScreen(),
-      RiwayatScreen(),
-      ProfilScreen(),
-    ];
-  }
-
+  // Fungsi untuk mengubah state saat navbar ditekan
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -64,11 +57,31 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Inisialisasi daftar halaman di sini
+    _pages = <Widget>[
+      // ✅ KOREKSI 1: Tambahkan parameter yang dibutuhkan HomeScreen
+      HomeScreen(
+        userId: '2', // Saya ambil '2' dari kode asli Anda
+        onNavigate: _onItemTapped,
+      ),
+      // ✅ KOREKSI 2: Ganti ReservasiScreen dengan PendaftaranScreen
+      PendaftaranScreen(),
+      DentalHomeScreen(), //
+      RiwayatScreen(), //
+      ProfilScreen(), // Diambil dari kode asli Anda
+    ];
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Tubuh Scaffold sekarang hanya menampilkan halaman yang dipilih
       body: Stack(
         children: [
-          _widgetOptions.elementAt(_selectedIndex),
+          _pages[_selectedIndex], // <-- Gunakan _pages
+          // UI Navbar tetap di sini (seperti file asli Anda)
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
