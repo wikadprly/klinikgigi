@@ -45,12 +45,20 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
 <<<<<<< HEAD
+<<<<<<< HEAD
       initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/riwayat',
 =======
       initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/firstpage',
 >>>>>>> 8d886dd (update: menambahkan keterangan import lima page)
+=======
+
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+
+>>>>>>> 22aaaaf (update: memperbaiki route dari riwayat ke start)
       routes: {
+        // Rute '/start' akan memuat StartScreen
         '/start': (context) => const StartScreen(),
+        // Rute '/masuk' akan memuat LoginPage (dari file masuk.dart)
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
