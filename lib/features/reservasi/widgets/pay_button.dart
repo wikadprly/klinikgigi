@@ -16,7 +16,6 @@ class PayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // gold pill button with black text like UI
     return SizedBox(
       width: double.infinity,
       height: 48,
