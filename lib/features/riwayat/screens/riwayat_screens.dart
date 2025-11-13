@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/riwayat_card.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
@@ -126,49 +125,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.cardDark,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            _NavItem(icon: Icons.home, label: "Beranda"),
-            _NavItem(icon: Icons.medical_services, label: "Pendaftaran"),
-            _NavItem(icon: Icons.house, label: "Dental Home"),
-            _NavItem(icon: Icons.history, label: "Riwayat", active: true),
-            _NavItem(icon: Icons.person, label: "Profil"),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: active ? AppColors.gold : AppColors.goldDark),
-        Text(label, style: AppTextStyles.label),
-      ],
     );
   }
 }
