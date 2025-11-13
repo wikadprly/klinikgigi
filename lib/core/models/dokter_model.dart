@@ -14,8 +14,14 @@ class DokterModel {
   factory DokterModel.fromJson(Map<String, dynamic> json) {
     return DokterModel(
       dokterId: json['dokter_id'].toString(),
-      namaDokter: json['nama_dokter'],
-      spesialisasi: json['spesialisasi'],
+
+      // Jika 'nama_dokter' null, gunakan string kosong ''
+      namaDokter: json['nama_dokter'] ?? '',
+
+      // Jika 'spesialisasi' null, gunakan string kosong ''
+      spesialisasi: json['spesialisasi'] ?? '',
+
+      // fotoProfil sudah aman karena tipenya String? (nullable)
       fotoProfil: json['foto_profil'],
     );
   }
