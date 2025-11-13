@@ -65,7 +65,7 @@ class TransferBankOption extends StatelessWidget {
               ),
             ),
 
-            // lingkaran indikator (radio)
+            // lingkaran indikator
             Container(
               width: 26,
               height: 26,
