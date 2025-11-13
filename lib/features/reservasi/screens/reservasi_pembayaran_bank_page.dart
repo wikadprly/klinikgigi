@@ -56,7 +56,7 @@ class _ReservasiPembayaranBankPageState
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // biar seimbang sama back button
+                  const SizedBox(width: 48),
                 ],
               ),
 
@@ -167,7 +167,6 @@ class _ReservasiPembayaranBankPageState
               ),
               const SizedBox(height: 15),
 
-              // Transfer Bank Option (emas cetar kalau dipilih)
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -186,7 +185,6 @@ class _ReservasiPembayaranBankPageState
 
               const SizedBox(height: 15),
 
-              // QRIS Option (emas cetar kalau dipilih)
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
