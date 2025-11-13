@@ -18,7 +18,7 @@ class CustomDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color dropdownBgColor = AppColors.bgPanel;
+    const Color dropdownBgColor = AppColors.gold;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
