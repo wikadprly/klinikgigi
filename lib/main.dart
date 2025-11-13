@@ -39,9 +39,13 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/riwayat',
+
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+
       routes: {
+        // Rute '/start' akan memuat StartScreen
         '/start': (context) => const StartScreen(),
+        // Rute '/masuk' akan memuat LoginPage (dari file masuk.dart)
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
