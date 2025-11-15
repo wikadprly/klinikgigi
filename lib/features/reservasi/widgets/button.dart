@@ -2,18 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
+class ButtonText {
+  static const String cekJadwal = "Cek Jadwal";
+  static const String bayar = "Bayar";
+  static const String selesai = "Selesai";
+  static const String simpanKodeQR = "Simpan Kode QR";
+  static const String kembaliKeBeranda = "Kembali ke Beranda";
+  static const String lihatRiwayat = "Lihat Riwayat";
+}
+
 class AuthButton extends StatelessWidget {
   final String text;
-  final Future<void> Function()?
-  onPressed; // ✅ ubah dari VoidCallback ke Future<void>
-  final Color? textColor;
-  final bool isDisabled; // ✅ tambahan: biar tombol bisa dinonaktifkan
+  final Future<void> Function()? onPressed;
+  final bool isDisabled;
 
   const AuthButton({
     super.key,
     required this.text,
     this.onPressed,
-    this.textColor,
     this.isDisabled = false,
   });
 
@@ -25,18 +31,16 @@ class AuthButton extends StatelessWidget {
       onTap: disabled
           ? null
           : () async {
-              // ✅ bungkus async di GestureDetector dengan try-catch
               try {
                 await onPressed?.call();
               } catch (e) {
-                debugPrint('Error in AuthButton: $e');
+                debugPrint("AuthButton Error: $e");
               }
             },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(vertical: 12),
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           gradient: disabled
               ? LinearGradient(
@@ -44,23 +48,23 @@ class AuthButton extends StatelessWidget {
                     AppColors.gold.withOpacity(0.4),
                     AppColors.goldDark.withOpacity(0.4),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 )
               : const LinearGradient(
-                  colors: [AppColors.gold, AppColors.goldDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.gold,
+                    AppColors.goldDark,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Center(
           child: Text(
             text,
             style: AppTextStyles.button.copyWith(
-              color: textColor ?? AppColors.background,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
+              color: AppColors.background,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
