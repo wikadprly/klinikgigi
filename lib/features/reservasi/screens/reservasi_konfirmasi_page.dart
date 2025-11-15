@@ -3,16 +3,7 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang_garis.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
-
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ReservasiKonfirmasiPage(),
-    ),
-  );
-}
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/back.dart';
 
 class ReservasiKonfirmasiPage extends StatelessWidget {
   const ReservasiKonfirmasiPage({super.key});
@@ -51,7 +42,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                         Text(
                           "Farel Sheva Basudewa",
                           style: AppTextStyles.input.copyWith(
-                            color: Colors.amber,
+                            color: AppColors.gold,
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
@@ -59,7 +50,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                         Text(
                           "No. Rekam Medis: 11100000",
                           style: AppTextStyles.label.copyWith(
-                            color: Colors.grey[400],
+                            color: AppColors.textLight,
                             fontSize: 12,
                           ),
                         ),
@@ -80,7 +71,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                   child: Text(
                     "Pilih Jadwal Periksa",
                     style: AppTextStyles.button.copyWith(
-                      color: Colors.amber,
+                      color: AppColors.gold,
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
@@ -107,15 +98,18 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.only(bottom: 8),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: Colors.amber, width: 1.2),
+                          bottom: BorderSide(
+                            color: AppColors.gold,
+                            width: 1.2,
+                          ),
                         ),
                       ),
                       child: Text(
                         "Konfirmasi Data Pendaftaran",
                         style: AppTextStyles.heading.copyWith(
-                          color: Colors.amber,
+                          color: AppColors.gold,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -133,7 +127,10 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     _buildDataText("No. HP", ""),
                     _buildDataText("Jenis Pasien", ""),
                     const SizedBox(height: 8),
-                    Container(height: 1, color: Colors.amber.withOpacity(0.8)),
+                    Container(
+                      height: 1,
+                      color: AppColors.gold.withOpacity(0.8),
+                    ),
                     const SizedBox(height: 8),
 
                     // ================================
@@ -145,8 +142,11 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     _buildDataText("Waktu Layanan", ""),
                     const SizedBox(height: 8),
 
-                    // Garis pemisah antara layanan dan keluhan (1 garis saja)
-                    Container(height: 1, color: Colors.amber.withOpacity(0.8)),
+                    // Garis pemisah antara layanan dan keluhan
+                    Container(
+                      height: 1,
+                      color: AppColors.gold.withOpacity(0.8),
+                    ),
                     const SizedBox(height: 8),
 
                     // ================================
@@ -154,7 +154,10 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     // ================================
                     _buildDataText("Keluhan", ""),
                     const SizedBox(height: 8),
-                    Container(height: 1, color: Colors.amber.withOpacity(0.8)),
+                    Container(
+                      height: 1,
+                      color: AppColors.gold.withOpacity(0.8),
+                    ),
 
                     const SizedBox(height: 14),
 
@@ -168,14 +171,14 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                           "Total Pembayaran",
                           style: AppTextStyles.label.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textLight,
                           ),
                         ),
                         Text(
                           "Rp 25.000",
                           style: AppTextStyles.input.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.amber,
+                            color: AppColors.gold,
                           ),
                         ),
                       ],
@@ -189,17 +192,16 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6C6C6C),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.borderSubtle,
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               "Batal",
-                              style: TextStyle(
-                                color: Colors.white,
+                              style: AppTextStyles.button.copyWith(
+                                color: AppColors.textLight,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -210,17 +212,16 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6C6C6C),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.gold,
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               "Bayar",
-                              style: TextStyle(
-                                color: Colors.white,
+                              style: AppTextStyles.button.copyWith(
+                                color: AppColors.background,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -248,7 +249,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.label.copyWith(
-              color: Colors.white,
+              color: AppColors.textLight,
               fontSize: 14,
             ),
           ),
@@ -256,7 +257,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
             Text(
               value,
               style: AppTextStyles.input.copyWith(
-                color: Colors.white70,
+                color: AppColors.textLight,
                 fontSize: 14,
               ),
             ),
