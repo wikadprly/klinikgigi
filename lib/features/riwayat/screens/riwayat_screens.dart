@@ -27,6 +27,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   Future<void> fetchRiwayat() async {
     try {
       final token = await SharedPrefsHelper.getUser();
+
       final response = await http.get(
         Uri.parse('http://127.0.0.1:8000/api/riwayat'),
         headers: {
@@ -36,19 +37,22 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data = decoded["data"]; // AMBIL DARI "data"
+
         setState(() {
           riwayatData = data
               .map(
                 (item) => {
-                  "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
-                  "dokter": item["dokter"] ?? "-",
-                  "tanggal": item["tanggal"] ?? "-",
-                  "poli": item["poli"] ?? "-",
-                  "status_reservasi": item["status_reservasi"] ?? "-",
+                  "no_pemeriksaan": item["no_pemeriksaan"],
+                  "dokter": item["dokter"],
+                  "tanggal": item["tanggal"],
+                  "poli": item["poli"],
+                  "status_reservasi": item["status_reservasi"],
                 },
               )
               .toList();
+
           isLoading = false;
         });
       } else {
