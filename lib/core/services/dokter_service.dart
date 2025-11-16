@@ -8,9 +8,14 @@ class DokterService {
   final String _url =
       ApiEndpoint.dokter; // Menggunakan 'http://127.0.0.1:8000/api/dokter'
 
-  Future<List<DokterModel>> fetchDokter() async {
-    // menggunakan _url yang sudah didefinisikan
-    final response = await http.get(Uri.parse(_url));
+  Future<List<DokterModel>> fetchDokter([String? search]) async {
+    var uri = Uri.parse(_url);
+    if (search != null && search.isNotEmpty) {
+      // Ini akan mengubah URL menjadi: .../api/dokter?search=nama_dokter
+      uri = uri.replace(queryParameters: {'search': search});
+    }
+
+    final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);

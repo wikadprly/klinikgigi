@@ -3,96 +3,65 @@ import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/services/dokter_service.dart';
 import '../../../core/models/dokter_model.dart';
+import 'dart:async'; // Import untuk Timer (debounce)
 
 // ------------------------------------
-// 1. WIDGET KARTU DOKTER MINIMALIS
+// 1. WIDGET KARTU DOKTER BARU (SESUAI DESAIN 1.png)
 // ------------------------------------
-class MinimalistDokterCard extends StatelessWidget {
+class _DokterListCard extends StatelessWidget {
   final DokterModel dokter;
 
-  const MinimalistDokterCard({Key? key, required this.dokter})
-    : super(key: key);
+  const _DokterListCard({required this.dokter});
 
   @override
   Widget build(BuildContext context) {
     Widget imageWidget;
+    // Logika menampilkan foto/placeholder
     if (dokter.fotoProfil != null &&
         Uri.tryParse(dokter.fotoProfil!)?.hasAbsolutePath == true) {
-      imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(10.0),
-        child: Image.network(
-          dokter.fotoProfil!,
-          width: double.infinity,
-          height: 150,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: double.infinity,
-            height: 150,
-            color: AppColors.cardDark,
-            child: Icon(Icons.person, color: AppColors.textMuted, size: 50),
-          ),
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: double.infinity,
-              height: 150,
-              color: AppColors.cardDark,
-              child: const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            );
-          },
-        ),
+      imageWidget = CircleAvatar(
+        radius: 30,
+        backgroundColor:
+            AppColors.cardDark, // background jika gambar gagal load
+        backgroundImage: NetworkImage(dokter.fotoProfil!),
+        onBackgroundImageError: (exception, stackTrace) {
+          // Fallback ke icon jika network image error (dibuang agar tidak error)
+        },
       );
     } else {
-      imageWidget = Container(
-        width: double.infinity,
-        height: 150,
-        decoration: BoxDecoration(
-          color: AppColors.gold.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(Icons.person, color: AppColors.gold, size: 60),
+      // Placeholder
+      imageWidget = CircleAvatar(
+        radius: 30,
+        backgroundColor: AppColors.gold.withOpacity(0.2),
+        child: Icon(Icons.person, color: AppColors.gold, size: 30),
       );
     }
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: AppColors.cardDark,
-      elevation: 4,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          imageWidget,
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  dokter.namaDokter,
-                  style: AppTextStyles.heading.copyWith(fontSize: 16),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  dokter.spesialisasi,
-                  style: AppTextStyles.label.copyWith(color: AppColors.gold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: imageWidget,
+        title: Text(
+          dokter.namaDokter,
+          style: AppTextStyles.heading.copyWith(
+            fontSize: 16,
+            color: AppColors.gold,
           ),
-        ],
+        ),
+        subtitle: Text(
+          "Spesialisasi: ${dokter.spesialisasi}",
+          style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
+        ),
       ),
     );
   }
 }
 
 // ------------------------------------
-// 2. MAIN SCREEN DOKTER (GRID VIEW)
+// 2. MAIN SCREEN DOKTER (DIUBAH MENJADI STATEFUL)
 // ------------------------------------
 class DokterScreens extends StatefulWidget {
   const DokterScreens({Key? key}) : super(key: key);
@@ -102,19 +71,53 @@ class DokterScreens extends StatefulWidget {
 }
 
 class _DokterScreensState extends State<DokterScreens> {
+  // State untuk mengelola daftar dokter
   late Future<List<DokterModel>> _futureDokter;
   final DokterService _dokterService = DokterService();
+
+  // Controller untuk search bar
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
+    // Ambil semua dokter saat pertama kali load
     _futureDokter = _dokterService.fetchDokter();
+
+    // Tambahkan listener untuk live search dengan debounce
+    _searchController.addListener(_onSearchChanged);
   }
 
-  Future<void> _refreshDokterList() async {
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  // Fungsi untuk fetch data (bisa dipanggil ulang)
+  void _fetchData(String? query) {
     setState(() {
-      _futureDokter = _dokterService.fetchDokter();
+      _futureDokter = _dokterService.fetchDokter(query);
     });
+  }
+
+  // Fungsi Debounce untuk pencarian
+  // Ini mencegah API dipanggil di setiap ketikan,
+  // hanya akan memanggil 500ms setelah user berhenti mengetik.
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _fetchData(_searchController.text.trim());
+    });
+  }
+
+  // Fungsi refresh manual (tarik ke bawah)
+  Future<void> _refreshDokterList() async {
+    _searchController.clear(); // Hapus filter saat refresh
+    _fetchData(null); // Ambil semua data lagi
   }
 
   @override
@@ -123,76 +126,116 @@ class _DokterScreensState extends State<DokterScreens> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'Dokter Kami',
+          'Dokter', // Diubah dari 'Dokter Kami'
           style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
-        backgroundColor: AppColors.cardDark,
-        elevation: 0.5,
+        backgroundColor: AppColors.background, // Ubah ke background
+        elevation: 0,
+        leading: IconButton(
+          // Tombol back
+          icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshDokterList,
-        child: FutureBuilder<List<DokterModel>>(
-          future: _futureDokter,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Colors.redAccent,
-                        size: 40,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Gagal memuat data: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.label.copyWith(
-                          color: Colors.redAccent,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            // --- Search Bar ---
+            TextField(
+              controller: _searchController,
+              style: AppTextStyles.input,
+              decoration: InputDecoration(
+                hintText: 'Cari dokter...',
+                hintStyle: AppTextStyles.label,
+                prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
+                filled: true,
+                fillColor: AppColors.cardDark,
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // --- List Dokter ---
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refreshDokterList,
+                color: AppColors.gold,
+                child: FutureBuilder<List<DokterModel>>(
+                  future: _futureDokter,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: AppColors.gold),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.redAccent,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Gagal memuat data: ${snapshot.error}',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.label.copyWith(
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: _refreshDokterList,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.gold,
+                                ),
+                                child: Text(
+                                  'Coba Lagi',
+                                  style: AppTextStyles.button.copyWith(
+                                    color: AppColors.background,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _refreshDokterList,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.gold,
+                      );
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Text(
+                          _searchController.text.isEmpty
+                              ? 'Tidak ada data dokter saat ini.'
+                              : 'Dokter tidak ditemukan.',
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.textMuted,
+                          ),
                         ),
-                        child: Text('Coba Lagi', style: AppTextStyles.button),
-                      ),
-                    ],
-                  ),
+                      );
+                    } else {
+                      // --- INI PERUBAHAN UTAMA: ListView.builder ---
+                      final dokterList = snapshot.data!;
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        itemCount: dokterList.length,
+                        itemBuilder: (context, index) {
+                          return _DokterListCard(dokter: dokterList[index]);
+                        },
+                      );
+                    }
+                  },
                 ),
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Text(
-                  'Tidak ada data dokter saat ini.',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              );
-            } else {
-              return GridView.builder(
-                padding: const EdgeInsets.all(16.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.75,
-                ),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  return MinimalistDokterCard(dokter: snapshot.data![index]);
-                },
-              );
-            }
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );
