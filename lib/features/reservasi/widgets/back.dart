@@ -10,7 +10,7 @@ class BackButtonCircle extends StatelessWidget {
   final double borderWidth;
 
   const BackButtonCircle({
-    Key? key,
+    super.key,
     this.onTap,
     this.size = 45,
     this.iconSize = 24,
@@ -18,7 +18,7 @@ class BackButtonCircle extends StatelessWidget {
     this.iconColor = const Color(0xFFFFD580),
     this.backgroundColor = Colors.transparent,
     this.borderWidth = 3,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
