@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class Rectangle extends StatelessWidget {
   final double width;
@@ -11,14 +10,14 @@ class Rectangle extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const Rectangle({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     this.child,
     this.backgroundColor,
     this.borderRadius = 18,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +32,7 @@ class Rectangle extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
