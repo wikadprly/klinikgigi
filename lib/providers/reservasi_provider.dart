@@ -11,6 +11,9 @@ class ReservasiProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isLoadingJadwal = false;
+  bool get isLoadingJadwal => _isLoadingJadwal;
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
@@ -54,18 +57,25 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchJadwal(String kodeDokter, String tanggal) async {
-    _isLoading = true;
+  Future<void> fetchJadwal({
+    required String kodeDokter,
+    required String kodePoli,
+    required String tanggalReservasi,
+  }) async {
+    _isLoadingJadwal = true;
     notifyListeners();
     try {
-      _jadwalList = await _reservasiService.getJadwal(kodeDokter, tanggal);
+      _jadwalList = await _reservasiService.getJadwal(
+        kodeDokter,
+        tanggalReservasi,
+      );
       _errorMessage = null;
     } catch (e) {
       _jadwalList = [];
       _errorMessage = 'Gagal memuat jadwal dokter';
       if (kDebugMode) print('fetchJadwal Error: $e');
     }
-    _isLoading = false;
+    _isLoadingJadwal = false;
     notifyListeners();
   }
 
