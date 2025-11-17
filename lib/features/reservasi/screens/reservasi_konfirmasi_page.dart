@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle_line.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back.dart';
 
 class ReservasiKonfirmasiPage extends StatelessWidget {
@@ -24,15 +23,8 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Tombol kembali
-                  BackButtonCircle(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+                  BackButtonCircle(onTap: () => Navigator.pop(context)),
                   const SizedBox(width: 12),
-
-                  // Info pasien (nama + no rekam medis)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,11 +80,11 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Judul bagian atas dengan garis bawah
+                    // Judul bagian atas
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(color: AppColors.gold, width: 1.2),
                         ),
@@ -118,7 +110,9 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     Container(
                       height: 1,
-                      color: AppColors.gold.withOpacity(0.8),
+                      color: AppColors.gold.withValues(
+                        alpha: 0.8,
+                      ), // ✅ ganti from withOpacity()
                     ),
                     const SizedBox(height: 8),
 
@@ -128,11 +122,9 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     _buildDataText("Tanggal", ""),
                     _buildDataText("Waktu Layanan", ""),
                     const SizedBox(height: 8),
-
-                    // Garis pemisah antara layanan dan keluhan
                     Container(
                       height: 1,
-                      color: AppColors.gold.withOpacity(0.8),
+                      color: AppColors.gold.withValues(alpha: 0.8), // ✅
                     ),
                     const SizedBox(height: 8),
 
@@ -141,7 +133,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     Container(
                       height: 1,
-                      color: AppColors.gold.withOpacity(0.8),
+                      color: AppColors.gold.withValues(alpha: 0.8), // ✅
                     ),
 
                     const SizedBox(height: 14),
@@ -169,6 +161,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
 
                     const SizedBox(height: 14),
 
+                    // Tombol aksi
                     Row(
                       children: [
                         Expanded(
