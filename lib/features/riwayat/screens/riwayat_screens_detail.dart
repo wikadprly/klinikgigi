@@ -10,20 +10,73 @@ class RiwayatDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provide default values untuk safety
-    final nama = data['nama'] as String? ?? "-";
-    final rekamMedis = data['rekam_medis'] as String? ?? "-";
-    final foto = data['foto'] as String? ?? "https://via.placeholder.com/150";
-    final noPemeriksaan = data['no_pemeriksaan'] as String? ?? "-";
-    final jamMulai = data['jam_mulai'] as String? ?? "-";
-    final jamSelesai = data['jam_selesai'] as String? ?? "-";
-    final tanggal = data['tanggal'] as String? ?? "-";
-    final dokter = data['dokter'] as String? ?? "-";
-    final poli = data['poli'] as String? ?? "-";
-    final catatan = data['catatan'] as String? ?? "-";
-    final status =
-        data['status'] as String? ?? data['status_reservasi'] as String? ?? "-";
-    final biaya = data['biaya'] as String? ?? "0";
+    // Provide default values untuk safety dan dukung beberapa variasi struktur respons
+    String safeString(dynamic v) => v == null ? '' : v.toString();
+    const String placeholderFoto = 'https://via.placeholder.com/150';
+
+    final nama = safeString(
+      data['nama'] ??
+          data['patient']?['nama'] ??
+          data['pasien']?['nama'] ??
+          data['user']?['name'],
+    );
+
+    final rekamMedis = safeString(
+      data['rekam_medis'] ??
+          data['no_rekam_medis'] ??
+          data['rekamMedis'] ??
+          data['patient']?['rekam_medis'],
+    );
+
+    final foto = safeString(
+      data['foto'] ?? data['patient']?['foto'] ?? data['pasien']?['foto'] ?? '',
+    );
+
+    final noPemeriksaan = safeString(
+      data['no_pemeriksaan'] ?? data['nomor'] ?? data['id'],
+    );
+
+    // tampilkan '-' jika kosong untuk konsistensi UI
+    final displayNama = nama.isNotEmpty ? nama : '-';
+    final displayRekamMedis = rekamMedis.isNotEmpty ? rekamMedis : '-';
+    final displayNoPemeriksaan = noPemeriksaan.isNotEmpty ? noPemeriksaan : '-';
+
+    final jamMulai = safeString(
+      data['jam_mulai'] ??
+          data['reservasi']?['jam_mulai'] ??
+          data['reservasi']?['start_time'] ??
+          data['start_time'],
+    );
+    final jamSelesai = safeString(
+      data['jam_selesai'] ??
+          data['reservasi']?['jam_selesai'] ??
+          data['reservasi']?['end_time'] ??
+          data['end_time'],
+    );
+
+    final tanggal = safeString(
+      data['tanggal'] ?? data['reservasi']?['tanggal'] ?? data['date'],
+    );
+    final dokter = safeString(
+      data['dokter'] ?? data['dokter_nama'] ?? data['doctor'],
+    );
+    final poli = safeString(
+      data['poli'] ?? data['poli_nama'] ?? data['clinic'],
+    );
+
+    final status = safeString(
+      data['status'] ??
+          data['status_reservasi'] ??
+          data['reservasi']?['status'],
+    );
+
+    final biaya = safeString(
+      data['biaya'] ??
+          data['reservasi']?['biaya'] ??
+          data['total'] ??
+          data['harga'] ??
+          '0',
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -45,13 +98,10 @@ class RiwayatDetailScreen extends StatelessWidget {
                 CircleAvatar(
                   radius: 35,
                   backgroundColor: AppColors.cardDark,
-                  backgroundImage:
-                      foto.isNotEmpty &&
-                          foto != "https://via.placeholder.com/150"
+                  backgroundImage: foto.isNotEmpty && foto != placeholderFoto
                       ? NetworkImage(foto)
                       : null,
-                  child:
-                      foto.isEmpty || foto == "https://via.placeholder.com/150"
+                  child: foto.isEmpty || foto == placeholderFoto
                       ? const Icon(Icons.person, color: Colors.grey, size: 35)
                       : null,
                 ),
@@ -61,14 +111,14 @@ class RiwayatDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Nama : $nama",
+                        "Nama : $displayNama",
                         style: AppTextStyles.heading.copyWith(fontSize: 16),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "NO.RM : $rekamMedis",
+                        "NO.RM : $displayRekamMedis",
                         style: AppTextStyles.label.copyWith(fontSize: 13),
                       ),
                     ],
@@ -92,7 +142,7 @@ class RiwayatDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildRowBold("No. Pemeriksaan :", noPemeriksaan),
+                  _buildRowBold("No. Pemeriksaan :", displayNoPemeriksaan),
 
                   const SizedBox(height: 12),
 
@@ -100,7 +150,6 @@ class RiwayatDetailScreen extends StatelessWidget {
                   _buildRow("Hari/Tanggal", tanggal),
                   _buildRow("Dokter", dokter),
                   _buildRow("Poli", poli),
-                  _buildRow("Catatan Dokter", catatan),
 
                   const SizedBox(height: 8),
 
