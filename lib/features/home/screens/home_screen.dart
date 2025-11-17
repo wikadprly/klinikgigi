@@ -5,8 +5,6 @@ import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart'
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-// import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart'; // Duplikat, bisa dihapus
-// import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart'; // Duplikat, bisa dihapus
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_klinik_gigi/core/models/promo_model.dart';
 import 'package:flutter_klinik_gigi/core/services/promo_service.dart';

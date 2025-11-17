@@ -3,7 +3,8 @@ import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/services/dokter_service.dart';
 import '../../../core/models/dokter_model.dart';
-import 'dart:async'; // Import untuk Timer (debounce)
+import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_detail_screens.dart';
+import 'dart:async';
 
 // ------------------------------------
 // 1. WIDGET KARTU DOKTER BARU (SESUAI DESAIN 1.png)
@@ -104,9 +105,6 @@ class _DokterScreensState extends State<DokterScreens> {
     });
   }
 
-  // Fungsi Debounce untuk pencarian
-  // Ini mencegah API dipanggil di setiap ketikan,
-  // hanya akan memanggil 500ms setelah user berhenti mengetik.
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
@@ -116,8 +114,8 @@ class _DokterScreensState extends State<DokterScreens> {
 
   // Fungsi refresh manual (tarik ke bawah)
   Future<void> _refreshDokterList() async {
-    _searchController.clear(); // Hapus filter saat refresh
-    _fetchData(null); // Ambil semua data lagi
+    _searchController.clear();
+    _fetchData(null);
   }
 
   @override
@@ -126,13 +124,12 @@ class _DokterScreensState extends State<DokterScreens> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'Dokter', // Diubah dari 'Dokter Kami'
+          'Dokter',
           style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
-        backgroundColor: AppColors.background, // Ubah ke background
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          // Tombol back
           icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -160,7 +157,6 @@ class _DokterScreensState extends State<DokterScreens> {
             ),
             const SizedBox(height: 16),
 
-            // --- List Dokter ---
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshDokterList,
@@ -221,13 +217,24 @@ class _DokterScreensState extends State<DokterScreens> {
                         ),
                       );
                     } else {
-                      // --- INI PERUBAHAN UTAMA: ListView.builder ---
                       final dokterList = snapshot.data!;
                       return ListView.builder(
                         padding: const EdgeInsets.only(bottom: 16),
                         itemCount: dokterList.length,
                         itemBuilder: (context, index) {
-                          return _DokterListCard(dokter: dokterList[index]);
+                          final dokter = dokterList[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      DokterDetailScreen(dokter: dokter),
+                                ),
+                              );
+                            },
+                            child: _DokterListCard(dokter: dokter),
+                          );
                         },
                       );
                     }
