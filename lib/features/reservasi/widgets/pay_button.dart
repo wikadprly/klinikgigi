@@ -8,11 +8,11 @@ class PayButton extends StatelessWidget {
   final String label;
 
   const PayButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     this.isEnabled = true,
     this.label = 'Bayar',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class PayButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: isEnabled
               ? AppColors.gold
-              : AppColors.gold.withOpacity(0.45),
+              : AppColors.gold.withValues(alpha: 0.45),
           foregroundColor: Colors.black,
           elevation: 2,
           shape: RoundedRectangleBorder(
