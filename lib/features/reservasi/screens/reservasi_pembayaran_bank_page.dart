@@ -94,7 +94,7 @@ class _ReservasiPembayaranBankPageState
                     Container(
                       height: 1.5,
                       margin: const EdgeInsets.symmetric(vertical: 10),
-                      color: Color(0xFFE0E0E0),
+                      color: AppColors.inputBorder,
                     ),
                     _buildPaymentRow(
                       "Total Pembayaran",
