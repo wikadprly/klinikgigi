@@ -6,17 +6,18 @@ class QrisOption extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const QrisOption({Key? key, required this.isSelected, required this.onTap})
-    : super(key: key);
+  const QrisOption({super.key, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final bg = AppColors.cardDark;
+
     final borderColor = isSelected
         ? AppColors.goldDark
-        : AppColors.goldDark.withOpacity(0.25);
+        : AppColors.goldDark.withValues(alpha: 0.25);
+
     final innerColor = isSelected
-        ? AppColors.goldDark.withOpacity(0.12)
+        ? AppColors.goldDark.withValues(alpha: 0.12)
         : Colors.transparent;
 
     return GestureDetector(
@@ -31,7 +32,7 @@ class QrisOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            // ikon QRIS
+            // Ikon QRIS
             Container(
               width: 44,
               height: 30,
@@ -46,7 +47,7 @@ class QrisOption extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // teks
+            // Teks QRIS
             Expanded(
               child: Text(
                 "QRIS",
@@ -58,14 +59,14 @@ class QrisOption extends StatelessWidget {
               ),
             ),
 
-            // lingkaran indikator
+            // Lingkaran indikator
             Container(
               width: 26,
               height: 26,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.textLight.withOpacity(0.9),
+                  color: AppColors.textLight.withValues(alpha: 0.9),
                   width: 1.6,
                 ),
                 color: isSelected ? Colors.white : Colors.transparent,
