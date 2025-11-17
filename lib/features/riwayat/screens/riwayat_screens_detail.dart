@@ -152,3 +152,63 @@ class RiwayatDetailScreen extends StatelessWidget {
                     color: Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.bold
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==== COMPONENT HOLDER ====
+
+  Widget _buildRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$title : ",
+            style: const TextStyle(color: Colors.white70, height: 1.4),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Colors.yellow,
+                height: 1.4,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRowBold(String title, String value) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              color: Colors.yellow,
+              fontSize: 18,
+              fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
