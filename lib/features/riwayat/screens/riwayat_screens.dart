@@ -79,26 +79,28 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         }
 
         setState(() {
-          riwayatData = data
-              .map(
-                (item) => {
-                  "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
-                  "dokter": item["dokter"] ?? "-",
-                  "tanggal": item["tanggal"] ?? "-",
-                  "poli": item["poli"] ?? "-",
-                  "status_reservasi": item["status_reservasi"] ?? "-",
-                  "jam_mulai": item["jam_mulai"] ?? "-",
-                  "jam_selesai": item["jam_selesai"] ?? "-",
-                  "catatan": item["catatan"] ?? "-",
-                  "biaya": item["biaya"] ?? "0",
-                  "nama": item["nama"] ?? "-",
-                  "rekam_medis": item["rekam_medis"] ?? "-",
-                  "foto": item["foto"] ?? "",
-                  "status": item["status_reservasi"] ?? "-",
-                },
-              )
-              .toList();
-
+          riwayatData = data.map((item) {
+            // Ambil data waktu layanan dan biaya dari relasi `reservasi` jika tersedia,
+            // kalau tidak fallback ke field top-level
+            final reservasi = item["reservasi"] ?? {};
+            return {
+              "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
+              "dokter": item["dokter"] ?? "-",
+              "tanggal": item["tanggal"] ?? "-",
+              "poli": item["poli"] ?? "-",
+              "status_reservasi": item["status_reservasi"] ?? "-",
+              "jam_mulai": reservasi["jam_mulai"] ?? item["jam_mulai"] ?? "-",
+              "jam_selesai":
+                  reservasi["jam_selesai"] ?? item["jam_selesai"] ?? "-",
+              "biaya": reservasi["biaya"] ?? item["biaya"] ?? "0",
+              // Profil pasien
+              "nama": item["nama"] ?? "-",
+              "rekam_medis":
+                  item["rekam_medis"] ?? item["no_rekam_medis"] ?? "-",
+              "foto": item["foto"] ?? "",
+              "status": item["status_reservasi"] ?? "-",
+            };
+          }).toList();
           isLoading = false;
         });
       } else if (response.statusCode == 401) {
