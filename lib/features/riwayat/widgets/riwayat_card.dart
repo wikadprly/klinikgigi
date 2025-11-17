@@ -8,6 +8,8 @@ class RiwayatCard extends StatelessWidget {
   final String tanggal;
   final String poli;
   final String statusReservasi;
+  final Map<String, dynamic> data;
+  final VoidCallback? onTap;
 
   const RiwayatCard({
     super.key,
@@ -16,49 +18,54 @@ class RiwayatCard extends StatelessWidget {
     required this.tanggal,
     required this.poli,
     required this.statusReservasi,
+    required this.data,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool isSelesai = statusReservasi.toLowerCase() == "selesai";
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: Border.all(color: AppColors.gold, width: 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Baris pertama: status + nomor pemeriksaan
-          Row(
-            children: [
-              Icon(
-                Icons.circle,
-                size: 14,
-                color: isSelesai ? AppColors.gold : AppColors.goldDark,
-              ),
-              const SizedBox(width: 6),
-              const Text("No. Pemeriksaan : ", style: AppTextStyles.heading),
-              Expanded(
-                child: Text(
-                  noPemeriksaan,
-                  style: AppTextStyles.heading,
-                  textAlign: TextAlign.right,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          border: Border.all(color: AppColors.gold, width: 1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Baris pertama: status + nomor pemeriksaan
+            Row(
+              children: [
+                Icon(
+                  Icons.circle,
+                  size: 14,
+                  color: isSelesai ? AppColors.gold : AppColors.goldDark,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
+                const SizedBox(width: 6),
+                const Text("No. Pemeriksaan : ", style: AppTextStyles.heading),
+                Expanded(
+                  child: Text(
+                    noPemeriksaan,
+                    style: AppTextStyles.heading,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
 
-          // Dokter
-          _infoRow("Dokter :", dokter),
-          _infoRow("Tanggal :", tanggal),
-          _infoRow("Poli :", poli),
-        ],
+            // Dokter
+            _infoRow("Dokter :", dokter),
+            _infoRow("Tanggal :", tanggal),
+            _infoRow("Poli :", poli),
+          ],
+        ),
       ),
     );
   }
