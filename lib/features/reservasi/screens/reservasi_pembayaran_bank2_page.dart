@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang_garis.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle_line.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 
 class ReservasiPembayaranBank2Page extends StatelessWidget {
@@ -43,7 +43,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
               const SizedBox(height: 10),
 
               // 💰 Box Total Pembayaran
-              PersegiPanjang(
+              Rectangle(
                 width: double.infinity,
                 height: 95,
                 child: Column(
@@ -109,7 +109,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
               const SizedBox(height: 25),
 
               // 🏦 Bank BCA Section
-              PersegiPanjang(
+              Rectangle(
                 width: double.infinity,
                 height: 130,
                 child: Column(
