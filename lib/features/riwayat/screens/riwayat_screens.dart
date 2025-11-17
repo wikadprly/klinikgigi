@@ -87,6 +87,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   "tanggal": item["tanggal"] ?? "-",
                   "poli": item["poli"] ?? "-",
                   "status_reservasi": item["status_reservasi"] ?? "-",
+                  "jam_mulai": item["jam_mulai"] ?? "-",
+                  "jam_selesai": item["jam_selesai"] ?? "-",
+                  "catatan": item["catatan"] ?? "-",
+                  "biaya": item["biaya"] ?? "0",
+                  "nama": item["nama"] ?? "-",
+                  "rekam_medis": item["rekam_medis"] ?? "-",
+                  "foto": item["foto"] ?? "",
+                  "status": item["status_reservasi"] ?? "-",
                 },
               )
               .toList();
@@ -169,6 +177,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         tanggal: data["tanggal"]!,
                         poli: data["poli"]!,
                         statusReservasi: data["status_reservasi"]!,
+                        data: data,
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/riwayat_detail',
+                            arguments: data,
+                          );
+                        },
                       );
                     },
                   ),

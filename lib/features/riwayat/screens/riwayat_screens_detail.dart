@@ -7,13 +7,28 @@ class RiwayatDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Provide default values untuk safety
+    final nama = data['nama'] as String? ?? "-";
+    final rekamMedis = data['rekam_medis'] as String? ?? "-";
+    final foto = data['foto'] as String? ?? "https://via.placeholder.com/150";
+    final noPemeriksaan = data['no_pemeriksaan'] as String? ?? "-";
+    final jamMulai = data['jam_mulai'] as String? ?? "-";
+    final jamSelesai = data['jam_selesai'] as String? ?? "-";
+    final tanggal = data['tanggal'] as String? ?? "-";
+    final dokter = data['dokter'] as String? ?? "-";
+    final poli = data['poli'] as String? ?? "-";
+    final catatan = data['catatan'] as String? ?? "-";
+    final status =
+        data['status'] as String? ?? data['status_reservasi'] as String? ?? "-";
+    final biaya = data['biaya'] as String? ?? "0";
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
         title: const Text(
-          "Riwayat",
+          "Detail Riwayat",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -24,37 +39,48 @@ class RiwayatDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ===== PROFILE PASIEN =====
             Row(
               children: [
                 CircleAvatar(
                   radius: 35,
-                  backgroundImage: NetworkImage(
-                    data['foto'] ?? "https://via.placeholder.com/150",
-                  ),
+                  backgroundColor: const Color(0xFF2A2A2A),
+                  backgroundImage:
+                      foto.isNotEmpty &&
+                          foto != "https://via.placeholder.com/150"
+                      ? NetworkImage(foto)
+                      : null,
+                  child:
+                      foto.isEmpty || foto == "https://via.placeholder.com/150"
+                      ? const Icon(Icons.person, color: Colors.grey, size: 35)
+                      : null,
                 ),
                 const SizedBox(width: 15),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Nama : ${data['nama']}",
-                      style: const TextStyle(
-                        color: Colors.white, 
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Nama : $nama",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      "NO.RM : ${data['rekam_medis']}",
-                      style: const TextStyle(
-                        color: Colors.white70, 
-                        fontSize: 14
+                      const SizedBox(height: 4),
+                      Text(
+                        "NO.RM : $rekamMedis",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                  ],
-                )
+                    ],
+                  ),
+                ),
               ],
             ),
 
@@ -73,16 +99,15 @@ class RiwayatDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-                  _buildRowBold("No. Pemeriksaan :", data['no_pemeriksaan'] ?? "-"),
+                  _buildRowBold("No. Pemeriksaan :", noPemeriksaan),
 
                   const SizedBox(height: 12),
 
-                  _buildRow("Waktu Layanan", "${data['jam_mulai']} - ${data['jam_selesai']}"),
-                  _buildRow("Hari/Tanggal", data['tanggal'] ?? "-"),
-                  _buildRow("Dokter", data['dokter'] ?? "-"),
-                  _buildRow("Poli", data['poli'] ?? "-"),
-                  _buildRow("Catatan Dokter", data['catatan'] ?? "-"),
+                  _buildRow("Waktu Layanan", "$jamMulai - $jamSelesai"),
+                  _buildRow("Hari/Tanggal", tanggal),
+                  _buildRow("Dokter", dokter),
+                  _buildRow("Poli", poli),
+                  _buildRow("Catatan Dokter", catatan),
 
                   const SizedBox(height: 8),
 
@@ -93,13 +118,16 @@ class RiwayatDetailScreen extends StatelessWidget {
                         style: TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        data['status'] ?? "-",
-                        style: TextStyle(
-                          color: (data['status'] == "Selesai")
-                              ? Colors.greenAccent
-                              : Colors.orangeAccent,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          status,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: (status.toLowerCase() == "selesai")
+                                ? Colors.greenAccent
+                                : Colors.orangeAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -113,21 +141,18 @@ class RiwayatDetailScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Total Biaya :",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 15),
                       ),
                       Text(
-                        "Rp.${data['biaya']}",
+                        "Rp.$biaya",
                         style: const TextStyle(
                           color: Colors.yellow,
                           fontSize: 18,
-                          fontWeight: FontWeight.bold
+                          fontWeight: FontWeight.bold,
                         ),
-                      )
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -151,7 +176,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.black87,
                     fontSize: 16,
-                    fontWeight: FontWeight.bold
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -178,12 +203,9 @@ class RiwayatDetailScreen extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.yellow,
-                height: 1.4,
-              ),
+              style: const TextStyle(color: Colors.yellow, height: 1.4),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -204,7 +226,7 @@ class RiwayatDetailScreen extends StatelessWidget {
             style: const TextStyle(
               color: Colors.yellow,
               fontSize: 18,
-              fontWeight: FontWeight.bold
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
