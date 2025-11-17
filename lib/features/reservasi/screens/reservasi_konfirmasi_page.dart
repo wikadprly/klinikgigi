@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang_garis.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle_line.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back.dart';
 
 class ReservasiKonfirmasiPage extends StatelessWidget {
@@ -20,9 +20,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ================================
               // Baris atas: tombol kembali + info pasien
-              // ================================
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -62,9 +60,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // ================================
               // Tombol Pilih Jadwal Periksa
-              // ================================
               Center(
                 child: TextButton(
                   onPressed: () {},
@@ -81,10 +77,8 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              // ================================
               // Kotak utama Konfirmasi Data
-              // ================================
-              PersegiPanjang(
+              Rectangle(
                 width: width,
                 height: 560,
                 padding: const EdgeInsets.symmetric(
@@ -100,10 +94,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(
-                            color: AppColors.gold,
-                            width: 1.2,
-                          ),
+                          bottom: BorderSide(color: AppColors.gold, width: 1.2),
                         ),
                       ),
                       child: Text(
@@ -118,9 +109,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
 
                     const SizedBox(height: 10),
 
-                    // ================================
                     // Kelompok 1: Data Pasien
-                    // ================================
                     _buildDataText("Nama Lengkap", ""),
                     _buildDataText("Tempat, Tanggal Lahir", ""),
                     _buildDataText("Alamat", ""),
@@ -133,9 +122,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // ================================
                     // Kelompok 2: Data Layanan
-                    // ================================
                     _buildDataText("Poli", ""),
                     _buildDataText("Dokter", ""),
                     _buildDataText("Tanggal", ""),
@@ -149,9 +136,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // ================================
                     // Kelompok 3: Keluhan
-                    // ================================
                     _buildDataText("Keluhan", ""),
                     const SizedBox(height: 8),
                     Container(
@@ -161,9 +146,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
 
                     const SizedBox(height: 14),
 
-                    // ================================
                     // Kelompok 4: Total & Tombol
-                    // ================================
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -192,7 +175,7 @@ class ReservasiKonfirmasiPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.borderSubtle,
+                              backgroundColor: AppColors.cardDark,
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
