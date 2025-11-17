@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class RectangleLine extends StatelessWidget {
   final double width;
@@ -17,7 +16,7 @@ class RectangleLine extends StatelessWidget {
   final Widget? centerChild; // ketika ingin konten di tengah
 
   const RectangleLine({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     this.showInnerLine = true,
@@ -30,7 +29,7 @@ class RectangleLine extends StatelessWidget {
     this.leftChild,
     this.rightChild,
     this.centerChild,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +45,7 @@ class RectangleLine extends StatelessWidget {
         border: Border.all(color: outerBorderColor, width: 2.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
