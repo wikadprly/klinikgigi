@@ -7,6 +7,7 @@ import 'features/auth/screens/daftar_pasien_lama.dart';
 import 'features/auth/screens/daftar_pasien_baru.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/riwayat/screens/riwayat_screens.dart';
+import 'features/riwayat/screens/riwayat_screens_detail.dart';
 import 'features/settings/screens/firstpage.dart';
 import 'features/settings/screens/ubahsandi_one.dart';
 import 'features/settings/screens/ubahsandi_two.dart';
@@ -64,10 +65,17 @@ class KlinikGigiApp extends StatelessWidget {
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
         '/main_screen': (context) => const MainScreen(),
         '/riwayat': (context) => const RiwayatScreen(),
+        '/riwayat_detail': (context) {
+          final data =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          return RiwayatDetailScreen(data: data ?? {});
+        },
         '/firstpage': (context) => const ProfileScreen(),
         '/ubahsandi_one.dart': (context) => const UbahKataSandi2Page(),
         '/ubahsandi_two.dart': (context) => const UbahKataSandi3Page(),
-        '/ubahsandi_three.dart': (context) => const UbahKataSandiKonfirmasiPage(),
+        '/ubahsandi_three.dart': (context) =>
+            const UbahKataSandiKonfirmasiPage(),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
       },
     );
