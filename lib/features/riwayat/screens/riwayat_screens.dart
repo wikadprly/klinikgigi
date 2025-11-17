@@ -84,19 +84,23 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             // kalau tidak fallback ke field top-level
             final reservasi = item["reservasi"] ?? {};
             return {
+              // Informasi reservasi
               "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
               "dokter": item["dokter"] ?? "-",
               "tanggal": item["tanggal"] ?? "-",
               "poli": item["poli"] ?? "-",
               "status_reservasi": item["status_reservasi"] ?? "-",
-              "jam_mulai": reservasi["jam_mulai"] ?? item["jam_mulai"] ?? "-",
+              "jam_mulai": item["jam_mulai"] ?? reservasi["jam_mulai"] ?? "-",
               "jam_selesai":
-                  reservasi["jam_selesai"] ?? item["jam_selesai"] ?? "-",
-              "biaya": reservasi["biaya"] ?? item["biaya"] ?? "0",
-              // Profil pasien
+                  item["jam_selesai"] ?? reservasi["jam_selesai"] ?? "-",
+              "biaya": item["biaya"] ?? reservasi["biaya"] ?? "0",
+
+              // Informasi pasien
               "nama": item["nama"] ?? "-",
               "rekam_medis":
                   item["rekam_medis"] ?? item["no_rekam_medis"] ?? "-",
+              "no_rekam_medis":
+                  item["no_rekam_medis"] ?? item["rekam_medis"] ?? "-",
               "foto": item["foto"] ?? "",
               "status": item["status_reservasi"] ?? "-",
             };
