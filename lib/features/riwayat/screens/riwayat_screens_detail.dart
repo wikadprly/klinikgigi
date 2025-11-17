@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/features/profile/widgets/custom_button.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class RiwayatDetailScreen extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -23,15 +26,12 @@ class RiwayatDetailScreen extends StatelessWidget {
     final biaya = data['biaya'] as String? ?? "0";
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text(
-          "Detail Riwayat",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Detail Riwayat", style: AppTextStyles.heading),
+        iconTheme: const IconThemeData(color: AppColors.gold),
       ),
 
       body: SingleChildScrollView(
@@ -44,7 +44,7 @@ class RiwayatDetailScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 35,
-                  backgroundColor: const Color(0xFF2A2A2A),
+                  backgroundColor: AppColors.cardDark,
                   backgroundImage:
                       foto.isNotEmpty &&
                           foto != "https://via.placeholder.com/150"
@@ -62,21 +62,14 @@ class RiwayatDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         "Nama : $nama",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextStyles.heading.copyWith(fontSize: 16),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "NO.RM : $rekamMedis",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
+                        style: AppTextStyles.label.copyWith(fontSize: 13),
                       ),
                     ],
                   ),
@@ -91,9 +84,9 @@ class RiwayatDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 2),
+                border: Border.all(color: AppColors.gold, width: 2),
                 borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFF2A2A2A),
+                color: AppColors.cardDark,
               ),
 
               child: Column(
@@ -115,14 +108,14 @@ class RiwayatDetailScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Status Reservasi",
-                        style: TextStyle(color: Colors.white70),
+                        style: AppTextStyles.label,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           status,
                           textAlign: TextAlign.right,
-                          style: TextStyle(
+                          style: AppTextStyles.input.copyWith(
                             color: (status.toLowerCase() == "selesai")
                                 ? Colors.greenAccent
                                 : Colors.orangeAccent,
@@ -139,14 +132,11 @@ class RiwayatDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Total Biaya :",
-                        style: TextStyle(color: Colors.white70, fontSize: 15),
-                      ),
+                      const Text("Total Biaya :", style: AppTextStyles.label),
                       Text(
                         "Rp.$biaya",
-                        style: const TextStyle(
-                          color: Colors.yellow,
+                        style: AppTextStyles.input.copyWith(
+                          color: AppColors.gold,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -159,27 +149,10 @@ class RiwayatDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // BUTTON KEMBALI
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF4D97D),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: const Text(
-                  "Kembali",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            // BUTTON KEMBALI MENGGUNAKAN CUSTOM BUTTON
+            CustomButton(
+              text: "Kembali",
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
@@ -195,15 +168,15 @@ class RiwayatDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "$title : ",
-            style: const TextStyle(color: Colors.white70, height: 1.4),
-          ),
+          Text("$title : ", style: AppTextStyles.label.copyWith(height: 1.4)),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(color: Colors.yellow, height: 1.4),
+              style: AppTextStyles.input.copyWith(
+                color: AppColors.gold,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -214,17 +187,14 @@ class RiwayatDetailScreen extends StatelessWidget {
   Widget _buildRowBold(String title, String value) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
-        ),
+        Text(title, style: AppTextStyles.label.copyWith(fontSize: 14)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Colors.yellow,
+            style: AppTextStyles.input.copyWith(
+              color: AppColors.gold,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
