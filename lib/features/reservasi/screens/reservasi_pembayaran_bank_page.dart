@@ -55,7 +55,9 @@ class _ReservasiPembayaranBankPageState
                   color: AppColors.cardDark,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                      color: AppColors.goldDark.withOpacity(0.5), width: 2.0),
+                    color: AppColors.goldDark.withOpacity(0.5),
+                    width: 2.0,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +84,9 @@ class _ReservasiPembayaranBankPageState
                   color: AppColors.cardDark,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                      color: AppColors.goldDark.withOpacity(0.5), width: 2.0),
+                    color: AppColors.goldDark.withOpacity(0.5),
+                    width: 2.0,
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -90,10 +94,13 @@ class _ReservasiPembayaranBankPageState
                     Container(
                       height: 1.5,
                       margin: const EdgeInsets.symmetric(vertical: 10),
-                      color: AppColors.borderSubtle,
+                      color: Color(0xFFE0E0E0),
                     ),
-                    _buildPaymentRow("Total Pembayaran", "Rp 25.000",
-                        isTotal: true),
+                    _buildPaymentRow(
+                      "Total Pembayaran",
+                      "Rp 25.000",
+                      isTotal: true,
+                    ),
                   ],
                 ),
               ),
@@ -139,8 +146,10 @@ class _ReservasiPembayaranBankPageState
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         label,
-        style: AppTextStyles.label
-            .copyWith(color: AppColors.textMuted, fontSize: 14),
+        style: AppTextStyles.label.copyWith(
+          color: AppColors.textMuted,
+          fontSize: 14,
+        ),
       ),
     );
   }
