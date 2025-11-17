@@ -30,7 +30,6 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Baris ini sekarang akan valid
     _futureDetailDokter = _dokterService.fetchDokterDetail(widget.dokter.id);
   }
 
