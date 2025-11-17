@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
@@ -63,15 +62,19 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                     // WARNA TEKS PASIEN DIUBAH MENJADI KUNING (AppColors.gold)
                     Text(
                       namaPasien,
-                      style: AppTextStyles.heading.copyWith(
+                      style: AppTextStyles.body(
                         fontSize: 20,
                         color: AppColors.gold, // <--- Perubahan di sini
                       ),
                     ),
                     Text(
                       "No. Rekam Medis: $noRekamMedis",
-                      style: AppTextStyles.body,
+                      style: AppTextStyles.input.copyWith(
+                        fontSize: 14,
+                        color: AppColors.textLight,
+                      ),
                     ),
+
                     const SizedBox(height: 20),
                     Center(
                       // WARNA TEKS JUDUL DIUBAH MENJADI KUNING (AppColors.gold)
@@ -128,18 +131,22 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       CustomDropdownField(
                         label: "Pilih Semua Dokter",
                         items: prov.dokterList
-                            .map((e) => e.gelar.isNotEmpty
-                                ? "${e.nama}, ${e.gelar}"
-                                : e.nama)
+                            .map(
+                              (e) => e.gelar.isNotEmpty
+                                  ? "${e.nama}, ${e.gelar}"
+                                  : e.nama,
+                            )
                             .toList(),
                         value: selectedDokter == null
                             ? null
                             : prov.dokterList
-                                .where((d) => d.kodeDokter == selectedDokter)
-                                .map((d) => d.gelar.isNotEmpty
-                                    ? "${d.nama}, ${d.gelar}"
-                                    : d.nama)
-                                .first,
+                                  .where((d) => d.kodeDokter == selectedDokter)
+                                  .map(
+                                    (d) => d.gelar.isNotEmpty
+                                        ? "${d.nama}, ${d.gelar}"
+                                        : d.nama,
+                                  )
+                                  .first,
                         onChanged: (val) {
                           if (val == null) return;
 
@@ -172,8 +179,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                             context: context,
                             initialDate: DateTime.now(),
                             firstDate: DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 90)),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 90),
+                            ),
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
@@ -202,7 +210,8 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       // BUTTON CEK JADWAL
                       AuthButton(
                         text: "Cek Jadwal",
-                        onPressed: (selectedPoli == null ||
+                        onPressed:
+                            (selectedPoli == null ||
                                 selectedDokter == null ||
                                 selectedTanggal == null)
                             ? null
