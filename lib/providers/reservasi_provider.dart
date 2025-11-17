@@ -12,7 +12,11 @@ class ReservasiProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+
+>>>>>>> 4ff78e3 (refactor: improve reservasi provider logic)
   bool _isLoadingJadwal = false;
   bool get isLoadingJadwal => _isLoadingJadwal;
 
