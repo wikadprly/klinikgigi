@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/theme/colors.dart';
 
 class BackButtonCircle extends StatelessWidget {
   final VoidCallback? onTap;
@@ -11,15 +10,15 @@ class BackButtonCircle extends StatelessWidget {
   final double borderWidth;
 
   const BackButtonCircle({
-    Key? key,
+    super.key,
     this.onTap,
     this.size = 45,
     this.iconSize = 24,
-    this.borderColor = const Color(0xFFFFD580), // kuning lembut
+    this.borderColor = const Color(0xFFFFD580),
     this.iconColor = const Color(0xFFFFD580),
     this.backgroundColor = Colors.transparent,
     this.borderWidth = 3,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +34,7 @@ class BackButtonCircle extends StatelessWidget {
         ),
         child: Center(
           child: Icon(
-            Icons.arrow_back_ios_new_rounded, // <== ini yang kamu mau
+            Icons.arrow_back_ios_new_rounded,
             color: iconColor,
             size: iconSize,
           ),
