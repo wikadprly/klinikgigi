@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/auth/screens/start.dart';
 import 'features/auth/screens/masuk.dart';
@@ -13,6 +14,7 @@ import 'features/settings/screens/ubahsandi_one.dart';
 import 'features/settings/screens/ubahsandi_two.dart';
 import 'features/settings/screens/ubahsandi_three.dart';
 import 'features/settings/screens/notifikasi.dart';
+import 'features/auth/screens/otp_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +26,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+        ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -77,6 +80,7 @@ class KlinikGigiApp extends StatelessWidget {
         '/ubahsandi_three.dart': (context) =>
             const UbahKataSandiKonfirmasiPage(),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
+        '/otp_screen': (context) => const OtpScreen(),
       },
     );
   }
