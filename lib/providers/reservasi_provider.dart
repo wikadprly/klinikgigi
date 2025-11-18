@@ -13,10 +13,13 @@ class ReservasiProvider extends ChangeNotifier {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 
 >>>>>>> 4ff78e3 (refactor: improve reservasi provider logic)
+=======
+>>>>>>> 24fd746 (update: memperbarui kode reservasi provider)
   bool _isLoadingJadwal = false;
   bool get isLoadingJadwal => _isLoadingJadwal;
 
