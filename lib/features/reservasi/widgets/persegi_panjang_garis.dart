@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class PersegiPanjangGaris extends StatelessWidget {
   final double width;
@@ -15,6 +14,8 @@ class PersegiPanjangGaris extends StatelessWidget {
   final Widget? leftChild; // ketika ada dua kolom (kiri)
   final Widget? rightChild; // ketika ada dua kolom (kanan)
   final Widget? centerChild; // ketika ingin konten di tengah
+
+  // yayayyaya
 
   const PersegiPanjangGaris({
     Key? key,
