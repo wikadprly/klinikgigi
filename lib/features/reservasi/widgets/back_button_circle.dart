@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart';
 
 class BackButtonWidget extends StatelessWidget {
   final VoidCallback onPressed;
 
-<<<<<<< HEAD
-  const BackButtonCircle({
-    super.key,
-    this.onTap,
-    this.size = 45,
-    this.iconSize = 24,
-    this.borderColor = const Color(0xFFFFD580),
-    this.iconColor = const Color(0xFFFFD580),
-    this.backgroundColor = Colors.transparent,
-    this.borderWidth = 3,
-  });
-=======
   const BackButtonWidget({super.key, required this.onPressed});
->>>>>>> 0717c97 (feat: membuat rectangle.dart)
 
   @override
   Widget build(BuildContext context) {
@@ -36,19 +24,10 @@ class BackButtonWidget extends StatelessWidget {
             ),
           ],
         ),
-<<<<<<< HEAD
-        child: Center(
-          child: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: iconColor,
-            size: iconSize,
-          ),
-=======
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
           color: AppColors.gold,
           size: 20,
->>>>>>> 0717c97 (feat: membuat rectangle.dart)
         ),
       ),
     );
