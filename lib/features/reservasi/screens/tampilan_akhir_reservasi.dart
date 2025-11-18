@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 
 class TampilanAkhirReservasi extends StatelessWidget {
-  const TampilanAkhirReservasi({super.key});
+  final Map<String, dynamic> data;
 
-  Widget detailRow({required String label, String? value}) {
+  const TampilanAkhirReservasi({
+    super.key,
+    required this.data,
+  });
+
+  // -------- WIDGET DETAIL ROW --------
+  Widget detailRow({
+    required String label,
+    required String value,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label (E.g., No. Pemeriksaan :)
         Text(
           label,
           style: AppTextStyles.label.copyWith(
@@ -19,11 +29,12 @@ class TampilanAkhirReservasi extends StatelessWidget {
             fontSize: 15.5,
           ),
         ),
+
         const SizedBox(width: 8),
 
         Expanded(
           child: Text(
-            value ?? "",
+            value,
             textAlign: TextAlign.right,
             style: AppTextStyles.input.copyWith(
               fontSize: 15.5,
@@ -48,37 +59,51 @@ class TampilanAkhirReservasi extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: BackButtonWidget(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ReservasiScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // 👆 BATAS TAMBAHAN
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
+                // ===================== ICON CHECK =======================
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 90,
+                  height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.gold, AppColors.gold.withOpacity(0.6)],
+                    border: Border.all(
+                      color: AppColors.gold,
+                      width: 3,
                     ),
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.check_rounded,
-                      size: 40,
-                      color: Colors.black,
+                      size: 50,
+                      color: AppColors.gold,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 25),
 
+                // ===================== TITLE =======================
                 Text(
                   "Pendaftaran Berhasil",
                   textAlign: TextAlign.center,
                   style: AppTextStyles.heading.copyWith(
-                    fontSize: 25,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textLight,
                   ),
@@ -98,6 +123,7 @@ class TampilanAkhirReservasi extends StatelessWidget {
 
                 const SizedBox(height: 35),
 
+                // ===================== CARD DETAIL =======================
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -106,52 +132,77 @@ class TampilanAkhirReservasi extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.cardDark,
-                    borderRadius: BorderRadius.circular(0),
-                    border: Border.all(color: AppColors.goldDark, width: 1.8),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.goldDark, width: 1.5),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Baris 1: No. Pemeriksaan
-                      detailRow(label: "No. Pemeriksaan :"),
+                      detailRow(
+                        label: "No. Pemeriksaan :",
+                        value: data["no_pemeriksaan"] ?? "-",
+                      ),
                       const Divider(
                         color: AppColors.goldDark,
                         height: 24,
                         thickness: 1,
                       ),
 
-                      // Baris 2 sampai 8
-                      detailRow(label: "Nama :"),
+                      detailRow(
+                        label: "Nama :",
+                        value: data["nama"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Waktu Layanan :"),
+                      detailRow(
+                        label: "Waktu Layanan :",
+                        value: data["jam"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Hari/Tanggal :"),
+                      detailRow(
+                        label: "Hari/Tanggal :",
+                        value: data["tanggal"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Dokter :"),
+                      detailRow(
+                        label: "Dokter :",
+                        value: data["dokter"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Poli :"),
+                      detailRow(
+                        label: "Poli :",
+                        value: data["poli"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Keluhan :"),
+                      detailRow(
+                        label: "Keluhan :",
+                        value: data["keluhan"] ?? "-",
+                      ),
                       const SizedBox(height: 12),
 
-                      detailRow(label: "Biaya Administrasi :"),
+                      detailRow(
+                        label: "Biaya Administrasi :",
+                        value: "Rp. ${data["biaya"] ?? "0"}",
+                      ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 40),
 
-                // Button
+                // ===================== BUTTON KE RIWAYAT DETAIL =======================
                 AuthButton(
                   text: ButtonText.lihatRiwayat,
                   onPressed: () async {
-                    // TODO: Tambahkan navigasi ke halaman riwayat di sini
-                    debugPrint("Navigate to history page");
+                    Navigator.pushNamed(
+                      context,
+                      "/riwayat_detail",
+                      arguments: data, // <-- kirim data lengkap ke detail
+                    );
                   },
                 ),
 

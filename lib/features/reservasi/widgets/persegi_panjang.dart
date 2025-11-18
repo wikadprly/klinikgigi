@@ -30,7 +30,7 @@ class PersegiPanjang extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
 
         border: Border.all(
-          color: AppColors.goldDark, // lebih kontras dan mewah
+          color: AppColors.goldDark,
           width: 2.0,
         ),
 

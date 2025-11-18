@@ -5,9 +5,29 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circl
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle_line.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
+import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
+// 👇 LIXA TAMBAHIN IMPORT INI
+import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi.dart';
 
 class ReservasiPembayaranBank2Page extends StatelessWidget {
-  const ReservasiPembayaranBank2Page({super.key});
+  final String namaLengkap;
+  final String poli;
+  final String dokter;
+  final String tanggal;
+  final String jam;
+  final String keluhan;
+  final int total;
+
+  const ReservasiPembayaranBank2Page({
+    super.key,
+    required this.namaLengkap,
+    required this.poli,
+    required this.dokter,
+    required this.tanggal,
+    required this.jam,
+    required this.keluhan,
+    required this.total,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +42,16 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
               // 🔙 Header
               Row(
                 children: [
-                  BackButtonCircle(onTap: () => Navigator.pop(context)),
+                  BackButtonWidget(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ReservasiScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(width: 16),
                   Text(
                     "Kode Pembayaran",
@@ -49,7 +78,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Baris total pembayaran
+                    // Total pembayaran
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -61,7 +90,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Rp25.000",
+                          "Rp$total",
                           style: AppTextStyles.input.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
@@ -70,7 +99,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                       ],
                     ),
 
-                    // ✨ Garis emas penuh pemisah
                     const SizedBox(height: 8),
                     Container(
                       width: double.infinity,
@@ -82,7 +110,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Baris waktu bayar dalam
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -115,7 +142,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Bagian atas: teks "Bank BCA"
                     Row(
                       children: [
                         Container(
@@ -134,7 +160,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                       ],
                     ),
 
-                    // ✨ Garis pemisah emas di dalam kotak
                     const SizedBox(height: 4),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -148,11 +173,8 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    // Bagian bawah: nomor virtual account (digeser & warna gold)
                     Padding(
-                      padding: const EdgeInsets.only(
-                        left: 8,
-                      ), // 🔹 geser dikit ke kanan
+                      padding: const EdgeInsets.only(left: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -164,12 +186,14 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 6),
+
+                          // (💡 Bisa dibuat dinamis juga kalau backend sudah ada)
                           Text(
                             "123 4567 8910 1112",
                             style: AppTextStyles.input.copyWith(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.goldDark, // 🟡 ubah jadi gold
+                              color: AppColors.goldDark,
                             ),
                           ),
                         ],
@@ -187,7 +211,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🔸 mBanking
+                      // mBanking
                       Text(
                         "Petunjuk Transfer mBanking",
                         style: AppTextStyles.input.copyWith(
@@ -205,6 +229,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
+
                       Text(
                         "Pilih m-Transfer > BCA Virtual Account.\n\n"
                         "Masukkan nomor Virtual Account 123 4567 8910 1112 dan pilih Send.\n\n"
@@ -217,7 +242,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
 
                       const SizedBox(height: 25),
 
-                      // 🔸 ATM
                       Text(
                         "Petunjuk Transfer ATM",
                         style: AppTextStyles.input.copyWith(
@@ -235,6 +259,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
+
                       Text(
                         "Pilih Transaksi Lainnya > Transfer > Ke Rek BCA Virtual Account.\n\n"
                         "Masukkan nomor Virtual Account 123 4567 8910 1112 dan pilih Benar.",
@@ -252,9 +277,30 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
 
               // ✅ Tombol Selesai
               AuthButton(
-                text: ButtonText.selesai,
+                text: 'Selesai',
+                // 👇 LIXA UBAH BAGIAN INI
                 onPressed: () async {
-                  Navigator.pop(context);
+                  // 1. Siapin data yang mau dikirim
+                  final Map<String, dynamic> reservasiData = {
+                    'nama': namaLengkap,
+                    'poli': poli,
+                    'dokter': dokter,
+                    'tanggal': tanggal,
+                    'jam': jam,
+                    'keluhan': keluhan,
+                    'biaya': total.toString(), // Kirim total sebagai string
+                    // 'no_pemeriksaan' nggak ada di halaman ini,
+                    // tapi TampilanAkhirReservasi udah handle (?? "-")
+                  };
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TampilanAkhirReservasi(
+                        data: reservasiData,
+                      ),
+                    ),
+                  );
                 },
               ),
             ],

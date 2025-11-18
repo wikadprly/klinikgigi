@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:provider/provider.dart';
-import 'features/auth/screens/start.dart';
-import 'features/auth/screens/masuk.dart';
-import 'features/home/screens/main_screen.dart';
-import 'features/auth/screens/daftar_pasien_lama.dart';
-import 'features/auth/screens/daftar_pasien_baru.dart';
-import 'features/auth/providers/auth_provider.dart';
-import 'features/riwayat/screens/riwayat_screens.dart';
-import 'features/riwayat/screens/riwayat_screens_detail.dart';
-import 'features/settings/screens/firstpage.dart';
-import 'features/settings/screens/ubahsandi_one.dart';
-import 'features/settings/screens/ubahsandi_two.dart';
-import 'features/settings/screens/ubahsandi_three.dart';
-import 'features/settings/screens/notifikasi.dart';
-import 'features/auth/screens/otp_screen.dart';
+
+// Providers
+import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
+import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
+import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
+
+// Auth Screens
+import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/masuk.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_lama.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_baru.dart';
+import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
+
+// Home Screens
+import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
+
+// Reservasi
+import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
+
+// Riwayat
+import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart';
+import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens_detail.dart';
+
+// Settings
+import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_two.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_three.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/notifikasi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +41,11 @@ void main() async {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
+
+        // ✅ FIX: Provider yang sebelumnya hilang
+        ChangeNotifierProvider<ReservasiProvider>(
+          create: (_) => ReservasiProvider(),
+        ),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -39,6 +58,7 @@ class KlinikGigiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Klinik Gigi',
@@ -49,29 +69,39 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
 
+      // Jika sudah login → langsung ke main_screen
       initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
 
       routes: {
-        // Rute '/start' akan memuat StartScreen
         '/start': (context) => const StartScreen(),
-        // Rute '/masuk' akan memuat LoginPage (dari file masuk.dart)
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
+
+        // Home
         '/main_screen': (context) => const MainScreen(),
+
+        // Reservasi
+        '/reservasi': (context) => const ReservasiScreen(),
+
+        // Riwayat
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
           final data =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
           return RiwayatDetailScreen(data: data ?? {});
         },
+
+        // Settings
         '/firstpage': (context) => const ProfileScreen(),
         '/ubahsandi_one.dart': (context) => const UbahKataSandi2Page(),
         '/ubahsandi_two.dart': (context) => const UbahKataSandi3Page(),
         '/ubahsandi_three.dart': (context) =>
             const UbahKataSandiKonfirmasiPage(),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
+
+        // OTP
         '/otp_screen': (context) => const OtpScreen(),
       },
     );
