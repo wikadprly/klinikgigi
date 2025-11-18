@@ -90,10 +90,10 @@ class ReservasiPembayaranQris2Page extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Widget Persegi Panjang QRIS (diperbesar height)
+              // Widget Persegi Panjang QRIS
               Rectangle(
                 width: double.infinity,
-                height: 420, // diperbesar
+                height: 420,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -134,7 +134,7 @@ class ReservasiPembayaranQris2Page extends StatelessWidget {
 
                       const SizedBox(height: 16),
 
-                      // Tombol Simpan Kode dengan ikon download, mengikuti ukuran AuthButton
+                      // Tombol Simpan Kode dengan ikon download
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
