@@ -5,15 +5,6 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circl
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ReservasiPembayaranQris2Page(),
-    ),
-  );
-}
-
 class ReservasiPembayaranQris2Page extends StatelessWidget {
   const ReservasiPembayaranQris2Page({super.key});
 
