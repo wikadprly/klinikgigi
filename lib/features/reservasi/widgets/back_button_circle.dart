@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 
-class BackButtonCircle extends StatelessWidget {
-  final VoidCallback? onTap;
-  final double size;
-  final double iconSize;
-  final Color borderColor;
-  final Color iconColor;
-  final Color backgroundColor;
-  final double borderWidth;
+class BackButtonWidget extends StatelessWidget {
+  final VoidCallback onPressed;
 
+<<<<<<< HEAD
   const BackButtonCircle({
     super.key,
     this.onTap,
@@ -19,25 +14,41 @@ class BackButtonCircle extends StatelessWidget {
     this.backgroundColor = Colors.transparent,
     this.borderWidth = 3,
   });
+=======
+  const BackButtonWidget({super.key, required this.onPressed});
+>>>>>>> 0717c97 (feat: membuat rectangle.dart)
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap ?? () => Navigator.pop(context),
+      onTap: onPressed,
       child: Container(
-        width: size,
-        height: size,
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
+          color: AppColors.background,
           shape: BoxShape.circle,
-          color: backgroundColor,
-          border: Border.all(color: borderColor, width: borderWidth),
+          border: Border.all(color: AppColors.gold, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.gold.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
+<<<<<<< HEAD
         child: Center(
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: iconColor,
             size: iconSize,
           ),
+=======
+        child: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppColors.gold,
+          size: 20,
+>>>>>>> 0717c97 (feat: membuat rectangle.dart)
         ),
       ),
     );
