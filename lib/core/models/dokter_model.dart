@@ -13,9 +13,15 @@ class DokterModel {
 
   factory DokterModel.fromJson(Map<String, dynamic> json) {
     return DokterModel(
+      // INI DARI VERSI HEAD (kamu)
+      // Karena 'dokterId' di class ini tipenya 'int'
       dokterId: json['dokter_id'],
-      namaDokter: json['nama_dokter'],
-      spesialisasi: json['spesialisasi'],
+
+      // INI DARI VERSI 'main' (lebih aman handle data null)
+      namaDokter: json['nama_dokter'] ?? '',
+      spesialisasi: json['spesialisasi'] ?? '',
+
+      // Ini sama di kedua versi, aman
       fotoProfil: json['foto_profil'],
     );
   }

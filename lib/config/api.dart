@@ -1,5 +1,3 @@
-// lib/config/api.dart
-
 const String baseUrl = "http://127.0.0.1:8000/api"; // kalau pakai emulator
 
 class ApiEndpoint {
@@ -8,6 +6,10 @@ class ApiEndpoint {
   static const register = "$baseUrl/register";
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
+
+  // INI DIGABUNG (Diambil dari 'main')
+  static const String pasien = "$baseUrl/pasien";
+  static const String dokter = "$baseUrl/dokter";
 
   // 🔹 RESERVASI
   static const reservasiCreate = "$baseUrl/reservasi/create";

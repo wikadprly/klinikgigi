@@ -1,60 +1,121 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart'; // <-- File Anda
 
 class BottomNavbar extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
+  final int selectedIndex;
+  final Function(int) onItemTapped;
 
   const BottomNavbar({
-    super.key,
-    this.currentIndex = 0,
-    this.onTap = _defaultOnTap,
-  });
-
-  static void _defaultOnTap(int index) {}
+    Key? key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+    // Ambil warna dari file colors.dart Anda
+    const Color activeColor = AppColors.gold;
+    const Color inactiveColor = AppColors.textMuted;
+
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: selectedIndex,
+      onTap: onItemTapped,
+      selectedItemColor: activeColor, // <-- DIGANTI
+      unselectedItemColor: inactiveColor, // <-- DIGANTI
+      showUnselectedLabels: true,
+      backgroundColor: AppColors
+          .navbarBackground, // <-- Saya tambahkan dari main_screen.dart lama Anda
+      elevation: 0, // <-- Saya tambahkan dari main_screen.dart lama Anda
+      items: [
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/icons/home.svg',
+            colorFilter: ColorFilter.mode(
+              inactiveColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: onTap,
-          backgroundColor: const Color(0xFF2A2A2A),
-          selectedItemColor: const Color(0xFFFFD65B),
-          unselectedItemColor: Colors.white54,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: 'Reservasi',
+          activeIcon: SvgPicture.asset(
+            'assets/icons/home.svg',
+            colorFilter: ColorFilter.mode(
+              activeColor, // <-- DIGANTI
+              BlendMode.srcIn,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assignment),
-              label: 'Rekam Medis',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-          ],
+          ),
+          label: 'Home',
         ),
-      ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/icons/reservasi_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              inactiveColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/icons/reservasi_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              activeColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          label: 'Reservasi',
+        ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/icons/riwayat_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              inactiveColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/icons/riwayat_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              activeColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          label: 'Riwayat',
+        ),
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/icons/dentalhome_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              inactiveColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/icons/dentalhome_navbar.svg',
+            colorFilter: ColorFilter.mode(
+              activeColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          label: 'Dental Home',
+        ),
+        // Saya lihat di main_screen.dart Anda ada 5 item, jadi saya tambahkan Profil
+        BottomNavigationBarItem(
+          icon: SvgPicture.asset(
+            'assets/icons/profil.svg',
+            colorFilter: ColorFilter.mode(
+              inactiveColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          activeIcon: SvgPicture.asset(
+            'assets/icons/profil.svg',
+            colorFilter: ColorFilter.mode(
+              activeColor, // <-- DIGANTI
+              BlendMode.srcIn,
+            ),
+          ),
+          label: 'Profil',
+        ),
+      ],
     );
   }
 }
