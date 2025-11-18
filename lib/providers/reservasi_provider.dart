@@ -27,6 +27,13 @@ class ReservasiProvider extends ChangeNotifier {
   List<MasterJadwalModel> get jadwalList => _jadwalList;
   List<ReservasiModel> get riwayatList => _riwayatList;
 
+  String keluhan = "";
+
+  void setKeluhan(String value) {
+    keluhan = value;
+    notifyListeners();
+  }
+
   Future<void> fetchPoli() async {
     _isLoading = true;
     notifyListeners();

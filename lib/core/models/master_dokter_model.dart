@@ -35,6 +35,8 @@ class MasterDokterModel {
     required this.inisial,
   });
 
+ String get namaLengkap => gelar.isNotEmpty ? '$nama, $gelar' : nama;
+
   factory MasterDokterModel.fromJson(Map<String, dynamic> json) {
     return MasterDokterModel(
       kodeDokter: json['kode_dokter'] ?? '',
@@ -74,9 +76,6 @@ class MasterDokterModel {
       'inisial': inisial,
     };
   }
-  @override
-  String toString() => gelar != null && gelar!.isNotEmpty
-      ? '$nama, $gelar'
-      : nama;
-
+   @override
+  String toString() => namaLengkap;
 }
