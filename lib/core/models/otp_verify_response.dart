@@ -1,7 +1,7 @@
 class OtpVerifyResponse {
   final bool success;
   final String message;
-  final Map<String, dynamic>? data;
+  final dynamic data;
   final String? resetToken;
 
   OtpVerifyResponse({

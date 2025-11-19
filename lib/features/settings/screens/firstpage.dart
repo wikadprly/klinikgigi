@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import 'notifikasi.dart';
-import 'ubahsandi_one.dart';
+import 'notifikasi.dart'; 
 import 'panduanpage.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

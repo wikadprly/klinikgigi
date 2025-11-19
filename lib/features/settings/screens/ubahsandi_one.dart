@@ -4,10 +4,13 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:pinput/pinput.dart';
+import 'package:flutter_klinik_gigi/core/services/otp_service.dart';
 import 'ubahsandi_two.dart';
 
 class UbahKataSandi1Page extends StatefulWidget {
-  const UbahKataSandi1Page({super.key});
+  final String email; // email user dari halaman setting
+
+  const UbahKataSandi1Page({super.key, required this.email});
 
   @override
   State<UbahKataSandi1Page> createState() => _UbahKataSandi1PageState();
@@ -15,6 +18,9 @@ class UbahKataSandi1Page extends StatefulWidget {
 
 class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
   final TextEditingController _otpController = TextEditingController();
+  final OtpService _otpService = OtpService();
+
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -26,27 +32,46 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
     final otp = _otpController.text.trim();
 
     if (otp.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Kode OTP tidak boleh kosong")),
-      );
+      _show("Kode OTP tidak boleh kosong");
       return;
     }
 
     if (otp.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Kode OTP minimal 4 digit")),
-      );
+      _show("Kode OTP minimal 4 digit");
       return;
     }
 
-    debugPrint("OTP dimasukkan: $otp");
+    setState(() => _loading = true);
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final result = await _otpService.verifyResetPassword(otp);
 
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute(builder: (_) => const UbahKataSandi2Page()),
-    );
+      if (!result.success) {
+        _show(result.message);
+      } else {
+        final resetToken = result.resetToken;
+
+        if (resetToken == null) {
+          _show("Reset token tidak ditemukan");
+          return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => UbahKataSandi2Page(resetToken: resetToken),
+          ),
+        );
+      }
+    } catch (e) {
+      _show("Gagal memverifikasi OTP");
+    }
+
+    setState(() => _loading = false);
+  }
+
+  void _show(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -131,7 +156,7 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
               const SizedBox(height: 8),
 
               Text(
-                "Masukkan kode untuk mengubah kata sandi ke kata sandi baru",
+                "Masukkan kode yang dikirim ke email kamu",
                 style: AppTextStyles.label.copyWith(
                   color: AppColors.textLight,
                   fontSize: 13,
@@ -148,7 +173,6 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
                   focusedPinTheme: focusedPinTheme,
                   followingPinTheme: followingPinTheme,
                   showCursor: true,
-                  // cursor widget sebagai pengganti cursorColor / cursorEnabled
                   cursor: Container(
                     width: 2,
                     height: 22,
@@ -165,8 +189,8 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
               const SizedBox(height: 40),
 
               AuthButton(
-                text: "Lanjut",
-                onPressed: _onContinuePressed,
+                text: _loading ? "Memproses..." : "Lanjut",
+                onPressed: _loading ? null : _onContinuePressed,
               ),
 
               const SizedBox(height: 20),
@@ -182,14 +206,25 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      "Kirim ulang atau gunakan metode verifikasi lain",
-                      style: AppTextStyles.label.copyWith(
-                        color: AppColors.textLight,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+
+                    GestureDetector(
+                      onTap: () async {
+                        final ok = await _otpService.requestResetPassword(widget.email);
+                        if (ok) {
+                          _show("Kode OTP telah dikirim ulang");
+                        } else {
+                          _show("Gagal mengirim ulang kode");
+                        }
+                      },
+                      child: Text(
+                        "Kirim ulang",
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.gold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),

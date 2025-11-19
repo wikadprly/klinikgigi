@@ -11,7 +11,6 @@ import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/masuk.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_lama.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_baru.dart';
-import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 
 // Home Screens
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
@@ -28,17 +27,6 @@ import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_two.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/notifikasi.dart';
-import 'features/auth/screens/start.dart';
-import 'features/auth/screens/masuk.dart';
-import 'features/home/screens/main_screen.dart';
-import 'features/auth/screens/daftar_pasien_lama.dart';
-import 'features/auth/screens/daftar_pasien_baru.dart';
-import 'features/auth/providers/auth_provider.dart';
-import 'features/riwayat/screens/riwayat_screens.dart';
-import 'features/settings/screens/firstpage.dart';
-import 'features/settings/screens/ubahsandi_one.dart';
-import 'features/settings/screens/ubahsandi_two.dart';
-import 'features/settings/screens/notifikasi.dart';
 import 'features/settings/screens/panduanpage.dart';
 import 'features/settings/screens/panduanlogin.dart';
 import 'features/settings/screens/panduanhomedental.dart';
@@ -86,7 +74,7 @@ class KlinikGigiApp extends StatelessWidget {
       ),
 
       // Jika sudah login → langsung ke main_screen
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/firstpage',
 
       routes: {
         '/start': (context) => const StartScreen(),
@@ -117,8 +105,7 @@ class KlinikGigiApp extends StatelessWidget {
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
         '/panduanpage.dart': (context) => const PanduanPage(),
         '/panduanlogin.dart': (context) => const PanduanLoginPage(),
-        '/panduanhomedental.dart': (context) =>
-            const PanduanHomeDentalCarePage(),
+        '/panduanhomedental.dart': (context) => const PanduanHomeDentalCarePage(),
         '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
         '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
         '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
