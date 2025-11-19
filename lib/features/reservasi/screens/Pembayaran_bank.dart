@@ -3,7 +3,6 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle_line.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 // 👇 LIXA TAMBAHIN IMPORT INI
@@ -296,9 +295,8 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => TampilanAkhirReservasi(
-                        data: reservasiData,
-                      ),
+                      builder: (_) =>
+                          TampilanAkhirReservasi(data: reservasiData),
                     ),
                   );
                 },

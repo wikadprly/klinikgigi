@@ -27,10 +27,26 @@ class ReservasiProvider extends ChangeNotifier {
   List<MasterJadwalModel> get jadwalList => _jadwalList;
   List<ReservasiModel> get riwayatList => _riwayatList;
 
+  MasterPoliModel? _selectedPoli;
+  MasterDokterModel? _selectedDokter;
+
+  MasterPoliModel? get selectedPoli => _selectedPoli;
+  MasterDokterModel? get selectedDokter => _selectedDokter;
+
   String keluhan = "";
 
   void setKeluhan(String value) {
     keluhan = value;
+    notifyListeners();
+  }
+
+  void setSelectedPoli(MasterPoliModel? poli) {
+    _selectedPoli = poli;
+    notifyListeners();
+  }
+
+  void setSelectedDokter(MasterDokterModel? dokter) {
+    _selectedDokter = dokter;
     notifyListeners();
   }
 
@@ -146,6 +162,8 @@ class ReservasiProvider extends ChangeNotifier {
     _dokterList = [];
     _jadwalList = [];
     _riwayatList = [];
+    _selectedPoli = null;
+    _selectedDokter = null;
     _errorMessage = null;
     _isLoading = false;
     notifyListeners();

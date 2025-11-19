@@ -122,6 +122,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                     selectedTanggal = null;
                   });
 
+                  // Simpan poli yang dipilih di provider
+                  reservasiProv.setSelectedPoli(poli);
+
                   await reservasiProv.fetchDokterByPoli(poli.kodePoli);
                 },
               ),
@@ -161,6 +164,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                     selectedKodeDokter = dokter.kodeDokter;
                     selectedTanggal = null;
                   });
+
+                  // Simpan dokter yang dipilih di provider
+                  reservasiProv.setSelectedDokter(dokter);
                 },
               ),
 
@@ -256,12 +262,12 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       final jadwal = prov.jadwalList[index];
 
                       return ScheduleCardWidget(
-                        namaPoli: jadwal.namaPoli,
-                        namaDokter: jadwal.namaDokter,
+                        namaPoli: prov.selectedPoli?.namaPoli ?? '-',
+                        namaDokter: prov.selectedDokter?.namaLengkap ?? '-',
                         hari: jadwal.hari,
                         jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
-                        kuotaSisa: jadwal.sisaKuota,
-                        kuotaTotal: jadwal.kuotaTotal,
+                        kuotaSisa: jadwal.quota,
+                        kuotaTotal: jadwal.quota,
                         onTap: () {
                           showModalBottomSheet(
                             context: context,
@@ -272,8 +278,8 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                                 namaPasien: user?.namaPengguna ?? "-",
                                 rekamMedis:
                                     user?.rekamMedisId.toString() ?? "-",
-                                poli: jadwal.namaPoli,
-                                dokter: jadwal.namaDokter,
+                                poli: prov.selectedPoli?.namaPoli ?? '-',
+                                dokter: prov.selectedDokter?.namaLengkap ?? '-',
                                 tanggal: selectedTanggal!,
                                 jam:
                                     "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
