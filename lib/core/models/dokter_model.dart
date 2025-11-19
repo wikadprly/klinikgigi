@@ -1,11 +1,11 @@
 class DokterModel {
-  final int dokterId;
+  final int id;
   final String namaDokter;
   final String spesialisasi;
-  final String? fotoProfil; // Path atau URL foto, bisa null
+  final String? fotoProfil;
 
   DokterModel({
-    required this.dokterId,
+    required this.id,
     required this.namaDokter,
     required this.spesialisasi,
     this.fotoProfil,
@@ -13,16 +13,13 @@ class DokterModel {
 
   factory DokterModel.fromJson(Map<String, dynamic> json) {
     return DokterModel(
-      // INI DARI VERSI HEAD (kamu)
-      // Karena 'dokterId' di class ini tipenya 'int'
-      dokterId: json['dokter_id'],
+      id: json['dokter_id'] is String
+          ? int.tryParse(json['dokter_id'].toString()) ?? 0
+          : json['dokter_id'] ?? 0,
 
-      // INI DARI VERSI 'main' (lebih aman handle data null)
-      namaDokter: json['nama_dokter'] ?? '',
-      spesialisasi: json['spesialisasi'] ?? '',
-
-      // Ini sama di kedua versi, aman
-      fotoProfil: json['foto_profil'],
+      namaDokter: json['nama_dokter']?.toString() ?? '',
+      spesialisasi: json['spesialisasi']?.toString() ?? '',
+      fotoProfil: json['foto_profil']?.toString(),
     );
   }
 }
