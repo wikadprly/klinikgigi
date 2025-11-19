@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:provider/provider.dart';
 import 'notifikasi.dart';
-import 'ubahsandi_one.dart';
 import 'panduanpage.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
+import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +19,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userEmail = Provider.of<AuthProvider>(context).user?.email ?? '';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -69,12 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // MENU
-            Positioned(
-              top: 300,
-              left: 25,
-              right: 25,
-              child: _menuBox(context),
-            ),
+            Positioned(top: 300, left: 25, right: 25, child: _menuBox(context)),
           ],
         ),
       ),
@@ -145,6 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // DIALOG UBAH KATA SANDI  (INI HILANG DI KODEMU)
   // ==================================================
   void _showConfirmDialog(BuildContext context) {
+    final userEmail = Provider.of<AuthProvider>(context).user?.email ?? '';
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -179,10 +179,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       onPressed: () {
                         Navigator.pop(dialogContext);
+                        // Tambahkan navigator push ke halaman ubah kata sandi
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const UbahKataSandi1Page(),
+                            builder: (_) => UbahKataSandi1Page(email: userEmail),
                           ),
                         );
                       },
@@ -236,7 +237,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 Text(
                   "Apakah anda ingin keluar?",
-                  style: AppTextStyles.label.copyWith(color: AppColors.textLight),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textLight,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 22),

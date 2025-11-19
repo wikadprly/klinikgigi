@@ -29,28 +29,16 @@ import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_two.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/notifikasi.dart';
-import 'features/auth/screens/start.dart';
-import 'features/auth/screens/masuk.dart';
-import 'features/home/screens/main_screen.dart';
-import 'features/auth/screens/daftar_pasien_lama.dart';
-import 'features/auth/screens/daftar_pasien_baru.dart';
-import 'features/auth/providers/auth_provider.dart';
-import 'features/riwayat/screens/riwayat_screens.dart';
-import 'features/settings/screens/firstpage.dart';
-import 'features/settings/screens/ubahsandi_one.dart';
-import 'features/settings/screens/ubahsandi_two.dart';
-import 'features/settings/screens/notifikasi.dart';
-import 'features/settings/screens/panduanpage.dart';
-import 'features/settings/screens/panduanlogin.dart';
-import 'features/settings/screens/panduanhomedental.dart';
-import 'features/settings/screens/panduanreservasi.dart';
-import 'features/settings/screens/panduaneditprofil.dart';
-import 'features/settings/screens/panduanubahsandi.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduanpage.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduanlogin.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduanhomedental.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduanreservasi.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduaneditprofil.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/panduanubahsandi.dart';
 
 //Profile
-import 'package:flutter_klinik_gigi/features/profile/screens/first_page.dart'; 
+import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,8 +51,12 @@ void main() async {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
-        ChangeNotifierProvider<ReservasiProvider>(create: (_) => ReservasiProvider()),
-        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider<ReservasiProvider>(
+          create: (_) => ReservasiProvider(),
+        ),
+        ChangeNotifierProvider<ProfileProvider>(
+          create: (_) => ProfileProvider(),
+        ),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -87,10 +79,7 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-
-      // Jika sudah login → langsung ke main_screen
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/first_page',
-
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
@@ -109,14 +98,15 @@ class KlinikGigiApp extends StatelessWidget {
           final data =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
-
           return RiwayatDetailScreen(data: data ?? {});
         },
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one.dart': (context) => const UbahKataSandi1Page(),
-        '/ubahsandi_two.dart': (context) => const UbahKataSandi2Page(),
+        '/ubahsandi_one.dart': (context) =>
+            const UbahKataSandi1Page(email: "user@example.com"),
+        '/ubahsandi_two.dart': (context) =>
+            const UbahKataSandi2Page(resetToken: "sample_token"),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
         '/panduanpage.dart': (context) => const PanduanPage(),
         '/panduanlogin.dart': (context) => const PanduanLoginPage(),
