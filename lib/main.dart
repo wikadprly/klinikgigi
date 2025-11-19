@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
+import 'package:flutter_klinik_gigi/features/settings/providers/reset_password_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -61,6 +62,7 @@ class KlinikGigiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userEmail = Provider.of<AuthProvider>(context).user?.email ?? '';
     final authProvider = Provider.of<AuthProvider>(context);
 
     return MaterialApp(
@@ -100,15 +102,16 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one.dart': (context) => const UbahKataSandi1Page(),
-        '/ubahsandi_two.dart': (context) => const UbahKataSandi2Page(),
-        '/notifikasi.dart': (context) => const NotificationSettingsPage(),
-        '/panduanpage.dart': (context) => const PanduanPage(),
-        '/panduanlogin.dart': (context) => const PanduanLoginPage(),
-        '/panduanhomedental.dart': (context) => const PanduanHomeDentalCarePage(),
-        '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
-        '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
-        '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
+        '/ubahsandi_one': (context) => UbahKataSandi1Page(email: userEmail),
+        '/ubahsandi_two': (context) =>
+            UbahKataSandi2Page(resetToken: resetToken),
+        '/notifikasi': (context) => const NotificationSettingsPage(),
+        '/panduanpage': (context) => const PanduanPage(),
+        '/panduanlogin': (context) => const PanduanLoginPage(),
+        '/panduanhomedental': (context) => const PanduanHomeDentalCarePage(),
+        '/panduanreservasi': (context) => const PanduanReservasiPage(),
+        '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
+        '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
       },
     );
   }
