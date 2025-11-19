@@ -10,8 +10,13 @@ import 'features/riwayat/screens/riwayat_screens.dart';
 import 'features/settings/screens/firstpage.dart';
 import 'features/settings/screens/ubahsandi_one.dart';
 import 'features/settings/screens/ubahsandi_two.dart';
-import 'features/settings/screens/ubahsandi_three.dart';
 import 'features/settings/screens/notifikasi.dart';
+import 'features/settings/screens/panduanpage.dart';
+import 'features/settings/screens/panduanlogin.dart';
+import 'features/settings/screens/panduanhomedental.dart';
+import 'features/settings/screens/panduanreservasi.dart';
+import 'features/settings/screens/panduaneditprofil.dart';
+import 'features/settings/screens/panduanubahsandi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,10 +58,15 @@ class KlinikGigiApp extends StatelessWidget {
         '/main_screen': (context) => const MainScreen(),
         '/riwayat': (context) => const RiwayatScreen(),
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one.dart': (context) => const UbahKataSandi2Page(),
-        '/ubahsandi_two.dart': (context) => const UbahKataSandi3Page(),
-        '/ubahsandi_three.dart': (context) => const UbahKataSandiKonfirmasiPage(),
+        '/ubahsandi_one.dart': (context) => const UbahKataSandi1Page(),
+        '/ubahsandi_two.dart': (context) => const UbahKataSandi2Page(),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
+        '/panduanpage.dart': (context) => const PanduanPage(),
+        '/panduanlogin.dart': (context) => const PanduanLoginPage(),
+        '/panduanhomedental.dart': (context) => const PanduanHomeDentalCarePage(),
+        '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
+        '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
+        '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
       },
     );
   }
