@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/services/dokter_service.dart';
-import '../../../core/models/dokter_model.dart';
+import '../../../core/models/master_dokter_model.dart';
 import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_detail_screens.dart';
 import 'dart:async';
 
@@ -10,33 +10,19 @@ import 'dart:async';
 // 1. WIDGET KARTU DOKTER BARU (SESUAI DESAIN 1.png)
 // ------------------------------------
 class _DokterListCard extends StatelessWidget {
-  final DokterModel dokter;
+  final MasterDokterModel dokter;
 
   const _DokterListCard({required this.dokter});
 
   @override
   Widget build(BuildContext context) {
     Widget imageWidget;
-    // Logika menampilkan foto/placeholder
-    if (dokter.fotoProfil != null &&
-        Uri.tryParse(dokter.fotoProfil!)?.hasAbsolutePath == true) {
-      imageWidget = CircleAvatar(
-        radius: 30,
-        backgroundColor:
-            AppColors.cardDark, // background jika gambar gagal load
-        backgroundImage: NetworkImage(dokter.fotoProfil!),
-        onBackgroundImageError: (exception, stackTrace) {
-          // Fallback ke icon jika network image error (dibuang agar tidak error)
-        },
-      );
-    } else {
-      // Placeholder
-      imageWidget = CircleAvatar(
-        radius: 30,
-        backgroundColor: AppColors.gold.withOpacity(0.2),
-        child: Icon(Icons.person, color: AppColors.gold, size: 30),
-      );
-    }
+    // Selalu tampilkan placeholder karena MasterDokterModel tidak memiliki data foto.
+    imageWidget = CircleAvatar(
+      radius: 30,
+      backgroundColor: AppColors.gold.withOpacity(0.2),
+      child: const Icon(Icons.person, color: AppColors.gold, size: 30),
+    );
 
     return Card(
       color: AppColors.cardDark,
@@ -46,14 +32,14 @@ class _DokterListCard extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: imageWidget,
         title: Text(
-          dokter.namaDokter,
+          dokter.nama,
           style: AppTextStyles.heading.copyWith(
             fontSize: 16,
             color: AppColors.gold,
           ),
         ),
         subtitle: Text(
-          "Spesialisasi: ${dokter.spesialisasi}",
+          "Spesialis: ${dokter.spesialisasi}",
           style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
         ),
       ),
@@ -73,7 +59,7 @@ class DokterScreens extends StatefulWidget {
 
 class _DokterScreensState extends State<DokterScreens> {
   // State untuk mengelola daftar dokter
-  late Future<List<DokterModel>> _futureDokter;
+  late Future<List<MasterDokterModel>> _futureDokter;
   final DokterService _dokterService = DokterService();
 
   // Controller untuk search bar
@@ -161,7 +147,7 @@ class _DokterScreensState extends State<DokterScreens> {
               child: RefreshIndicator(
                 onRefresh: _refreshDokterList,
                 color: AppColors.gold,
-                child: FutureBuilder<List<DokterModel>>(
+                child: FutureBuilder<List<MasterDokterModel>>(
                   future: _futureDokter,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {

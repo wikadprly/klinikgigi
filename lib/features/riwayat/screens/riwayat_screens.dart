@@ -27,27 +27,30 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   // 🟦 Fungsi ambil data dari Laravel API dengan filter user yang login
   Future<void> fetchRiwayat() async {
     try {
-      // Ambil user dan token dari SharedPreferences
+      // Ambil user (opsional) dan token dari SharedPreferences
       final user = await SharedPrefsHelper.getUser();
+      final token = await SharedPrefsHelper.getToken();
 
-      if (user == null || user.token == null) {
+      if (token == null) {
         if (kDebugMode) {
-          print('DEBUG: User atau token null');
-          print('User: $user');
+          print('DEBUG: Token null atau tidak tersedia');
+          print('DEBUG: User: $user');
         }
         setState(() {
-          errorMessage =
-              "User tidak ditemukan atau token tidak tersedia. Silakan login kembali.";
+          errorMessage = "Token tidak tersedia. Silakan login kembali.";
           isLoading = false;
         });
         return;
       }
 
-      final token = user.token;
       if (kDebugMode) {
         print('DEBUG: Token diterima: $token');
-        print('DEBUG: User ID: ${user.userId}');
-        print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+        if (user != null) {
+          try {
+            print('DEBUG: User ID: ${user.userId}');
+            print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+          } catch (_) {}
+        }
       }
 
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
@@ -79,26 +82,32 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         }
 
         setState(() {
-          riwayatData = data
-              .map(
-                (item) => {
-                  "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
-                  "dokter": item["dokter"] ?? "-",
-                  "tanggal": item["tanggal"] ?? "-",
-                  "poli": item["poli"] ?? "-",
-                  "status_reservasi": item["status_reservasi"] ?? "-",
-                  "jam_mulai": item["jam_mulai"] ?? "-",
-                  "jam_selesai": item["jam_selesai"] ?? "-",
-                  "catatan": item["catatan"] ?? "-",
-                  "biaya": item["biaya"] ?? "0",
-                  "nama": item["nama"] ?? "-",
-                  "rekam_medis": item["rekam_medis"] ?? "-",
-                  "foto": item["foto"] ?? "",
-                  "status": item["status_reservasi"] ?? "-",
-                },
-              )
-              .toList();
+          riwayatData = data.map((item) {
+            // Ambil data waktu layanan dan biaya dari relasi `reservasi` jika tersedia,
+            // kalau tidak fallback ke field top-level
+            final reservasi = item["reservasi"] ?? {};
+            return {
+              // Informasi reservasi
+              "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
+              "dokter": item["dokter"] ?? "-",
+              "tanggal": item["tanggal"] ?? "-",
+              "poli": item["poli"] ?? "-",
+              "status_reservasi": item["status_reservasi"] ?? "-",
+              "jam_mulai": item["jam_mulai"] ?? reservasi["jam_mulai"] ?? "-",
+              "jam_selesai":
+                  item["jam_selesai"] ?? reservasi["jam_selesai"] ?? "-",
+              "biaya": item["biaya"] ?? reservasi["biaya"] ?? "0",
 
+              // Informasi pasien
+              "nama": item["nama"] ?? "-",
+              "rekam_medis":
+                  item["rekam_medis"] ?? item["no_rekam_medis"] ?? "-",
+              "no_rekam_medis":
+                  item["no_rekam_medis"] ?? item["rekam_medis"] ?? "-",
+              "foto": item["foto"] ?? "",
+              "status": item["status_reservasi"] ?? "-",
+            };
+          }).toList();
           isLoading = false;
         });
       } else if (response.statusCode == 401) {
@@ -172,11 +181,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     itemBuilder: (context, index) {
                       final data = riwayatData[index];
                       return RiwayatCard(
-                        noPemeriksaan: data["no_pemeriksaan"]!,
-                        dokter: data["dokter"]!,
-                        tanggal: data["tanggal"]!,
-                        poli: data["poli"]!,
-                        statusReservasi: data["status_reservasi"]!,
+                        noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
+                            .toString(),
+                        dokter: (data["dokter"] ?? "-").toString(),
+                        tanggal: (data["tanggal"] ?? "-").toString(),
+                        poli: (data["poli"] ?? "-").toString(),
+                        statusReservasi: (data["status_reservasi"] ?? "-")
+                            .toString(),
                         data: data,
                         onTap: () {
                           Navigator.pushNamed(

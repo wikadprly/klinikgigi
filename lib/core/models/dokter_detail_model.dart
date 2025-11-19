@@ -4,16 +4,15 @@
 import 'master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/models/master_poli_model.dart';
 
-class MasterDokterModel {
+class DokterDetailModel {
   final int id;
   final String? nama;
   final String? foto;
   final String? spesialisasi;
   final MasterPoliModel? masterPoli;
-  final List<MasterJadwalModel>?
-  masterJadwal; // Tipe data (Nama Class) ini benar
+  final List<MasterJadwalModel>? masterJadwal;
 
-  MasterDokterModel({
+  DokterDetailModel({
     required this.id,
     this.nama,
     this.foto,
@@ -22,8 +21,8 @@ class MasterDokterModel {
     this.masterJadwal,
   });
 
-  factory MasterDokterModel.fromJson(Map<String, dynamic> json) {
-    return MasterDokterModel(
+  factory DokterDetailModel.fromJson(Map<String, dynamic> json) {
+    return DokterDetailModel(
       id: json['id'] is String
           ? int.tryParse(json['id']) ?? 0
           : json['id'] ?? 0,
@@ -36,8 +35,6 @@ class MasterDokterModel {
           ? MasterPoliModel.fromJson(json['masterPoli'])
           : null,
 
-      // Pemanggilan class 'MasterJadwalModel' ini sudah benar.
-      // Error sebelumnya terjadi karena import di baris 1 gagal.
       masterJadwal: json['masterJadwal'] != null
           ? List<MasterJadwalModel>.from(
               json['masterJadwal'].map((x) => MasterJadwalModel.fromJson(x)),

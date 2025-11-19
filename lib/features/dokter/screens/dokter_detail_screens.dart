@@ -1,20 +1,15 @@
-// File: lib/features/dokter/screens/dokter_detail_screens.dart
-// (GANTI SELURUH ISI FILE DENGAN KODE INI)
-
 import 'package:flutter/material.dart';
-// PERBAIKAN: Menambahkan import 'Api' yang hilang
+import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart'; // PERUBAHAN: Menggunakan MasterDokterModel
+import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart'; // PERUBAHAN
 import 'package:flutter_klinik_gigi/config/api.dart';
-// PERBAIKAN: Memastikan import model (tanpa underscore)
-import 'package:flutter_klinik_gigi/core/models/master_doktermodel.dart';
 import 'package:flutter_klinik_gigi/core/models/master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/services/dokter_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import 'package:flutter_klinik_gigi/core/models/dokter_model.dart';
 
 class DokterDetailScreen extends StatefulWidget {
-  final DokterModel dokter;
-  const DokterDetailScreen({super.key, required this.dokter});
+  final MasterDokterModel dokter; // PERUBAHAN: Menggunakan MasterDokterModel
+  const DokterDetailScreen({super.key, required this.dokter}); // PERUBAHAN
 
   @override
   State<DokterDetailScreen> createState() => _DokterDetailScreenState();
@@ -24,13 +19,19 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final DokterService _dokterService = DokterService();
-  late Future<MasterDokterModel> _futureDetailDokter;
+  // PERBAIKAN: Menggunakan id dari widget.dokter untuk fetch data
+  late Future<DokterDetailModel> _futureDetailDokter; // PERUBAHAN
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _futureDetailDokter = _dokterService.fetchDokterDetail(widget.dokter.id);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+    ); // 3 tabs: Tentang, Layanan, Jadwal
+    _futureDetailDokter = _dokterService.fetchDokterDetail(
+      widget.dokter.kodeDokter,
+    );
   }
 
   @override
@@ -45,7 +46,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          widget.dokter.namaDokter,
+          widget.dokter.nama,
           style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
         backgroundColor: AppColors.background,
@@ -56,7 +57,8 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: FutureBuilder<MasterDokterModel>(
+      body: FutureBuilder<DokterDetailModel>(
+        // PERUBAHAN
         future: _futureDetailDokter,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -85,7 +87,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
 
           final poli = masterDokter.masterPoli?.namaPoli ?? 'N/A';
           final spesialis = masterDokter.spesialisasi ?? 'Dokter';
-          final String fotoUrl = "$baseUrl/storage/${masterDokter.foto}";
+          final String fotoUrl = "$baseUrl/storage/${masterDokter.foto ?? ''}";
 
           return Column(
             children: [
@@ -122,7 +124,11 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                     ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Navigasi ke DentalCare')),
+                          SnackBar(
+                            content: Text(
+                              'Fitur "Book Now" belum diimplementasikan.',
+                            ),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -167,7 +173,9 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                     children: [
                       _buildTentangTab(masterDokter),
                       _buildLayananTab(poli),
-                      _buildJadwalTab(masterDokter.masterJadwal),
+                      _buildJadwalTab(
+                        masterDokter.masterJadwal,
+                      ), // PERBAIKAN: Memastikan data jadwal diteruskan
                     ],
                   ),
                 ),
@@ -181,7 +189,8 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
 
   // --- WIDGET UNTUK TAB ---
 
-  Widget _buildTentangTab(MasterDokterModel dokter) {
+  Widget _buildTentangTab(DokterDetailModel dokter) {
+    // PERUBAHAN
     String biografi =
         "Informasi tentang dokter ini belum tersedia. Dokter ${dokter.nama} adalah seorang profesional di bidang ${dokter.spesialisasi ?? 'kesehatan gigi'} dengan pengalaman di ${dokter.masterPoli?.namaPoli ?? 'poli'}.";
 
@@ -224,6 +233,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
       );
     }
 
+    // Mengelompokkan jadwal berdasarkan hari
     Map<String, List<MasterJadwalModel>> jadwalByHari = {};
     for (var jadwal in jadwalList) {
       String hari = jadwal.hari;
@@ -234,6 +244,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
       }
     }
 
+    // Mengurutkan hari dari Senin sampai Minggu
     List<String> hariOrder = [
       'Senin',
       'Selasa',
@@ -247,7 +258,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
       ..sort((a, b) => hariOrder.indexOf(a).compareTo(hariOrder.indexOf(b)));
 
     return ListView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       children: sortedHari.map((hari) {
         return Card(
           color: AppColors.cardDark,

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:flutter_klinik_gigi/features/profile/widgets/custom_button.dart';
 
 class RiwayatDetailScreen extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -7,79 +10,57 @@ class RiwayatDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provide default values untuk safety
-    final nama = data['nama'] as String? ?? "-";
-    final rekamMedis = data['rekam_medis'] as String? ?? "-";
-    final foto = data['foto'] as String? ?? "https://via.placeholder.com/150";
-    final noPemeriksaan = data['no_pemeriksaan'] as String? ?? "-";
-    final jamMulai = data['jam_mulai'] as String? ?? "-";
-    final jamSelesai = data['jam_selesai'] as String? ?? "-";
-    final tanggal = data['tanggal'] as String? ?? "-";
-    final dokter = data['dokter'] as String? ?? "-";
-    final poli = data['poli'] as String? ?? "-";
-    final catatan = data['catatan'] as String? ?? "-";
-    final status =
-        data['status'] as String? ?? data['status_reservasi'] as String? ?? "-";
-    final biaya = data['biaya'] as String? ?? "0";
+    String safe(dynamic v) => v == null ? '' : v.toString();
+
+    final nama = safe(data['nama'] ?? data['pasien']?['nama']);
+    final rekamMedis = safe(data['rekam_medis']);
+    final noPemeriksaan = safe(data['no_pemeriksaan']);
+    final jam = "${safe(data['jam_mulai'])} - ${safe(data['jam_selesai'])}";
+    final tanggal = safe(data['tanggal']);
+    final dokter = safe(data['dokter']);
+    final poli = safe(data['poli']);
+    final catatan = safe(data['catatan'] ?? "Tidak ada catatan");
+    final status = safe(data['status']);
+    final biaya = safe(data['biaya'] ?? "0");
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        elevation: 0,
-        title: const Text(
-          "Detail Riwayat",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ===== JUDUL =====
+            const Text(
+              "Riwayat",
+              style: AppTextStyles.heading,
+            ),
+            const SizedBox(height: 20),
+
             // ===== PROFILE PASIEN =====
             Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 35,
-                  backgroundColor: const Color(0xFF2A2A2A),
-                  backgroundImage:
-                      foto.isNotEmpty &&
-                          foto != "https://via.placeholder.com/150"
-                      ? NetworkImage(foto)
-                      : null,
-                  child:
-                      foto.isEmpty || foto == "https://via.placeholder.com/150"
-                      ? const Icon(Icons.person, color: Colors.grey, size: 35)
-                      : null,
+                  backgroundImage: NetworkImage(
+                    "https://via.placeholder.com/150",
+                  ),
                 ),
                 const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Nama : $nama",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "NO.RM : $rekamMedis",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Nama : $nama",
+                      style: AppTextStyles.heading.copyWith(fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "NO.RM : $rekamMedis",
+                      style: AppTextStyles.label,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -89,69 +70,84 @@ class RiwayatDetailScreen extends StatelessWidget {
             // ===== CARD DETAIL =====
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 2),
+                color: AppColors.cardDark,
                 borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFF2A2A2A),
+                border: Border.all(color: AppColors.gold, width: 1.2),
               ),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildRowBold("No. Pemeriksaan :", noPemeriksaan),
-
-                  const SizedBox(height: 12),
-
-                  _buildRow("Waktu Layanan", "$jamMulai - $jamSelesai"),
-                  _buildRow("Hari/Tanggal", tanggal),
-                  _buildRow("Dokter", dokter),
-                  _buildRow("Poli", poli),
-                  _buildRow("Catatan Dokter", catatan),
-
-                  const SizedBox(height: 8),
-
-                  Row(
-                    children: [
-                      const Text(
-                        "Status Reservasi",
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          status,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: (status.toLowerCase() == "selesai")
-                                ? Colors.greenAccent
-                                : Colors.orangeAccent,
+                  // === TEKS NO PEMERIKSAAN (DALAM PADDING) ===
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "No. Pemeriksaan :",
+                          style: AppTextStyles.label.copyWith(fontSize: 14),
+                        ),
+                        Text(
+                          noPemeriksaan,
+                          style: AppTextStyles.heading.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
+                  // === GARIS FULL TANPA PADDING ===
+                  Container(
+                    height: 1.8,
+                    width: double.infinity,
+                    color: AppColors.gold,
+                  ),
 
-                  // TOTAL BIAYA
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Total Biaya :",
-                        style: TextStyle(color: Colors.white70, fontSize: 15),
-                      ),
-                      Text(
-                        "Rp.$biaya",
-                        style: const TextStyle(
-                          color: Colors.yellow,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  const SizedBox(height: 12),
+
+                  // === DETAIL ITEM LAIN (DAPAT PADDING) ===
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _item("Waktu Layanan", jam),
+                        _item("Hari/Tanggal", tanggal),
+                        _item("Dokter", dokter),
+                        _item("Poli", poli),
+                        _item("Catatan Dokter", catatan),
+
+                        _item(
+                          "Status Reservasi",
+                          status,
+                          valueColor: Colors.greenAccent,
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 15),
+
+                        // ===== TOTAL BIAYA =====
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Total Biaya :", style: AppTextStyles.label),
+                            Text(
+                              "Rp.$biaya",
+                              style: AppTextStyles.heading.copyWith(
+                                color: AppColors.gold,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 15),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -160,26 +156,9 @@ class RiwayatDetailScreen extends StatelessWidget {
             const SizedBox(height: 25),
 
             // BUTTON KEMBALI
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF4D97D),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: const Text(
-                  "Kembali",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            CustomButton(
+              text: "Kembali",
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
@@ -187,50 +166,25 @@ class RiwayatDetailScreen extends StatelessWidget {
     );
   }
 
-  // ==== COMPONENT HOLDER ====
-
-  Widget _buildRow(String title, String value) {
+  // ==== ITEM DEFAULT =====
+  Widget _item(String title, String value, {Color? valueColor}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(title, style: AppTextStyles.label),
+          const SizedBox(height: 3),
           Text(
-            "$title : ",
-            style: const TextStyle(color: Colors.white70, height: 1.4),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(color: Colors.yellow, height: 1.4),
+            value,
+            style: AppTextStyles.input.copyWith(
+              color: valueColor ?? AppColors.gold,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRowBold(String title, String value) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Colors.yellow,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

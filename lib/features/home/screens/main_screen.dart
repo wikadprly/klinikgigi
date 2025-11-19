@@ -54,8 +54,13 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      HomeScreen(userId: '2', onNavigate: _onItemTapped),
-      PendaftaranScreen(),
+      // ✅ KOREKSI 1: Tambahkan parameter yang dibutuhkan HomeScreen
+      HomeScreen(
+        userId: '2', // Saya ambil '2' dari kode asli Anda
+        onNavigate: _onItemTapped,
+      ),
+      // ✅ KOREKSI 2: Ganti ReservasiScreen dengan PendaftaranScreen
+      ReservasiScreen(),
       DentalHomeScreen(), //
       RiwayatScreen(), //
       ProfilePage(), //
