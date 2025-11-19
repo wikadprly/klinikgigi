@@ -1,4 +1,4 @@
-// lib/core/models/master_jadwal_model.dart
+// lib/core/models/master_jadwalmodel.dart
 
 class MasterJadwalModel {
   final int id;
@@ -26,12 +26,12 @@ class MasterJadwalModel {
       id: json['id'] is String
           ? int.tryParse(json['id']) ?? 0
           : json['id'] ?? 0,
-      kodeDokter: json['kode_dokter'] ?? '',
-      kodePoli: json['kode_poli'] ?? '',
-      hari: json['hari'] ?? '',
-      jamMulai: json['jam_mulai'] ?? '',
-      jamSelesai: json['jam_selesai'] ?? '',
-      keterangan: json['keterangan'] ?? '',
+      kodeDokter: json['kode_dokter']?.toString() ?? '',
+      kodePoli: json['kode_poli']?.toString() ?? '',
+      hari: json['hari']?.toString() ?? '',
+      jamMulai: json['jam_mulai']?.toString() ?? '',
+      jamSelesai: json['jam_selesai']?.toString() ?? '',
+      keterangan: json['keterangan']?.toString() ?? '',
       quota: json['quota'] is String
           ? int.tryParse(json['quota']) ?? 0
           : json['quota'] ?? 0,

@@ -27,27 +27,30 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   // 🟦 Fungsi ambil data dari Laravel API dengan filter user yang login
   Future<void> fetchRiwayat() async {
     try {
-      // Ambil user dan token dari SharedPreferences
+      // Ambil user (opsional) dan token dari SharedPreferences
       final user = await SharedPrefsHelper.getUser();
+      final token = await SharedPrefsHelper.getToken();
 
-      if (user == null || user.token == null) {
+      if (token == null) {
         if (kDebugMode) {
-          print('DEBUG: User atau token null');
-          print('User: $user');
+          print('DEBUG: Token null atau tidak tersedia');
+          print('DEBUG: User: $user');
         }
         setState(() {
-          errorMessage =
-              "User tidak ditemukan atau token tidak tersedia. Silakan login kembali.";
+          errorMessage = "Token tidak tersedia. Silakan login kembali.";
           isLoading = false;
         });
         return;
       }
 
-      final token = user.token;
       if (kDebugMode) {
         print('DEBUG: Token diterima: $token');
-        print('DEBUG: User ID: ${user.userId}');
-        print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+        if (user != null) {
+          try {
+            print('DEBUG: User ID: ${user.userId}');
+            print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+          } catch (_) {}
+        }
       }
 
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
@@ -178,11 +181,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     itemBuilder: (context, index) {
                       final data = riwayatData[index];
                       return RiwayatCard(
-                        noPemeriksaan: data["no_pemeriksaan"]!,
-                        dokter: data["dokter"]!,
-                        tanggal: data["tanggal"]!,
-                        poli: data["poli"]!,
-                        statusReservasi: data["status_reservasi"]!,
+                        noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
+                            .toString(),
+                        dokter: (data["dokter"] ?? "-").toString(),
+                        tanggal: (data["tanggal"] ?? "-").toString(),
+                        poli: (data["poli"] ?? "-").toString(),
+                        statusReservasi: (data["status_reservasi"] ?? "-")
+                            .toString(),
                         data: data,
                         onTap: () {
                           Navigator.pushNamed(

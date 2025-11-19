@@ -67,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
         onNavigate: _onItemTapped,
       ),
       // ✅ KOREKSI 2: Ganti ReservasiScreen dengan PendaftaranScreen
-      PendaftaranScreen(),
+      ReservasiScreen(),
       DentalHomeScreen(), //
       RiwayatScreen(), //
       ProfilScreen(), // Diambil dari kode asli Anda

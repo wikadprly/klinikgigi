@@ -1,46 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 
-class UbahKataSandi3Page extends StatefulWidget {
-  const UbahKataSandi3Page({super.key});
+class UbahKataSandi2Page extends StatefulWidget {
+  const UbahKataSandi2Page({super.key});
 
   @override
-  State<UbahKataSandi3Page> createState() => _UbahKataSandi3PageState();
+  State<UbahKataSandi2Page> createState() => _UbahKataSandi2PageState();
 }
 
-class _UbahKataSandi3PageState extends State<UbahKataSandi3Page> {
-  final TextEditingController _passwordController = TextEditingController();
+class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
+  final TextEditingController _newPassController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
 
-  bool _isObscure = true;
+  bool _obscure1 = true;
+  bool _obscure2 = true;
+  bool _loading = false;
 
   @override
   void dispose() {
-    _passwordController.dispose();
+    _newPassController.dispose();
+    _confirmPassController.dispose();
     super.dispose();
   }
 
-  Future<void> _onContinuePressed() async {
-    final password = _passwordController.text.trim();
+  Future<void> _onConfirmPressed() async {
+    final pass1 = _newPassController.text.trim();
+    final pass2 = _confirmPassController.text.trim();
 
-    if (password.isEmpty) {
+    // VALIDASI
+    if (pass1.isEmpty || pass2.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kata sandi tidak boleh kosong')),
+        const SnackBar(content: Text("Semua kolom harus diisi")),
       );
       return;
     }
 
-    if (password.length < 6) {
+    if (pass1.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kata sandi minimal 6 karakter')),
+        const SnackBar(content: Text("Kata sandi minimal 6 karakter")),
       );
       return;
     }
 
-    // TODO: Tambahkan logika update password ke backend di sini
-    debugPrint('Kata sandi baru: $password');
+    if (pass1 != pass2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Konfirmasi kata sandi tidak sesuai")),
+      );
+      return;
+    }
+
+    // SIMULASI PROSES UPDATE
+    setState(() => _loading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _loading = false);
+
+    // SELESAI
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Kata sandi berhasil diperbarui")),
+    );
+
+    Navigator.pop(context); // kembali ke halaman sebelumnya
   }
 
   @override
@@ -48,151 +69,187 @@ class _UbahKataSandi3PageState extends State<UbahKataSandi3Page> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: ListView(
             children: [
-              // =========================
-              // HEADER: Tombol Back + Judul di Tengah
-              // =========================
+              // HEADER
               SizedBox(
-                height: 48,
+                height: 50,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
                       child: BackButtonWidget(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
                     Align(
                       alignment: Alignment.center,
                       child: Text(
-                        'Ubah Kata Sandi',
+                        "Ubah Kata Sandi",
                         style: AppTextStyles.heading.copyWith(
-                          fontSize: 20,
                           color: AppColors.textLight,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
 
-              // =========================
-              // SUBTITLE DAN DESKRIPSI
-              // =========================
+              const SizedBox(height: 32),
+
+              // JUDUL SECTION
               Text(
-                'Buat Kata Sandi baru',
-                style: AppTextStyles.label.copyWith(
+                "Buat Kata Sandi baru",
+                style: AppTextStyles.heading.copyWith(
                   color: AppColors.gold,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+
               Text(
-                'Pilih Kata Sandi yang unik dan jangan dibagikan ke siapa pun',
+                "Pilih Kata Sandi yang unik dan jangan dibagikan ke siapa pun",
                 style: AppTextStyles.label.copyWith(
                   color: AppColors.textMuted,
                   fontSize: 13,
                 ),
               ),
+
               const SizedBox(height: 24),
 
-              // =========================
-              // INPUT KATA SANDI BARU
-              // =========================
-              TextField(
-                controller: _passwordController,
-                obscureText: _isObscure,
-                cursorColor: AppColors.gold,
-                style: AppTextStyles.input.copyWith(color: AppColors.textLight),
-                decoration: InputDecoration(
-                  hintText: 'Masukkan kata sandi baru',
-                  hintStyle:
-                      AppTextStyles.label.copyWith(color: AppColors.textMuted),
-                  filled: true,
-                  fillColor: AppColors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: AppColors.white),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide:
-                        BorderSide(color: AppColors.inputBorder, width: 1),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(6)),
-                    borderSide: BorderSide(color: AppColors.gold, width: 1.5),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscure
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: AppColors.gold,
-                    ),
-                    onPressed: () {
-                      setState(() => _isObscure = !_isObscure);
-                    },
-                  ),
-                ),
+              // PASSWORD BARU
+              _buildPasswordField(
+                controller: _newPassController,
+                label: "Kata Sandi Baru",
+                obscure: _obscure1,
+                onToggle: () => setState(() => _obscure1 = !_obscure1),
               ),
-              const SizedBox(height: 28),
 
-              // =========================
-              // CARD TIPS KEAMANAN
-              // =========================
+              const SizedBox(height: 24),
+
+              // KONFIRMASI PASSWORD
+              _buildPasswordField(
+                controller: _confirmPassController,
+                label: "Konfirmasi Kata Sandi Baru",
+                obscure: _obscure2,
+                onToggle: () => setState(() => _obscure2 = !_obscure2),
+              ),
+
+              const SizedBox(height: 30),
+
+              // BOX TIPS
               Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
-                  border: Border.all(color: AppColors.gold, width: 1),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: AppColors.gold),
+                  color: AppColors.white.withOpacity(0.05),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tips bikin Kata Sandi yang aman',
+                      "Tips bikin Kata Sandi yang aman",
                       style: AppTextStyles.label.copyWith(
+                        fontWeight: FontWeight.w700,
                         color: AppColors.gold,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      '1. Hindari huruf/nomor berulang & berurutan, contoh 12345/abcde.\n'
-                      '2. Jangan menggunakan nama, tanggal lahir, dan nomor HP. Agar sulit untuk ditebak.\n'
-                      '3. Buat Kata Sandi yang unik.',
-                      style: AppTextStyles.label.copyWith(
-                        color: AppColors.textLight,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
+                    _tip("1. Hindari huruf/nomor berulang & berurutan, contoh 1234/abcd."),
+                    _tip("2. Jangan memakai nama, tanggal lahir, atau nomor HP."),
+                    _tip("3. Buat Kata Sandi yang unik."),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
 
-              // =========================
-              // TOMBOL LANJUT
-              // =========================
-              AuthButton(
-                text: 'Lanjut',
-                onPressed: _onContinuePressed,
+              const SizedBox(height: 30),
+
+              // TOMBOL KONFIRMASI
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                  onPressed: _loading ? null : _onConfirmPressed,
+                  child: _loading
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : const Text(
+                          "Konfirmasi",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
               ),
+
+              const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tip(String text) {
+    return Text(
+      text,
+      style: AppTextStyles.label.copyWith(
+        color: AppColors.textMuted,
+        fontSize: 12,
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      cursorColor: AppColors.gold,
+      style: AppTextStyles.input.copyWith(color: AppColors.textLight),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: AppTextStyles.label.copyWith(
+          color: AppColors.gold,
+          fontWeight: FontWeight.w600,
+        ),
+        filled: true,
+        fillColor: AppColors.white.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: BorderSide(color: AppColors.inputBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: AppColors.gold, width: 1.5),
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: AppColors.gold,
+          ),
+          onPressed: onToggle,
         ),
       ),
     );

@@ -3,73 +3,110 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
+import 'package:pinput/pinput.dart';
+import 'ubahsandi_two.dart';
 
-class UbahKataSandi2Page extends StatefulWidget {
-  const UbahKataSandi2Page({super.key});
+class UbahKataSandi1Page extends StatefulWidget {
+  const UbahKataSandi1Page({super.key});
 
   @override
-  State<UbahKataSandi2Page> createState() => _UbahKataSandi2PageState();
+  State<UbahKataSandi1Page> createState() => _UbahKataSandi1PageState();
 }
 
-class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
-  final List<TextEditingController> _codeControllers =
-      List.generate(4, (_) => TextEditingController());
+class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
+  final TextEditingController _otpController = TextEditingController();
 
   @override
   void dispose() {
-    for (final controller in _codeControllers) {
-      controller.dispose();
-    }
+    _otpController.dispose();
     super.dispose();
   }
 
   Future<void> _onContinuePressed() async {
-    final code = _codeControllers.map((e) => e.text).join();
-    if (code.length < 4) {
+    final otp = _otpController.text.trim();
+
+    if (otp.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan kode lengkap terlebih dahulu')),
+        const SnackBar(content: Text("Kode OTP tidak boleh kosong")),
       );
       return;
     }
-    // TODO: tambahkan logika verifikasi ke backend di sini
-    debugPrint('Kode yang dimasukkan: $code');
+
+    if (otp.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kode OTP minimal 4 digit")),
+      );
+      return;
+    }
+
+    debugPrint("OTP dimasukkan: $otp");
+
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(builder: (_) => const UbahKataSandi2Page()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
+    final defaultPinTheme = PinTheme(
+      width: 42,
+      height: 55,
+      textStyle: AppTextStyles.heading.copyWith(
+        color: AppColors.textLight,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.gold,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: const Border(
+        bottom: BorderSide(color: AppColors.gold, width: 2.5),
+      ),
+    );
+
+    final followingPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border(
+        bottom: BorderSide(
+          color: AppColors.gold.withOpacity(0.4),
+          width: 1.5,
+        ),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // =========================
-              // HEADER: Tombol Back di Kiri + Judul di Tengah
-              // =========================
               SizedBox(
                 height: 48,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Tombol Back di Kiri
                     Align(
                       alignment: Alignment.centerLeft,
                       child: BackButtonWidget(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
-
-                    // Judul di Tengah
                     Align(
                       alignment: Alignment.center,
                       child: Text(
-                        'Ubah Kata Sandi',
+                        "Ubah Kata Sandi",
                         style: AppTextStyles.heading.copyWith(
                           fontSize: 20,
                           color: AppColors.textLight,
@@ -79,102 +116,78 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 40),
 
-
-              // =========================
-              // SUBTITLE DAN DESKRIPSI
-              // =========================
               Text(
-                'Masukkan Kode e-mail',
+                "Masukkan Kode e-mail",
                 style: AppTextStyles.label.copyWith(
                   color: AppColors.gold,
                   fontWeight: FontWeight.w600,
+                  fontSize: 15,
                 ),
               ),
+
               const SizedBox(height: 8),
+
               Text(
-                'Masukkan kode untuk mengubah kata sandi ke kata sandi baru',
+                "Masukkan kode untuk mengubah kata sandi ke kata sandi baru",
                 style: AppTextStyles.label.copyWith(
-                  color: AppColors.textMuted,
+                  color: AppColors.textLight,
                   fontSize: 13,
                 ),
               ),
+
               const SizedBox(height: 32),
 
-              // =========================
-              // INPUT KODE OTP (4 DIGIT)
-              // =========================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (index) {
-                  return SizedBox(
-                    width: 50,
-                    child: TextField(
-                      controller: _codeControllers[index],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      cursorColor: AppColors.gold,
-                      style: AppTextStyles.input.copyWith(
-                        fontSize: 22,
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: InputDecoration(
-                        counterText: '',
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppColors.gold.withOpacity(0.6),
-                            width: 2,
-                          ),
-                        ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppColors.gold,
-                            width: 2.5,
-                          ),
-                        ),
-                      ),
-                      onChanged: (value) {
-                        if (value.isNotEmpty && index < 3) {
-                          FocusScope.of(context).nextFocus();
-                        } else if (value.isEmpty && index > 0) {
-                          FocusScope.of(context).previousFocus();
-                        }
-                      },
+              Center(
+                child: Pinput(
+                  length: 6,
+                  controller: _otpController,
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: focusedPinTheme,
+                  followingPinTheme: followingPinTheme,
+                  showCursor: true,
+                  // cursor widget sebagai pengganti cursorColor / cursorEnabled
+                  cursor: Container(
+                    width: 2,
+                    height: 22,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold,
+                      borderRadius: BorderRadius.circular(1),
                     ),
-                  );
-                }),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
               ),
-              SizedBox(height: height * 0.08),
 
-              // =========================
-              // TOMBOL LANJUT
-              // =========================
+              const SizedBox(height: 40),
+
               AuthButton(
-                text: 'Lanjut',
+                text: "Lanjut",
                 onPressed: _onContinuePressed,
               ),
-              const SizedBox(height: 16),
 
-              // =========================
-              // PESAN DI BAWAH
-              // =========================
+              const SizedBox(height: 20),
+
               Center(
                 child: Column(
                   children: [
                     Text(
-                      'Tidak menerima kode?',
-                      style: AppTextStyles.label.copyWith(fontSize: 13),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Kirim ulang atau gunakan metode verifikasi lain',
+                      "Tidak menerima kode?",
                       style: AppTextStyles.label.copyWith(
-                        fontSize: 13,
                         color: AppColors.textLight,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "Kirim ulang atau gunakan metode verifikasi lain",
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.textLight,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
