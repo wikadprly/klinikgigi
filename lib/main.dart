@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-<<<<<<< HEAD
 
 // Providers
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
@@ -30,7 +29,6 @@ import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_two.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_three.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/notifikasi.dart';
-=======
 import 'features/auth/screens/start.dart';
 import 'features/auth/screens/masuk.dart';
 import 'features/home/screens/main_screen.dart';
@@ -48,7 +46,6 @@ import 'features/settings/screens/panduanhomedental.dart';
 import 'features/settings/screens/panduanreservasi.dart';
 import 'features/settings/screens/panduaneditprofil.dart';
 import 'features/settings/screens/panduanubahsandi.dart';
->>>>>>> Jeffrey
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
