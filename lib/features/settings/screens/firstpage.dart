@@ -179,11 +179,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       onPressed: () {
                         Navigator.pop(dialogContext);
+                        // Tambahkan navigator push ke halaman ubah kata sandi
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                UbahKataSandi1Page(email: userEmail),
+                            builder: (_) => UbahKataSandi1Page(email: userEmail),
                           ),
                         );
                       },

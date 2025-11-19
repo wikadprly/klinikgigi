@@ -10,6 +10,17 @@ class ResetPasswordProvider extends ChangeNotifier {
   String? _message;
   String? get message => _message;
 
+  // Tambahkan properti resetToken
+  String? _resetToken;
+  String? get resetToken => _resetToken;
+
+  // Setter untuk menyimpan token sementara dari halaman OTP
+  void setResetToken(String token) {
+    _resetToken = token;
+    notifyListeners();
+  }
+
+  // Fungsi reset password
   Future<bool> resetPassword({
     required String token,
     required String newPassword,
@@ -25,8 +36,6 @@ class ResetPasswordProvider extends ChangeNotifier {
       );
 
       _isLoading = false;
-
-      // Bisa disesuaikan tergantung response backendmu
       _message = result["message"] ?? "Berhasil mengganti password";
       notifyListeners();
 
