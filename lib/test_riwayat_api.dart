@@ -20,12 +20,16 @@ void main() async {
   print('  - Nama: ${user.namaPengguna}');
   print('  - Email: ${user.email}');
   print('  - Rekam Medis ID: ${user.rekamMedisId}');
-  print('  - Token: ${user.token?.substring(0, 20)}...');
+  // Token disimpan terpisah di SharedPrefs (key: auth_token)
+  final tokenFromPrefs = await SharedPrefsHelper.getToken();
+  print(
+    '  - Token (stored): ${tokenFromPrefs != null ? tokenFromPrefs.substring(0, 20) + '...' : 'NULL'}',
+  );
 
   // Test 2: Call API Riwayat
   print('\n========== TEST 2: CALL API RIWAYAT ==========');
 
-  final token = user.token;
+  final token = tokenFromPrefs;
   final response = await http.get(
     Uri.parse('http://127.0.0.1:8000/api/riwayat'),
     headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
