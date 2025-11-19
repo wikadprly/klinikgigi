@@ -18,6 +18,29 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        // Try to extract token from common response shapes and persist it
+        try {
+          String? token;
+          if (data['token'] != null && data['token'] is String) {
+            token = data['token'];
+          } else if (data['access_token'] != null &&
+              data['access_token'] is String) {
+            token = data['access_token'];
+          } else if (data['data'] != null && data['data'] is Map) {
+            final d = data['data'];
+            if (d['token'] != null && d['token'] is String) token = d['token'];
+            if (d['access_token'] != null && d['access_token'] is String)
+              token = d['access_token'];
+          }
+
+          if (token != null && token.isNotEmpty) {
+            await SharedPrefsHelper.saveToken(token);
+          }
+        } catch (e) {
+          print('Warning: gagal ekstrak token: $e');
+        }
+
         if (data['data'] != null) {
           final user = UserModel.fromJson(data['data']);
           await SharedPrefsHelper.saveUser(user); // simpan user
