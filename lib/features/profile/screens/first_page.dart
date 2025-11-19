@@ -140,11 +140,11 @@ class ProfilePage extends StatelessWidget {
 
                     Align(
                       alignment: Alignment.center,
-                      child: editProfileButton(
-                        onTap: () {
-                          Navigator.pushNamed(context, "/edit-profile");
-                        },
-                      ),
+                        child: editProfileButton(
+                          onTap: () {
+                            Navigator.pushNamed(context, "/two_page");
+                          },
+                        ),
                     ),
                   ],
                 ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -46,6 +47,11 @@ import 'features/settings/screens/panduanreservasi.dart';
 import 'features/settings/screens/panduaneditprofil.dart';
 import 'features/settings/screens/panduanubahsandi.dart';
 
+//Profile
+import 'package:flutter_klinik_gigi/features/profile/screens/first_page.dart'; 
+import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -57,11 +63,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
-
-        // ✅ FIX: Provider yang sebelumnya hilang
-        ChangeNotifierProvider<ReservasiProvider>(
-          create: (_) => ReservasiProvider(),
-        ),
+        ChangeNotifierProvider<ReservasiProvider>(create: (_) => ReservasiProvider()),
+        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -86,7 +89,7 @@ class KlinikGigiApp extends StatelessWidget {
       ),
 
       // Jika sudah login → langsung ke main_screen
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/first_page',
 
       routes: {
         '/start': (context) => const StartScreen(),
@@ -122,6 +125,10 @@ class KlinikGigiApp extends StatelessWidget {
         '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
         '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
         '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
+
+        //Profile
+        '/first_page': (context) => const ProfilePage(),
+        '/two_page': (context) => const EditProfilPage2(),
       },
     );
   }
