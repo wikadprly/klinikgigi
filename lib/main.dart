@@ -27,7 +27,6 @@ import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens_det
 import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_two.dart';
-import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_three.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/notifikasi.dart';
 import 'features/auth/screens/start.dart';
 import 'features/auth/screens/masuk.dart';
@@ -105,7 +104,8 @@ class KlinikGigiApp extends StatelessWidget {
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
           final data =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
 
           return RiwayatDetailScreen(data: data ?? {});
         },
@@ -117,7 +117,8 @@ class KlinikGigiApp extends StatelessWidget {
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
         '/panduanpage.dart': (context) => const PanduanPage(),
         '/panduanlogin.dart': (context) => const PanduanLoginPage(),
-        '/panduanhomedental.dart': (context) => const PanduanHomeDentalCarePage(),
+        '/panduanhomedental.dart': (context) =>
+            const PanduanHomeDentalCarePage(),
         '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
         '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
         '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
