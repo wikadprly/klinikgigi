@@ -166,7 +166,8 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                           );
                           Navigator.pushReplacementNamed(
                             context,
-                            '/main_screen',
+                            '/otp_screen',
+                            arguments: emailController.text.trim(),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

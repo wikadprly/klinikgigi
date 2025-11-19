@@ -242,7 +242,8 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                           );
                           Navigator.pushReplacementNamed(
                             context,
-                            '/main_screen',
+                            '/otp_screen',
+                            arguments: emailController.text.trim(),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

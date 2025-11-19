@@ -1,69 +1,71 @@
+// lib/core/services/pasien_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
-import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import '../models/pasien_model.dart';
-import '../../config/api.dart';
+import '../storage/shared_prefs_helper.dart';
 
 class PasienService {
-  // FUNGSI BARU: Untuk mengambil data pasien yang sedang login
-  Future<Pasien> getPasienLogin() async {
-    // 3. UBAH LOGIKA PENGAMBILAN TOKEN
-    // Ambil data user lengkap dari SharedPreferences menggunakan helper
-    final UserModel? user = await SharedPrefsHelper.getUser();
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
 
-    // Cek apakah user ada dan punya token
-    // (Asumsi: UserModel Anda memiliki properti 'token')
-    if (user == null || user.token == null || user.token!.isEmpty) {
-      throw Exception('Token tidak ditemukan. Harap login kembali.');
+  Future<Pasien> getPasienByUserId(String userId) async {
+    // ✅ Ambil token dari SharedPrefs
+    final token = await SharedPrefsHelper.getToken();
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Token tidak tersedia. Silakan login terlebih dahulu.');
     }
 
-    // Ambil token dari UserModel
-    final String token = user.token!;
-
-    // menentukan URL (sesuai routes/api.php)
+    // ✅ Gunakan endpoint protected /pasien
     final url = Uri.parse('$baseUrl/pasien');
 
-    // 4. SISA KODE SAMA PERSIS (sudah benar)
-    // membuat request DENGAN authorization header
     final response = await http.get(
       url,
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {
+        'Authorization': 'Bearer $token', // ✅ Kirim token
+        'Accept': 'application/json',
+      },
     );
 
-    // Proses response
+    // ✅ Handle errors dengan pesan yang jelas (401, 500, dll)
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      if (response.body.trim().isEmpty) {
+        throw Exception('Server mengembalikan status 200 tapi body kosong.');
+      }
 
-      // mengecek apakah API bisa mengembalikan data sukses
-      if (data is Map<String, dynamic> && data['status'] == 'success') {
-        // mengambil data dari payload
-        final payload = data['data'];
+      try {
+        final data = json.decode(response.body);
+
+        if (data is Map<String, dynamic> &&
+            data.containsKey('status') &&
+            data['status'] == 'error') {
+          throw Exception(
+            data['message'] ?? 'Gagal memuat data pasien dari API.',
+          );
+        }
+
+        dynamic payload = data;
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          payload = data['data'];
+        }
+
         if (payload is Map<String, dynamic>) {
-          // model Pasien (pasien_model.dart) harus sesuai
-          // dengan data yang dikembalikan (yaitu dari tabel 'users' berdasarkan MpUser.php)
           return Pasien.fromJson(payload);
         }
-      }
 
-      // mengecek jika API mengembalikan error
-      if (data is Map<String, dynamic> && data['status'] == 'error') {
-        throw Exception(data['message'] ?? 'Gagal memuat data pasien.');
+        throw Exception('Format payload tidak sesuai (bukan Map).');
+      } catch (e) {
+        throw Exception('Gagal memproses data: $e');
       }
-
-      // Jika format tidak terduga
-      throw FormatException('Format respon tidak terduga dari server.');
-    } else if (response.statusCode == 404) {
-      // Error 404 dari PasienController@index
-      final data = json.decode(response.body);
-      throw Exception(data['message'] ?? 'Data pasien tidak ditemukan (404).');
     } else if (response.statusCode == 401) {
-      // Token tidak valid atau expired
-      throw Exception('Autentikasi gagal. Silakan login ulang (401).');
-    } else {
-      // Error server lainnya
       throw Exception(
-        'Gagal memuat data pasien. Status Code: ${response.statusCode}. Body: ${response.body}',
+        'Token tidak valid atau sudah expired. Silakan login kembali.',
+      );
+    } else if (response.statusCode == 500) {
+      throw Exception('Server error (500). Hubungi administrator.');
+    } else {
+      throw Exception(
+        'Gagal memuat data pasien. Status Code: ${response.statusCode}',
       );
     }
   }

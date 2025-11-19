@@ -13,9 +13,9 @@ class MasterPoliModel {
 
   factory MasterPoliModel.fromJson(Map<String, dynamic> json) {
     return MasterPoliModel(
-      kodePoli: json['kode_poli'] ?? '',
-      namaPoli: json['nama_poli'] ?? '',
-      keterangan: json['keterangan'] ?? '',
+      kodePoli: json['kode_poli']?.toString() ?? '',
+      namaPoli: json['nama_poli']?.toString() ?? '',
+      keterangan: json['keterangan']?.toString() ?? '',
     );
   }
 

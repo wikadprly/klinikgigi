@@ -25,7 +25,7 @@ class PasienProvider extends ChangeNotifier {
 
     try {
       // 2. Memanggil PasienService untuk mendapatkan data
-      final fetchedPasien = await _pasienService.getPasienLogin();
+      final fetchedPasien = await _pasienService.getPasienByUserId(userId);
 
       // 3. Update data pasien dan set loading menjadi false
       _pasien = fetchedPasien;
