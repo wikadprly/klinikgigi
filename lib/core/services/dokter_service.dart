@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../config/api.dart';
-import '../models/dokter_model.dart';
-import '../models/master_doktermodel.dart';
+import '../models/master_dokter_model.dart';
+import '../models/dokter_detail_model.dart';
 
 class DokterService {
   final String _url = ApiEndpoint.dokter;
 
   // --- METHOD UNTUK DAFTAR DOKTER ---
-  Future<List<DokterModel>> fetchDokter([String? search]) async {
+  Future<List<MasterDokterModel>> fetchDokter([String? search]) async {
     try {
       var uri = Uri.parse(_url);
       if (search != null && search.isNotEmpty) {
@@ -23,8 +23,8 @@ class DokterService {
         if (jsonResponse['status'] == 'success' &&
             jsonResponse['data'] != null) {
           List<dynamic> listData = jsonResponse['data'];
-          List<DokterModel> dokterList = listData
-              .map((data) => DokterModel.fromJson(data))
+          List<MasterDokterModel> dokterList = listData
+              .map((data) => MasterDokterModel.fromJson(data))
               .toList();
 
           return dokterList;
@@ -42,8 +42,8 @@ class DokterService {
   }
 
   // --- METHOD UNTUK DETAIL DOKTER ---
-  // (Method ini sekarang mengembalikan tipe 'MasterDokterModel' yang benar)
-  Future<MasterDokterModel> fetchDokterDetail(int id) async {
+  // PERBAIKAN: Mengubah parameter ke String dan tipe return ke DokterDetailModel
+  Future<DokterDetailModel> fetchDokterDetail(String id) async {
     try {
       final uri = Uri.parse('$_url/$id');
       final response = await http.get(uri);
@@ -53,7 +53,7 @@ class DokterService {
 
         if (jsonResponse['status'] == 'success' &&
             jsonResponse['data'] != null) {
-          return MasterDokterModel.fromJson(jsonResponse['data']);
+          return DokterDetailModel.fromJson(jsonResponse['data']);
         } else {
           throw Exception('API status is not success or data is null');
         }

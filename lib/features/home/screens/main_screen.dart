@@ -3,16 +3,12 @@ import 'package:flutter_klinik_gigi/features/home/screens/home_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-// IMPORT HALAMAN YANG BENAR
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 
-// GradientMask class (tetap ada seperti di file asli Anda)
 class GradientMask extends StatelessWidget {
-  // ... (kode GradientMask Anda)
   const GradientMask({
     required this.child,
     required this.gradient,
@@ -46,10 +42,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // Daftar halaman TIDAK PERLU 'late final' jika diinisialisasi di initState
   late List<Widget> _pages;
 
-  // Fungsi untuk mengubah state saat navbar ditekan
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -59,7 +53,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi daftar halaman di sini
     _pages = <Widget>[
       // ✅ KOREKSI 1: Tambahkan parameter yang dibutuhkan HomeScreen
       HomeScreen(
@@ -70,18 +63,16 @@ class _MainScreenState extends State<MainScreen> {
       ReservasiScreen(),
       DentalHomeScreen(), //
       RiwayatScreen(), //
-      ProfileScreen(), // Diambil dari kode asli Anda
+      ProfileScreen(), //
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Tubuh Scaffold sekarang hanya menampilkan halaman yang dipilih
       body: Stack(
         children: [
-          _pages[_selectedIndex], // <-- Gunakan _pages
-          // UI Navbar tetap di sini (seperti file asli Anda)
+          _pages[_selectedIndex],
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(

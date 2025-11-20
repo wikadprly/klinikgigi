@@ -24,8 +24,3 @@ class ApiEndpoint {
   static String updatePembayaran(String noPemeriksaan) =>
       "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
 }
-
-class ApiConfig {
-  // GANTI sesuai IP WiFi laptop kamu
-  static const String baseUrl = 'http://10.76.215.207/klinikgigi';
-}
