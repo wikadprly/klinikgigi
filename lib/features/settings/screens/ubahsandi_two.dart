@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
+import 'package:flutter_klinik_gigi/core/services/reset_password_service.dart';
 
 class UbahKataSandi2Page extends StatefulWidget {
-  const UbahKataSandi2Page({super.key});
+  final String resetToken;
+
+  const UbahKataSandi2Page({
+    super.key,
+    required this.resetToken,
+  });
 
   @override
   State<UbahKataSandi2Page> createState() => _UbahKataSandi2PageState();
@@ -13,6 +19,8 @@ class UbahKataSandi2Page extends StatefulWidget {
 class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
   final TextEditingController _newPassController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
+
+  final ResetPasswordService _resetService = ResetPasswordService();
 
   bool _obscure1 = true;
   bool _obscure2 = true;
@@ -31,37 +39,48 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
 
     // VALIDASI
     if (pass1.isEmpty || pass2.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Semua kolom harus diisi")),
-      );
+      _show("Semua kolom harus diisi");
       return;
     }
 
     if (pass1.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Kata sandi minimal 6 karakter")),
-      );
+      _show("Kata sandi minimal 6 karakter");
       return;
     }
 
     if (pass1 != pass2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Konfirmasi kata sandi tidak sesuai")),
-      );
+      _show("Konfirmasi kata sandi tidak sesuai");
       return;
     }
 
-    // SIMULASI PROSES UPDATE
     setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 1));
+
+    try {
+      final res = await _resetService.resetPassword(
+        token: widget.resetToken,
+        newPassword: pass1,
+      );
+
+      final success = res["success"] ?? false;
+      final message = res["message"] ?? "Terjadi kesalahan";
+
+      if (!success) {
+        _show(message);
+      } else {
+        _show("Kata sandi berhasil diperbarui");
+
+        // KEMBALI KE HALAMAN LOGIN ATAU SETTING
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } catch (e) {
+      _show("Gagal menghubungi server");
+    }
+
     setState(() => _loading = false);
+  }
 
-    // SELESAI
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Kata sandi berhasil diperbarui")),
-    );
-
-    Navigator.pop(context); // kembali ke halaman sebelumnya
+  void _show(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -102,7 +121,7 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
 
               const SizedBox(height: 32),
 
-              // JUDUL SECTION
+              // JUDUL
               Text(
                 "Buat Kata Sandi baru",
                 style: AppTextStyles.heading.copyWith(
@@ -133,7 +152,7 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
 
               const SizedBox(height: 24),
 
-              // KONFIRMASI PASSWORD
+              // KONFIRMASI SANDI
               _buildPasswordField(
                 controller: _confirmPassController,
                 label: "Konfirmasi Kata Sandi Baru",
@@ -162,16 +181,16 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _tip("1. Hindari huruf/nomor berulang & berurutan, contoh 1234/abcd."),
+                    _tip("1. Hindari huruf/nomor berulang & berurutan seperti 1234."),
                     _tip("2. Jangan memakai nama, tanggal lahir, atau nomor HP."),
-                    _tip("3. Buat Kata Sandi yang unik."),
+                    _tip("3. Buat kata sandi yang unik dan sulit ditebak."),
                   ],
                 ),
               ),
 
               const SizedBox(height: 30),
 
-              // TOMBOL KONFIRMASI
+              // KONFIRMASI
               SizedBox(
                 width: double.infinity,
                 height: 48,

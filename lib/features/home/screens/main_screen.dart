@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart'; //
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart'; //
-import 'package:flutter_klinik_gigi/features/profile/screens/first_page.dart';
+import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 
 class GradientMask extends StatelessWidget {
   const GradientMask({
@@ -63,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
       ReservasiScreen(),
       DentalHomeScreen(), //
       RiwayatScreen(), //
-      ProfilePage(), //
+      ProfileScreen(), // Diambil dari kode asli Anda
     ];
   }
 
