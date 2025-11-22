@@ -7,6 +7,10 @@ class ApiEndpoint {
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
 
+  // HOME CARE
+  static const homeCareCalculate = "$baseUrl/homecare/calculate";
+  static const homeCareBook = "$baseUrl/homecare/book";
+
   // INI DIGABUNG (Diambil dari 'main')
   static const String pasien = "$baseUrl/pasien";
   static const String dokter = "$baseUrl/dokter";

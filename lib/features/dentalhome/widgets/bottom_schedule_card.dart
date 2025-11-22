@@ -40,8 +40,10 @@ class BottomScheduleCard extends StatelessWidget {
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             ),
-            child: const Text("Konfirmasi Jadwal",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Konfirmasi Jadwal",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
