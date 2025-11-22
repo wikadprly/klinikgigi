@@ -43,7 +43,8 @@ dependencies:
   shared_preferences: ^2.5.3
   lucide_icons: ^0.257.0
   table_calendar: ^3.1.1
-  pinput: ^4.0.0
+  pinput: ^6.0.0
+  dio: ^5.9.0
 
 dev_dependencies:
   flutter_test:
