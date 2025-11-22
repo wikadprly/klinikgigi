@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/services/dokter_service.dart';
-import '../../../core/models/master_dokter_model.dart';
+import '../../../core/models/dokter_model.dart'; // Pastikan import ini benar
 import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_detail_screens.dart';
 import 'dart:async';
 
 // ------------------------------------
-// 1. WIDGET KARTU DOKTER BARU (SESUAI DESAIN 1.png)
+// 1. WIDGET KARTU DOKTER (Disesuaikan dengan DokterModel)
 // ------------------------------------
 class _DokterListCard extends StatelessWidget {
-  final MasterDokterModel dokter;
+  final DokterModel dokter;
 
   const _DokterListCard({required this.dokter});
 
   @override
   Widget build(BuildContext context) {
     Widget imageWidget;
-    // Selalu tampilkan placeholder karena MasterDokterModel tidak memiliki data foto.
+    // Placeholder foto
     imageWidget = CircleAvatar(
       radius: 30,
-      backgroundColor: AppColors.gold.withOpacity(0.2),
+      backgroundColor: AppColors.gold.withValues(
+        alpha: 0.2,
+      ), // Perbaikan deprecated withOpacity
       child: const Icon(Icons.person, color: AppColors.gold, size: 30),
     );
 
@@ -32,7 +34,7 @@ class _DokterListCard extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: imageWidget,
         title: Text(
-          dokter.nama,
+          dokter.namaDokter, // Menggunakan properti namaDokter dari DokterModel
           style: AppTextStyles.heading.copyWith(
             fontSize: 16,
             color: AppColors.gold,
@@ -48,18 +50,18 @@ class _DokterListCard extends StatelessWidget {
 }
 
 // ------------------------------------
-// 2. MAIN SCREEN DOKTER (DIUBAH MENJADI STATEFUL)
+// 2. MAIN SCREEN DOKTER
 // ------------------------------------
 class DokterScreens extends StatefulWidget {
-  const DokterScreens({Key? key}) : super(key: key);
+  const DokterScreens({super.key}); // Menggunakan super parameter
 
   @override
   State<DokterScreens> createState() => _DokterScreensState();
 }
 
 class _DokterScreensState extends State<DokterScreens> {
-  // State untuk mengelola daftar dokter
-  late Future<List<MasterDokterModel>> _futureDokter;
+  // State untuk mengelola daftar dokter (List<DokterModel>)
+  late Future<List<DokterModel>> _futureDokter;
   final DokterService _dokterService = DokterService();
 
   // Controller untuk search bar
@@ -91,6 +93,7 @@ class _DokterScreensState extends State<DokterScreens> {
     });
   }
 
+  // Logika pencarian dengan penundaan (debounce)
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
@@ -147,7 +150,7 @@ class _DokterScreensState extends State<DokterScreens> {
               child: RefreshIndicator(
                 onRefresh: _refreshDokterList,
                 color: AppColors.gold,
-                child: FutureBuilder<List<MasterDokterModel>>(
+                child: FutureBuilder<List<DokterModel>>(
                   future: _futureDokter,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {

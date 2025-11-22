@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart'; // PERUBAHAN: Menggunakan MasterDokterModel
-import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart'; // PERUBAHAN
+import 'package:flutter_klinik_gigi/core/models/dokter_model.dart'; // [UBAH INI]
+import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart';
 import 'package:flutter_klinik_gigi/config/api.dart';
 import 'package:flutter_klinik_gigi/core/models/master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/services/dokter_service.dart';
@@ -8,8 +8,8 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class DokterDetailScreen extends StatefulWidget {
-  final MasterDokterModel dokter; // PERUBAHAN: Menggunakan MasterDokterModel
-  const DokterDetailScreen({super.key, required this.dokter}); // PERUBAHAN
+  final DokterModel dokter; // [UBAH INI]
+  const DokterDetailScreen({super.key, required this.dokter});
 
   @override
   State<DokterDetailScreen> createState() => _DokterDetailScreenState();
@@ -19,25 +19,18 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final DokterService _dokterService = DokterService();
-  // PERBAIKAN: Menggunakan id dari widget.dokter untuk fetch data
-  late Future<DokterDetailModel> _futureDetailDokter; // PERUBAHAN
+  late Future<DokterDetailModel> _futureDetailDokter;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 3,
-      vsync: this,
-    ); // 3 tabs: Tentang, Layanan, Jadwal
-    _futureDetailDokter = _dokterService.fetchDokterDetail(
-      widget.dokter.kodeDokter,
-    );
-  }
+    _tabController = TabController(length: 3, vsync: this);
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    // [PENTING: Ubah ini]
+    // Gunakan widget.dokter.id (int) lalu ubah ke String
+    _futureDetailDokter = _dokterService.fetchDokterDetail(
+      widget.dokter.id.toString(),
+    );
   }
 
   @override
@@ -46,7 +39,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          widget.dokter.nama,
+          widget.dokter.namaDokter, // [UBAH INI: .namaDokter]
           style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
         backgroundColor: AppColors.background,
@@ -126,7 +119,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Fitur "Book Now" belum diimplementasikan.',
+                              'Navigasi ke dentalhome belum tersedia.',
                             ),
                           ),
                         );
