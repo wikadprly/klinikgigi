@@ -16,6 +16,7 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 
 // Home Screens
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
