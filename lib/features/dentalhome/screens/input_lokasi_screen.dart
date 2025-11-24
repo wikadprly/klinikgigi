@@ -38,15 +38,19 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
   // Flutter Map variables
   late MapController _mapController;
-  LatLng? _centerLocation = const LatLng(-6.200000, 106.816666);
+  LatLng? _centerLocation;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-    // Set default location
-    _centerLocation = const LatLng(-6.200000, 106.816666);
+    // Set default location ke null atau biarkan kosong dulu
+    _centerLocation = null;
 
+    // Ambil lokasi pengguna secara otomatis saat halaman dimuat
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getCurrentLocation();
+    });
   }
 
 
@@ -69,16 +73,69 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         }
       }
 
-      // Ambil Posisi
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Izin lokasi ditolak secara permanen. Mohon aktifkan izin lokasi melalui pengaturan aplikasi.")),
+          );
+        }
+        return;
+      }
+
+      print("Meminta lokasi dengan akurasi tinggi...");
+
+      // Ambil Posisi dengan akurasi tinggi
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Move map to the current location first to provide immediate visual feedback
-      _moveToLocation(position.latitude, position.longitude);
-      await Future.delayed(const Duration(milliseconds: 50)); // Very short delay
+      print("Lokasi diperoleh: ${position.latitude}, ${position.longitude}, Akurasi: ${position.accuracy}m");
 
-      // Then update coordinates and calculate estimation
+      // Jika akurasi sangat buruk (>100km), coba sekali lagi untuk mendapatkan fresh location
+      if (position.accuracy != null && position.accuracy! > 100000) {
+        print("Akurasi sangat buruk (>100km), mencoba mendapatkan fresh location...");
+
+        await Future.delayed(const Duration(milliseconds: 1500)); // Tunggu lebih lama untuk fresh signal
+
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        print("Fresh location: ${position.latitude}, ${position.longitude}, Akurasi: ${position.accuracy}m");
+      }
+      // Jika akurasi buruk tapi tidak terlalu buruk (antara 1000-100000m), coba sekali lagi
+      else if (position.accuracy != null && position.accuracy! > 1000 && position.accuracy! <= 100000) {
+        print("Akurasi sedang buruk (1km-100km), mencoba sekali lagi...");
+
+        await Future.delayed(const Duration(milliseconds: 1000));
+
+        try {
+          Position newPosition = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
+
+          // Gunakan yang terbaik antara yang lama dan yang baru
+          if (newPosition.accuracy != null &&
+              (position.accuracy == null || newPosition.accuracy! < position.accuracy!)) {
+            position = newPosition;
+            print("Lokasi diperbarui: ${position.latitude}, ${position.longitude}, Akurasi: ${position.accuracy}m");
+          }
+        } catch (e) {
+          print("Gagal mendapatkan lokasi kedua, tetap menggunakan lokasi pertama");
+        }
+      }
+
+      // Update state dengan lokasi baru
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _centerLocation = LatLng(position.latitude, position.longitude);
+      });
+
+      // Pindahkan peta ke lokasi terbaru
+      _mapController.move(LatLng(position.latitude, position.longitude), 15.0);
+
+      // Update estimasi dan alamat
       await _updateLocationAndCalculate(position.latitude, position.longitude);
     } catch (e) {
       if (mounted) {
@@ -249,18 +306,31 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                     child: FlutterMap(
                       mapController: _mapController,
                       options: MapOptions(
-                        initialCenter: _centerLocation ?? const LatLng(-6.200000, 106.816666), // Jakarta as default
+                        initialCenter: _centerLocation ?? const LatLng(-0.7893, 113.9213), // Default ke Indonesia (akan segera diganti oleh GPS)
                         initialZoom: 15.0,
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                         ),
+                        // Implementasi ketuk peta sesuai flutter_map v8.2.2
+                        onTap: (tapPosition, point) {
+                          // Update lokasi dan perbarui marker
+                          setState(() {
+                            _centerLocation = point;
+                            _latitude = point.latitude;
+                            _longitude = point.longitude;
+                          });
+
+                          // Update estimasi jarak dan biaya berdasarkan lokasi baru
+                          _updateLocationAndCalculate(
+                            point.latitude,
+                            point.longitude
+                          );
+                        },
                       ),
                       children: [
                         TileLayer(
                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          // Tidak menggunakan subdomains untuk menghindari potensi masalah di masa depan
                         ),
-                        // Marker layer untuk menunjukkan lokasi yang dipilih
                         MarkerLayer(
                           markers: [
                             if (_centerLocation != null)
@@ -268,7 +338,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                                 width: 50.0,
                                 height: 50.0,
                                 point: _centerLocation!,
-                                child: const Icon(
+                                child: Icon(
                                   Icons.location_on,
                                   color: Color(0xFFFFD700), // Gold color
                                   size: 40,
@@ -278,6 +348,17 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Petunjuk penggunaan peta
+                Text(
+                  "Gunakan tombol di bawah untuk mengatur lokasi",
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
                   ),
                 ),
 
@@ -515,3 +596,4 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
     );
   }
 }
+

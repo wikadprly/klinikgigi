@@ -146,6 +146,10 @@ class HomeCareService {
       } else {
         throw Exception('Format response booking tidak valid: $responseString');
       }
+    } else if (response.statusCode == 401) {
+      // Jika mendapatkan 401 Unauthorized, coba login ulang atau refresh token
+      print("DEBUG: Received 401 Unauthorized - token mungkin expired");
+      throw Exception('Unauthorized: Token tidak valid atau telah kadaluarsa. Silakan login kembali.');
     } else {
       // Cek jika respons berisi HTML (menunjukkan error page Laravel)
       final responseString = response.body;
