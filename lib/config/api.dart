@@ -7,6 +7,12 @@ class ApiEndpoint {
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
 
+  // HOME CARE
+  static const homeCareCalculate = "$baseUrl/homecare/calculate";
+  static const homeCareBook = "$baseUrl/homecare/booking";
+  static String homeCareConfirmPayment(int bookingId) => "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
+  static String homeCareTracking(int bookingId) => "$baseUrl/homecare/booking/$bookingId/tracking";
+
   // INI DIGABUNG (Diambil dari 'main')
   static const String pasien = "$baseUrl/pasien";
   static const String dokter = "$baseUrl/dokter";

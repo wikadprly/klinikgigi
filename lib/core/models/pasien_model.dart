@@ -31,7 +31,7 @@ class Pasien {
     final String foto = (json['file_foto'] ?? json['foto'] ?? 'default.png')
         .toString();
     final String rekamMedis =
-        (json['no_identitas'] ?? json['nik'] ?? json['rekam_medis_id'] ?? '')
+        (json['rekam_medis_id'] ?? json['no_identitas'] ?? json['nik'] ?? '')
             .toString();
 
     // Parse id secara aman
