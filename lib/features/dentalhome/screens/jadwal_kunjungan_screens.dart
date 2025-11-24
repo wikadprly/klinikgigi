@@ -121,14 +121,16 @@ class _SchedulePageState extends State<SchedulePage> {
             child: BottomScheduleCard(
               doctorName: doctors[selectedDoctor]['name']!,
               onConfirm: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text("Konfirmasi"),
-                    content: Text(
-                      "Konfirmasi jadwal pada tanggal $selectedDay?",
-                    ),
-                  ),
+                // Navigate to input location screen with the selected doctor and schedule data
+                Navigator.pushNamed(
+                  context,
+                  '/dentalhome/input_lokasi',
+                  arguments: {
+                    'masterJadwalId': 1, // This would be the actual master jadwal ID in real implementation
+                    'tanggal': '2025-12-05', // This would be the selected date in real implementation
+                    'namaDokter': doctors[selectedDoctor]['name']!,
+                    'jamPraktek': doctors[selectedDoctor]['time']!,
+                  },
                 );
               },
             ),

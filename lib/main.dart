@@ -17,6 +17,8 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 // Home Screens
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -89,6 +91,32 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Home
         '/main_screen': (context) => const MainScreen(),
+
+        // Dental Home Care
+        '/dentalhome/jadwal': (context) => const SchedulePage(),
+        '/dentalhome/input_lokasi': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          return InputLokasiScreen(
+            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
+            tanggal: arguments?['tanggal'] ?? '',
+            namaDokter: arguments?['namaDokter'] ?? '',
+            jamPraktek: arguments?['jamPraktek'] ?? '',
+          );
+        },
+        '/dentalhome/pembayaran': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          return PembayaranHomeCareScreen(
+            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
+            tanggal: arguments?['tanggal'] ?? '',
+            namaDokter: arguments?['namaDokter'] ?? '',
+            jamPraktek: arguments?['jamPraktek'] ?? '',
+            keluhan: arguments?['keluhan'] ?? '',
+            alamat: arguments?['alamat'] ?? '',
+            latitude: arguments?['latitude'] ?? 0.0,
+            longitude: arguments?['longitude'] ?? 0.0,
+            rincianBiaya: arguments?['rincianBiaya'] ?? {},
+          );
+        },
 
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),
