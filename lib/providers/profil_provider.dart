@@ -28,11 +28,14 @@ class ProfileProvider with ChangeNotifier {
   Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
     final result = await _profilService.updateProfil(token, data);
 
-    if (result["success"] == true) {
-      await fetchProfile(token); // refresh data
-      return true;
-    }
+print("HASIL UPDATE: $result"); // <–– tambahkan ini
 
-    return false;
-  }
+if (result["success"] == true) {
+  await fetchProfile(token);
+  return true;
+}
+
+return false;
+
+}
 }
