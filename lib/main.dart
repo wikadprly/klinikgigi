@@ -80,7 +80,7 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/firstpage',
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
