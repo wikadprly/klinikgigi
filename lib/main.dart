@@ -24,6 +24,9 @@ import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart';
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens_detail.dart';
 
+// Reward
+import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
+
 // Settings
 import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
@@ -100,6 +103,9 @@ class KlinikGigiApp extends StatelessWidget {
                   as Map<String, dynamic>?;
           return RiwayatDetailScreen(data: data ?? {});
         },
+
+        // Reward
+        '/point_reward': (context) => const PointRewardScreen(),
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
