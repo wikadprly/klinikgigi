@@ -3,6 +3,7 @@ import 'package:flutter_klinik_gigi/core/models/pasien_model.dart';
 import 'package:flutter_klinik_gigi/core/services/pasien_service.dart';
 import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart';
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
+import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -85,29 +86,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCustomAppBar(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
-        const Text('Home', style: AppTextStyles.heading),
-        Row(
-          children: [
-            IconButton(
-              icon: GradientMask(
-                gradient: AppColors.goldGradient,
-                child: const Icon(
-                  Icons.mail_outline,
-                  color: Colors.white,
-                  size: 28,
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
+      const Text('Home', style: AppTextStyles.heading),
+      Row(
+        children: [
+          // ===============================================
+          // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
+          // ===============================================
+          GestureDetector(
+            onTap: () {
+              // Navigasi ke halaman PointRewardScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PointRewardScreen(),
                 ),
-              ),
-              onPressed: () {},
+              );
+            },
+            child: SvgPicture.asset(
+              'assets/icons/point.svg', // Ikon Poin
+              width: 35.0,
+              height: 35.0,
             ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+          
+          // SizedBox (spasi) dan IconButton (mail) dihapus
+          
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _buildUserInfo(BuildContext context) {
     return FutureBuilder<Pasien>(
