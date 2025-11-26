@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/services/profil_service.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class ProfilProvider with ChangeNotifier {
   final ProfilService _service = ProfilService();
@@ -12,7 +13,8 @@ class ProfilProvider with ChangeNotifier {
   Map<String, dynamic>? get userData => profilData?["data"]?["user"];
 
   // Getter untuk data rekam medis
-  Map<String, dynamic>? get rekamMedisData => profilData?["data"]?["rekam_medis"];
+  Map<String, dynamic>? get rekamMedisData =>
+      profilData?["data"]?["rekam_medis"];
 
   // Getter untuk informasi asuransi
   String? get namaAsuransi => profilData?["data"]?["nama_asuransi"];
@@ -21,22 +23,44 @@ class ProfilProvider with ChangeNotifier {
 
   Future<void> fetchProfil(String token) async {
     try {
+      print(
+        "ProfilProvider: Starting to fetch profile with token: ${token.length > 0 ? '***' : 'empty'}",
+      );
       isLoading = true;
       notifyListeners();
 
       final result = await _service.getProfil(token);
+      print("ProfilProvider: Raw API response: $result");
 
       if (result["success"] == true) {
         profilData = result;
         errorMessage = null;
+        print("ProfilProvider: Profile data set successfully");
+        print("ProfilProvider: User data: ${profilData?["data"]?["user"]}");
       } else {
         errorMessage = result["message"] ?? "Gagal mengambil profil";
+        print("ProfilProvider: API returned error: $errorMessage");
       }
     } catch (e) {
       errorMessage = e.toString();
+      print("ProfilProvider: Error fetching profile: $e");
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> fetchProfilFromToken() async {
+    String? token = await SharedPrefsHelper.getToken();
+    print(
+      "ProfilProvider: Token from SharedPrefsHelper: ${token != null && token.isNotEmpty ? '***' : 'null/empty'}",
+    );
+
+    if (token != null && token.isNotEmpty) {
+      await fetchProfil(token);
+    } else {
+      errorMessage = "Token tidak ditemukan";
+      print("ProfilProvider: No token available to fetch profile");
     }
   }
 
