@@ -7,8 +7,6 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang_g
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/transfer_bank_option.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/qris_option.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/pay_button.dart';
-
-// ==== IMPORT TAMBAHAN SESUAI PERMINTAAN ====
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_bank.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_qris.dart';
 
@@ -85,12 +83,13 @@ class _ReservasiPembayaranBankPageState
 
               PersegiPanjang(
                 width: double.infinity,
-                height: 200,
+                height: 205,
                 padding: const EdgeInsets.symmetric(
-                  vertical: 10,
+                  vertical: 12,
                   horizontal: 14,
                 ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     DetailRow(title: "Nama Lengkap", value: widget.namaLengkap),
                     DetailRow(title: "Poli", value: widget.poli),
@@ -118,7 +117,7 @@ class _ReservasiPembayaranBankPageState
 
               PersegiPanjangGaris(
                 width: double.infinity,
-                height: 100,
+                height: 110,
                 showInnerLine: true,
                 leftChild: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +128,7 @@ class _ReservasiPembayaranBankPageState
                         color: AppColors.textLight,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 22),
                     Text(
                       "Total Pembayaran",
                       style: AppTextStyles.input.copyWith(
@@ -147,7 +146,7 @@ class _ReservasiPembayaranBankPageState
                         color: AppColors.textLight,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 22),
                     Text(
                       "Rp${widget.total}",
                       style: AppTextStyles.input.copyWith(
@@ -204,15 +203,12 @@ class _ReservasiPembayaranBankPageState
                   if (selectedMethod == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Pilih metode pembayaran terlebih dahulu",
-                        ),
+                        content: Text("Pilih metode pembayaran terlebih dahulu"),
                       ),
                     );
                     return;
                   }
 
-                  // ==== PERBAIKAN SESUAI PERMINTAAN ====
                   if (selectedMethod == "bank") {
                     Navigator.push(
                       context,
@@ -228,7 +224,7 @@ class _ReservasiPembayaranBankPageState
                         ),
                       ),
                     );
-                  } else if (selectedMethod == "qris") {
+                  } else {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -255,7 +251,7 @@ class _ReservasiPembayaranBankPageState
     );
   }
 
-  // ==== Builder Option Wrapper ====
+  // ==== Wrapper Payment Option ====
   Widget _buildPaymentOption({
     required bool isSelected,
     required VoidCallback onTap,
@@ -263,11 +259,12 @@ class _ReservasiPembayaranBankPageState
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
           border: Border.all(
             color: isSelected ? AppColors.goldDark : Colors.transparent,
-            width: 2.5,
+            width: 2.2,
           ),
           borderRadius: BorderRadius.circular(14),
         ),
@@ -278,13 +275,12 @@ class _ReservasiPembayaranBankPageState
 }
 
 // ===== DETAIL ROW WIDGET =====
-
 class DetailRow extends StatelessWidget {
   final String title;
   final String value;
 
   const DetailRow({Key? key, required this.title, required this.value})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -312,27 +308,6 @@ class DetailRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ===== PAGE SUKSES (contoh) =====
-class PaymentSuccessPage extends StatelessWidget {
-  const PaymentSuccessPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Text(
-          "Pembayaran berhasil!",
-          style: AppTextStyles.heading.copyWith(
-            color: AppColors.goldDark,
-            fontSize: 20,
-          ),
-        ),
       ),
     );
   }

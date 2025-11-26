@@ -13,37 +13,44 @@ class TampilanAkhirReservasi extends StatelessWidget {
     required this.data,
   });
 
-  // -------- WIDGET DETAIL ROW --------
+  // --- DETAIL ROW ---
   Widget detailRow({
     required String label,
     required String value,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.label.copyWith(
-            color: AppColors.textLight,
-            fontSize: 15.5,
-          ),
-        ),
-
-        const SizedBox(width: 8),
-
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: AppTextStyles.input.copyWith(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: AppTextStyles.label.copyWith(
+                color: AppColors.textLight,
+                fontSize: 15.5,
+              ),
             ),
           ),
-        ),
-      ],
+
+          // Value
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.input.copyWith(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w700,
+                color: AppColors.gold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -59,6 +66,8 @@ class TampilanAkhirReservasi extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                
+                // BACK BUTTON
                 Align(
                   alignment: Alignment.topLeft,
                   child: BackButtonWidget(
@@ -72,44 +81,44 @@ class TampilanAkhirReservasi extends StatelessWidget {
                     },
                   ),
                 ),
-                // 👆 BATAS TAMBAHAN
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                // ===================== ICON CHECK =======================
+                // ICON CHECK
                 Container(
-                  width: 90,
-                  height: 90,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: AppColors.gold,
                       width: 3,
                     ),
+                    color: AppColors.cardDark,
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.check_rounded,
-                      size: 50,
+                      size: 55,
                       color: AppColors.gold,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 28),
 
-                // ===================== TITLE =======================
+                // TITLE
                 Text(
                   "Pendaftaran Berhasil",
                   textAlign: TextAlign.center,
                   style: AppTextStyles.heading.copyWith(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
                     color: AppColors.textLight,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
                 Text(
                   "Pendaftaran Anda telah berhasil disimpan.\nSilakan datang sesuai jadwal yang tertera di bawah ini.",
@@ -117,13 +126,13 @@ class TampilanAkhirReservasi extends StatelessWidget {
                   style: AppTextStyles.label.copyWith(
                     color: AppColors.gold,
                     fontSize: 14.5,
-                    height: 1.5,
+                    height: 1.6,
                   ),
                 ),
 
                 const SizedBox(height: 35),
 
-                // ===================== CARD DETAIL =======================
+                // CARD DETAIL
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -132,8 +141,8 @@ class TampilanAkhirReservasi extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.cardDark,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.goldDark, width: 1.5),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.goldDark, width: 1.4),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +153,7 @@ class TampilanAkhirReservasi extends StatelessWidget {
                       ),
                       const Divider(
                         color: AppColors.goldDark,
-                        height: 24,
+                        height: 26,
                         thickness: 1,
                       ),
 
@@ -152,41 +161,35 @@ class TampilanAkhirReservasi extends StatelessWidget {
                         label: "Nama :",
                         value: data["nama"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Waktu Layanan :",
                         value: data["jam"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Hari/Tanggal :",
                         value: data["tanggal"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Dokter :",
                         value: data["dokter"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Poli :",
                         value: data["poli"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Keluhan :",
                         value: data["keluhan"] ?? "-",
                       ),
-                      const SizedBox(height: 12),
 
                       detailRow(
                         label: "Biaya Administrasi :",
-                        value: "Rp. ${data["biaya"] ?? "0"}",
+                        value: "Rp ${data["biaya"] ?? "0"}",
                       ),
                     ],
                   ),
@@ -194,18 +197,17 @@ class TampilanAkhirReservasi extends StatelessWidget {
 
                 const SizedBox(height: 40),
 
-                // ===================== BUTTON KE RIWAYAT DETAIL =======================
+                // BUTTON LIHAT RIWAYAT
                 AuthButton(
-                  text: ButtonText.lihatRiwayat,
-                  onPressed: () async {
-                    Navigator.pushNamed(
-                      context,
-                      "/riwayat_detail",
-                      arguments: data, // <-- kirim data lengkap ke detail
-                    );
-                  },
-                ),
-
+                text: ButtonText.lihatRiwayat,
+                onPressed: () async {
+                  await Navigator.pushNamed(
+                    context,
+                    "/riwayat_detail",
+                    arguments: data,
+                  );
+                },
+              ),
                 const SizedBox(height: 40),
               ],
             ),
