@@ -5,9 +5,43 @@ import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 
+String _formatTanggalLahir(String? tanggalLahir) {
+  if (tanggalLahir == null || tanggalLahir.isEmpty) return "-";
+
+  try {
+    // Parse string menjadi DateTime
+    DateTime parsedDate = DateTime.parse(tanggalLahir.split('.')[0]);
+
+    // Format menjadi DD-MM-YYYY
+    String day = parsedDate.day.toString().padLeft(2, '0');
+    String month = parsedDate.month.toString().padLeft(2, '0');
+    String year = parsedDate.year.toString();
+
+    return '$day-$month-$year';
+  } catch (e) {
+    // Jika parsing gagal, kembalikan nilai asli
+    return tanggalLahir;
+  }
+}
+
 class ProfilePage extends StatelessWidget {
   final String token;
   const ProfilePage({super.key, required this.token});
+
+  String _convertJenisKelamin(String? jenisKelamin) {
+    if (jenisKelamin == null || jenisKelamin.isEmpty) return "-";
+
+    switch (jenisKelamin.toLowerCase()) {
+      case 'l':
+      case 'laki-laki':
+        return 'Laki-laki';
+      case 'p':
+      case 'perempuan':
+        return 'Perempuan';
+      default:
+        return jenisKelamin; // Jika tidak sesuai, kembalikan nilai asli
+    }
+  }
 
   // ==========================
   // ROW INFORMASI API
@@ -90,17 +124,40 @@ class ProfilePage extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Row(children: const [Icon(Icons.close, color: AppColors.goldDark, size: 26)]),
+              Row(
+                children: const [
+                  Icon(Icons.close, color: AppColors.goldDark, size: 26),
+                ],
+              ),
               const SizedBox(height: 12),
-              const CircleAvatar(radius: 40, backgroundImage: AssetImage("assets/profile.jpg")),
+              const CircleAvatar(
+                radius: 40,
+                backgroundImage: AssetImage("assets/profile.jpg"),
+              ),
               const SizedBox(height: 16),
-              Container(height: 1, width: double.infinity, color: AppColors.goldDark),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: AppColors.goldDark,
+              ),
               const SizedBox(height: 18),
-              _menuItem(icon: Icons.photo, text: "Pilih dari galeri", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.photo,
+                text: "Pilih dari galeri",
+                onTap: () => Navigator.pop(context),
+              ),
               const SizedBox(height: 14),
-              _menuItem(icon: Icons.camera_alt, text: "Ambil foto", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.camera_alt,
+                text: "Ambil foto",
+                onTap: () => Navigator.pop(context),
+              ),
               const SizedBox(height: 14),
-              _menuItem(icon: Icons.delete, text: "Hapus", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.delete,
+                text: "Hapus",
+                onTap: () => Navigator.pop(context),
+              ),
             ],
           ),
         );
@@ -108,14 +165,25 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _menuItem({required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _menuItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Row(
         children: [
           Icon(icon, color: AppColors.goldDark, size: 45),
           const SizedBox(width: 30),
-          Text(text, style: const TextStyle(color: AppColors.goldDark, fontSize: 25, fontWeight: FontWeight.w500)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.goldDark,
+              fontSize: 25,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -130,12 +198,17 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: FutureBuilder(
-          future: Provider.of<ProfilProvider>(context, listen: false).fetchProfil(token),
+          future: Provider.of<ProfilProvider>(
+            context,
+            listen: false,
+          ).fetchProfil(token),
           builder: (context, snapshot) {
             final provider = Provider.of<ProfilProvider>(context);
 
             if (provider.isLoading) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.gold),
+              );
             }
 
             final user = provider.profilData;
@@ -150,10 +223,17 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: BackButtonWidget(onPressed: () => Navigator.pop(context)),
+                        child: BackButtonWidget(
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ),
                       Center(
-                        child: Text('Profil Saya', style: AppTextStyles.heading.copyWith(color: AppColors.goldDark)),
+                        child: Text(
+                          'Profil Saya',
+                          style: AppTextStyles.heading.copyWith(
+                            color: AppColors.goldDark,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -165,20 +245,31 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: user?["file_foto"] != null && user?["file_foto"].isNotEmpty
-                            ? NetworkImage(user?["file_foto"]) as ImageProvider
+                        backgroundImage:
+                            provider.userData?["file_foto"] != null &&
+                                provider.userData?["file_foto"].isNotEmpty
+                            ? NetworkImage(provider.userData?["file_foto"])
+                                  as ImageProvider
                             : const AssetImage('assets/profile.jpg'),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        user?["nama_pengguna"] ?? "-",
-                        style: AppTextStyles.heading.copyWith(color: AppColors.goldDark),
+                        provider.userData?["nama_pengguna"] ?? "-",
+                        style: AppTextStyles.heading.copyWith(
+                          color: AppColors.goldDark,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
                         onTap: () => showEditPhotoModal(context),
-                        child: Text("Edit foto", style: AppTextStyles.input.copyWith(color: AppColors.goldDark, fontSize: 14)),
-                      )
+                        child: Text(
+                          "Edit foto",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.goldDark,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
 
@@ -195,30 +286,60 @@ class ProfilePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Informasi Dasar", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
+                        Text(
+                          "Informasi Dasar",
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 18,
+                          ),
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.person, user?["nama_pengguna"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.phone,
+                          provider.userData?["no_hp"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.phone, user?["no_hp"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.email,
+                          provider.userData?["email"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.email, user?["email"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.calendar_today,
+                          _formatTanggalLahir(
+                            provider.userData?["tanggal_lahir"],
+                          ),
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.calendar_today, user?["tanggal_lahir"]?.toString() ?? "-", textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.location_on,
+                          provider.rekamMedisData?["alamat"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.location_on, provider.rekamMedisData?["alamat"] ?? "-", textColor: AppColors.goldDark),
-                        const SizedBox(height: 14),
-
-                        infoRow(Icons.man, user?["jenis_kelamin"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.man,
+                          _convertJenisKelamin(
+                            provider.userData?["jenis_kelamin"],
+                          ),
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 16),
 
                         Align(
                           alignment: Alignment.center,
-                          child: editProfileButton(onTap: () => Navigator.pushNamed(context, "/two_page")),
+                          child: editProfileButton(
+                            onTap: () =>
+                                Navigator.pushNamed(context, "/two_page"),
+                          ),
                         ),
                       ],
                     ),
@@ -237,12 +358,33 @@ class ProfilePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Asuransi Saya", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
+                        Text(
+                          "Asuransi Saya",
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 18,
+                          ),
+                        ),
                         const SizedBox(height: 12),
 
-                        Text("Nama Asuransi : ${provider.namaAsuransi ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
-                        Text("Nomor Peserta : ${provider.noPeserta ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
-                        Text("Status : ${provider.statusAktif ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
+                        Text(
+                          "Nama Asuransi : ${provider.namaAsuransi ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.goldDark,
+                          ),
+                        ),
+                        Text(
+                          "Nomor Peserta : ${provider.noPeserta ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.goldDark,
+                          ),
+                        ),
+                        Text(
+                          "Status : ${provider.statusAktif ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.goldDark,
+                          ),
+                        ),
                       ],
                     ),
                   ),
