@@ -64,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
       ReservasiScreen(),
       DentalHomeScreen(), //
       RiwayatScreen(), //
-      ProfilePage(), // Diambil dari kode asli Anda
+      ProfileScreen(), // Diambil dari kode asli Anda
     ];
   }
 
