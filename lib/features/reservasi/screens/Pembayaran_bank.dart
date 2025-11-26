@@ -5,7 +5,6 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circl
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
-// 👇 LIXA TAMBAHIN IMPORT INI
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi.dart';
 
 class ReservasiPembayaranBank2Page extends StatelessWidget {
@@ -58,6 +57,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 30),
 
               // 💳 Rincian Pembayaran
@@ -70,7 +70,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              // 💰 Box Total Pembayaran
+
               Rectangle(
                 width: double.infinity,
                 height: 95,
@@ -134,7 +134,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // 🏦 Bank BCA Section
+
               Rectangle(
                 width: double.infinity,
                 height: 130,
@@ -186,7 +186,6 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
 
-                          // (💡 Bisa dibuat dinamis juga kalau backend sudah ada)
                           Text(
                             "123 4567 8910 1112",
                             style: AppTextStyles.input.copyWith(
@@ -274,12 +273,9 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // ✅ Tombol Selesai
               AuthButton(
                 text: 'Selesai',
-                // 👇 LIXA UBAH BAGIAN INI
                 onPressed: () async {
-                  // 1. Siapin data yang mau dikirim
                   final Map<String, dynamic> reservasiData = {
                     'nama': namaLengkap,
                     'poli': poli,
@@ -287,9 +283,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                     'tanggal': tanggal,
                     'jam': jam,
                     'keluhan': keluhan,
-                    'biaya': total.toString(), // Kirim total sebagai string
-                    // 'no_pemeriksaan' nggak ada di halaman ini,
-                    // tapi TampilanAkhirReservasi udah handle (?? "-")
+                    'biaya': total.toString(),
                   };
 
                   Navigator.pushReplacement(

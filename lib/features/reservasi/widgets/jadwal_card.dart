@@ -8,9 +8,10 @@ class ScheduleCardWidget extends StatelessWidget {
   final String hari;
   final String jam;
 
-  /// Kuota dari backend
-  final int kuotaSisa;
-  final int kuotaTotal;
+  final int quota;           
+  final int kuotaTerpakai;   
+
+  int get kuotaSisa => quota - kuotaTerpakai; 
 
   final VoidCallback onTap;
 
@@ -20,8 +21,8 @@ class ScheduleCardWidget extends StatelessWidget {
     required this.namaDokter,
     required this.hari,
     required this.jam,
-    required this.kuotaSisa,
-    required this.kuotaTotal,
+    required this.quota,
+    required this.kuotaTerpakai,
     required this.onTap,
   });
 
@@ -31,40 +32,54 @@ class ScheduleCardWidget extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.cardWarm,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.gold, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nama Poli
+          // POLI
           Text(
             namaPoli,
             style: AppTextStyles.heading.copyWith(
               color: AppColors.gold,
-              fontSize: 16,
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
           const SizedBox(height: 6),
 
-          // Nama Dokter
+          // Dokter
           Text(
             namaDokter,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextStyles.label.copyWith(
+              color: AppColors.textLight,
+              fontSize: 14,
+            ),
           ),
 
           const SizedBox(height: 12),
 
-          // Hari & Jam
+          // Waktu
           Row(
             children: [
               const Icon(Icons.access_time, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
                 "$hari | $jam",
-                style: AppTextStyles.label,
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textLight,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -77,8 +92,11 @@ class ScheduleCardWidget extends StatelessWidget {
               const Icon(Icons.group, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
-                "Kuota : $kuotaSisa/$kuotaTotal",
-                style: AppTextStyles.label,
+                "Kuota : $kuotaSisa/$quota",
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textLight,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -88,23 +106,23 @@ class ScheduleCardWidget extends StatelessWidget {
           // Button Pilih
           Align(
             alignment: Alignment.centerRight,
-            child: InkWell(
+            child: GestureDetector(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 22,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
                 ),
                 child: const Text(
                   "Pilih",
                   style: TextStyle(
                     color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ),
