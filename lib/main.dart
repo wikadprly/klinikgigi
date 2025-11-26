@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 // Providers
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
@@ -58,9 +59,7 @@ void main() async {
         ChangeNotifierProvider<ReservasiProvider>(
           create: (_) => ReservasiProvider(),
         ),
-        ChangeNotifierProvider<ProfileProvider>(
-          create: (_) => ProfileProvider(),
-        ),
+        ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -83,11 +82,10 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/firstpage',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
-        
 
         // Home
         '/main_screen': (context) => const MainScreen(),
@@ -95,11 +93,12 @@ class KlinikGigiApp extends StatelessWidget {
         //dentalhome
         '/nota_pelunasan': (context) => const TagihanPage(),
 
-        
         // Dental Home Care
         '/dentalhome/jadwal': (context) => const SchedulePage(),
         '/dentalhome/input_lokasi': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           return InputLokasiScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
@@ -108,7 +107,9 @@ class KlinikGigiApp extends StatelessWidget {
           );
         },
         '/dentalhome/pembayaran': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           return PembayaranHomeCareScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
@@ -136,21 +137,28 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one.dart': (context) =>
+        '/ubahsandi_one': (context) =>
             const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two.dart': (context) =>
+        '/ubahsandi_two': (context) =>
             const UbahKataSandi2Page(resetToken: "sample_token"),
-        '/notifikasi.dart': (context) => const NotificationSettingsPage(),
-        '/panduanpage.dart': (context) => const PanduanPage(),
-        '/panduanlogin.dart': (context) => const PanduanLoginPage(),
-        '/panduanhomedental.dart': (context) =>
-            const PanduanHomeDentalCarePage(),
-        '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
-        '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
-        '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
+        '/notifikasi': (context) => const NotificationSettingsPage(),
+        '/panduanpage': (context) => const PanduanPage(),
+        '/panduanlogin': (context) => const PanduanLoginPage(),
+        '/panduanhomedental': (context) => const PanduanHomeDentalCarePage(),
+        '/panduanreservasi': (context) => const PanduanReservasiPage(),
+        '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
+        '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
 
         //Profile
-        '/first_page': (context) => const ProfilePage(),
+        '/profil_screens': (context) {
+          return FutureBuilder<String?>(
+            future: SharedPrefsHelper.getToken(),
+            builder: (context, snapshot) {
+              String token = snapshot.data ?? '';
+              return ProfilePage(token: token);
+            },
+          );
+        },
         '/two_page': (context) => const EditProfilPage2(),
       },
     );
