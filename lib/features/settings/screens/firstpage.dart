@@ -8,6 +8,8 @@ import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -86,60 +88,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _menuBox(BuildContext context, String userEmail) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.gold),
-        borderRadius: BorderRadius.circular(10),
-        color: AppColors.cardDark,
-      ),
-      child: Column(
-        children: [
-          // PROFIL SAYA — tidak melakukan navigasi ke halaman yang sama
-          _menuItem(Icons.person, "Profil Saya", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const ProfilePage(),
-              ),
-            );
-          }),
+  return FutureBuilder<String?>(
+    future: SharedPrefsHelper.getToken(),
+    builder: (context, snapshot) {
+      final token = snapshot.data ?? '';
 
-          _divider(),
-          _menuItem(Icons.file_copy, "Rekam Medis", () {}),
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.gold),
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.cardDark,
+        ),
+        child: Column(
+          children: [
+            _menuItem(Icons.person, "Profil Saya", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfilePage(token: token),
+                ),
+              );
+            }),
 
-          _divider(),
-          _menuItem(Icons.lock, "Ubah Kata Sandi", () {
-            _showConfirmDialog(context, userEmail);
-          }),
+            _divider(),
+            _menuItem(Icons.file_copy, "Rekam Medis", () {}),
 
-          _divider(),
-          _menuItem(Icons.notifications, "Notifikasi", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const NotificationSettingsPage(),
-              ),
-            );
-          }),
+            _divider(),
+            _menuItem(Icons.lock, "Ubah Kata Sandi", () {
+              _showConfirmDialog(context, userEmail);
+            }),
 
-          _divider(),
-          _menuItem(Icons.help, "Panduan", () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const PanduanPage(),
-              ),
-            );
-          }),
+            _divider(),
+            _menuItem(Icons.notifications, "Notifikasi", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationSettingsPage(),
+                ),
+              );
+            }),
 
-          _divider(),
-          _menuItem(Icons.logout, "Keluar", () {
-            _showLogoutDialog(context);
-          }),
-        ],
-      ),
-    );
-  }
+            _divider(),
+            _menuItem(Icons.help, "Panduan", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PanduanPage(),
+                ),
+              );
+            }),
+
+            _divider(),
+            _menuItem(Icons.logout, "Keluar", () {
+              _showLogoutDialog(context);
+            }),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 
   Widget _menuItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
