@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:provider/provider.dart';
-import '/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 
 class EditProfilPage2 extends StatefulWidget {
@@ -12,7 +12,6 @@ class EditProfilPage2 extends StatefulWidget {
 }
 
 class _EditProfilPage2State extends State<EditProfilPage2> {
-  // CONTROLLER YANG BENAR (SATU FIELD = SATU CONTROLLER)
   final TextEditingController namaController = TextEditingController();
   final TextEditingController noHpController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -24,24 +23,36 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
   @override
   void initState() {
     super.initState();
-    final profil = Provider.of<ProfileProvider>(context, listen: false);
 
-    // MAPPING DATA DARI PROVIDER
-    namaController.text = profil.user?["nama_pengguna"] ?? "";
-    noHpController.text = profil.user?["no_hp"] ?? "";
-    emailController.text = profil.user?["email"] ?? "";
-    birthController.text = profil.user?["tanggal_lahir"] ?? "";
-    alamatController.text = profil.user?["alamat"] ?? "";
+    // Load data setelah widget terbangun
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profil = Provider.of<ProfilProvider>(context, listen: false);
+      final user = profil.profilData; // ⬅️ Sudah aman dan null-safe
+
+      namaController.text = user?['nama_pengguna'] ?? "";
+      noHpController.text = user?['no_hp'] ?? "";
+      emailController.text = user?['email'] ?? "";
+
+      // Format tanggal otomatis
+      final rawDate = user?['tanggal_lahir'] ?? "";
+      if (rawDate is String && rawDate.contains("T")) {
+        birthController.text = rawDate.split("T")[0];
+      } else {
+        birthController.text = rawDate;
+      }
+
+      alamatController.text = user?['alamat'] ?? "";
+    });
   }
 
   Future<void> saveData() async {
-    final profil = Provider.of<ProfileProvider>(context, listen: false);
+    final profil = Provider.of<ProfilProvider>(context, listen: false);
 
     setState(() => isSaving = true);
 
-    final token = profil.user?["token"] ?? "";
+    // Ambil token
+    final token = profil.profilData?['data']?['token'] ?? "";
 
-    // DATA SESUAI BACKEND
     final data = {
       "nama_pengguna": namaController.text,
       "no_hp": noHpController.text,
@@ -55,7 +66,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     setState(() => isSaving = false);
 
     if (success) {
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Informasi profil berhasil diperbarui")),
       );
@@ -78,51 +89,45 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
         children: [
           Icon(icon, color: AppColors.goldDark, size: 20),
           const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: hint,
-                    hintStyle: const TextStyle(color: Colors.white54),
-                  ),
-                  readOnly: controller == birthController ? true : false,
-                  onTap: () async {
-                    if (controller == birthController) {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.tryParse(controller.text) ?? DateTime.now(),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                        builder: (BuildContext context, Widget? child) {
-                          return Theme(
-                            data: Theme.of(context).copyWith(
-                              colorScheme: const ColorScheme.light(
-                                primary: Color(0xFFBFA05A), // header background color
-                                onPrimary: Colors.white, // header text color
-                                onSurface: Colors.black, // body text color
-                              ),
-                              textButtonTheme: TextButtonThemeData(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Color(0xFFBFA05A), // button text color
-                                ),
-                              ),
-                            ),
-                            child: child ?? const SizedBox.shrink(),
-                          );
-                        },
-                      );
-                      if (pickedDate != null) {
-                        String formattedDate = "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                        setState(() {
-                          controller.text = formattedDate;
-                        });
-                      }
-                    }
-                  },
-                ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: hint,
+                hintStyle: const TextStyle(color: Colors.white54),
               ),
+              readOnly: controller == birthController,
+              onTap: () async {
+                if (controller == birthController) {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.tryParse(controller.text) ?? DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: Color(0xFFBFA05A),
+                            onPrimary: Colors.white,
+                            onSurface: Colors.black,
+                          ),
+                        ),
+                        child: child ?? const SizedBox.shrink(),
+                      );
+                    },
+                  );
+                  if (pickedDate != null) {
+                    controller.text =
+                        "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                    setState(() {});
+                  }
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -138,8 +143,6 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // HEADER
               Row(
                 children: [
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
