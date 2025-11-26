@@ -262,34 +262,34 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       final jadwal = prov.jadwalList[index];
 
                       return ScheduleCardWidget(
-                        namaPoli: prov.selectedPoli?.namaPoli ?? '-',
-                        namaDokter: prov.selectedDokter?.namaLengkap ?? '-',
-                        hari: jadwal.hari,
-                        jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
-                        kuotaSisa: jadwal.quota,
-                        kuotaTotal: jadwal.quota,
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) {
-                              return KonfirmasiReservasiSheet(
-                                namaPasien: user?.namaPengguna ?? "-",
-                                rekamMedis:
-                                    user?.rekamMedisId.toString() ?? "-",
-                                poli: prov.selectedPoli?.namaPoli ?? '-',
-                                dokter: prov.selectedDokter?.namaLengkap ?? '-',
-                                tanggal: selectedTanggal!,
-                                jam:
-                                    "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
-                                keluhan: "-",
-                                total: 25000,
-                              );
-                            },
-                          );
-                        },
-                      );
+                      namaPoli: prov.selectedPoli?.namaPoli ?? '-',
+                      namaDokter: prov.selectedDokter?.namaLengkap ?? '-',
+                      hari: jadwal.hari,
+                      jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+
+                      quota: jadwal.quota,
+                      kuotaTerpakai: jadwal.kuotaTerpakai ?? 0,
+
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) {
+                            return KonfirmasiReservasiSheet(
+                              namaPasien: user?.namaPengguna ?? "-",
+                              rekamMedis: user?.rekamMedisId.toString() ?? "-",
+                              poli: prov.selectedPoli?.namaPoli ?? '-',
+                              dokter: prov.selectedDokter?.namaLengkap ?? '-',
+                              tanggal: selectedTanggal!,
+                              jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+                              keluhan: "-",
+                              total: 25000,
+                            );
+                          },
+                        );
+                      },
+                    );
                     },
                   );
                 },
