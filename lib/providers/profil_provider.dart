@@ -1,41 +1,64 @@
 import 'package:flutter/material.dart';
-import '../core/services/profil_service.dart';
+import 'package:flutter_klinik_gigi/core/services/profil_service.dart';
 
-class ProfileProvider with ChangeNotifier {
-  final ProfilService _profilService = ProfilService();
+class ProfilProvider with ChangeNotifier {
+  final ProfilService _service = ProfilService();
 
-  Map<String, dynamic>? user;
-  Map<String, dynamic>? rekamMedis;
+  Map<String, dynamic>? profilData;
   bool isLoading = false;
+  String? errorMessage;
 
-  // Ambil profil user
-  Future<void> fetchProfile(String token) async {
-    isLoading = true;
-    notifyListeners();
+  // Getter untuk data user
+  Map<String, dynamic>? get userData => profilData?["data"]?["user"];
 
-    final result = await _profilService.getProfil(token);
+  // Getter untuk data rekam medis
+  Map<String, dynamic>? get rekamMedisData => profilData?["data"]?["rekam_medis"];
 
-    if (result["success"] == true) {
-      user = result["data"]["user"];
-      rekamMedis = result["data"]["rekam_medis"];
+  // Getter untuk informasi asuransi
+  String? get namaAsuransi => profilData?["data"]?["nama_asuransi"];
+  String? get noPeserta => profilData?["data"]?["no_peserta"];
+  String? get statusAktif => profilData?["data"]?["status_aktif"];
+
+  Future<void> fetchProfil(String token) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final result = await _service.getProfil(token);
+
+      if (result["success"] == true) {
+        profilData = result;
+        errorMessage = null;
+      } else {
+        errorMessage = result["message"] ?? "Gagal mengambil profil";
+      }
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
-  // Update profil
   Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
-    final result = await _profilService.updateProfil(token, data);
+    try {
+      isLoading = true;
+      notifyListeners();
 
-print("HASIL UPDATE: $result"); // <–– tambahkan ini
+      final result = await _service.updateProfil(token, data);
 
-if (result["success"] == true) {
-  await fetchProfile(token);
-  return true;
-}
+      if (result["success"] == true) {
+        await fetchProfil(token);
+        return true;
+      }
 
-return false;
-
-}
+      return false;
+    } catch (e) {
+      errorMessage = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }
