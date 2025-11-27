@@ -8,6 +8,9 @@ class AppColors {
   static const Color textMuted = Color(0xFFB0B0B0);
   static const Color inputBorder = Color(0xFF8D8D8D);
   static const Color white = Color(0xFFFFFFFF);
+  static const Color cardWarmDark = Color(0xFF2A2620);
+  static const Color cardWarm = Color.fromARGB(255, 48, 44, 37);
+
 
   static const LinearGradient goldGradient = LinearGradient(
     colors: [Color(0xFFF9E68D), Color(0xFFB18D37)],

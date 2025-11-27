@@ -59,6 +59,31 @@ class ReservasiService {
     return [];
   }
 
+  Future<Map<String, dynamic>> getKuota({
+    required String kodeJadwal,
+    required String tanggalReservasi,
+  }) async {
+    final url = Uri.parse('$baseUrl/reservasi/cek-kuota');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'kode_jadwal': kodeJadwal,
+          'tanggal_reservasi': tanggalReservasi,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? {};
+      }
+    } catch (_) {}
+
+    return {}; // fallback biar UI aman
+  }
+
   Future<bool> createReservasi(Map<String, dynamic> reservasiData) async {
     final url = Uri.parse('$baseUrl/reservasi/create');
     try {
