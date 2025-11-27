@@ -352,36 +352,21 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                         ),
-                        // Implementasi ketuk peta sesuai flutter_map v8.2.2
-                        onTap: (tapPosition, point) {
-                          // Update lokasi dan perbarui marker
-                          setState(() {
-                            _centerLocation = point;
-                            _latitude = point.latitude;
-                            _longitude = point.longitude;
-                          });
-
-                          // Update estimasi jarak dan biaya berdasarkan lokasi baru
-                          _updateLocationAndCalculate(
-                            point.latitude,
-                            point.longitude
-                          );
                         onPositionChanged: (pos, hasGesture) {
                           if (hasGesture && pos.center != null) {
                             _centerLocation = pos.center;
                             setState(() {});
                           }
                           
-                          // Jika selesai geser peta, hitung ulang estimasi//
+                          gi// Jika selesai geser peta, hitung ulang estimasi//
                           if (!hasGesture && pos.center != null) {
                             _updateLocationAndCalculate(
                               pos.center!.latitude,
                               pos.center!.longitude,
                             );
-                          },
+                          }
                         },
                       ),
-                      
                       children: [
                         TileLayer(
                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
