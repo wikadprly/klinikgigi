@@ -52,44 +52,56 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
   // Fungsi Ambil Lokasi GPS
   Future<void> _getCurrentLocation() async {
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    try {
-      // Cek Permission GPS
-      LocationPermission permission = await Geolocator.checkPermission();
+  try {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Izin lokasi ditolak. Mohon aktifkan izin lokasi untuk aplikasi ini.")),
-            );
-          }
-          return;
-        }
-      }
-
-      // Ambil Posisi
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // Move map to the current location first to provide immediate visual feedback
-      _moveToLocation(position.latitude, position.longitude);
-      await Future.delayed(const Duration(milliseconds: 50)); // Very short delay
-
-      // Then update coordinates and calculate estimation
-      await _updateLocationAndCalculate(position.latitude, position.longitude);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal mengambil lokasi: $e")));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Izin lokasi ditolak.")),
+        );
+        return;
       }
     }
+
+    // Ambil dua kali biar lebih akurat
+    Position pos1 = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
+    );
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    Position pos2 = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
+    );
+
+    Position finalPos = pos1.accuracy < pos2.accuracy ? pos1 : pos2;
+
+    // Pindahkan PETA (Flutter Map)
+    _mapController.move(
+      LatLng(finalPos.latitude, finalPos.longitude),
+      16.0,
+    );
+    
+    setState(() {
+      _centerLocation = LatLng(finalPos.latitude, finalPos.longitude);
+    });
+
+    // Update lat-lng + reverse geocode + estimasi biaya
+    await _updateLocationAndCalculate(
+      finalPos.latitude,
+      finalPos.longitude,
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Gagal mengambil lokasi: $e")),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   // Fungsi untuk mengupdate lokasi dan menghitung estimasi biaya
   Future<void> _updateLocationAndCalculate(double lat, double lng) async {
@@ -254,6 +266,20 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                         ),
+                        onPositionChanged: (pos, hasGesture) {
+                          if (hasGesture && pos.center != null) {
+                            _centerLocation = pos.center;
+                            setState(() {});
+                          }
+                          
+                          // Jika selesai geser peta, hitung ulang estimasi//
+                          if (!hasGesture && pos.center != null) {
+                            _updateLocationAndCalculate(
+                              pos.center!.latitude,
+                              pos.center!.longitude,
+                            );
+                          }
+                        },
                       ),
                       children: [
                         TileLayer(
@@ -270,7 +296,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                                 point: _centerLocation!,
                                 child: const Icon(
                                   Icons.location_on,
-                                  color: Color(0xFFFFD700), // Gold color
+                                  color: Color.fromARGB(255, 255, 0, 0), // Gold color
                                   size: 40,
                                 ),
                               ),
