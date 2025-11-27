@@ -358,7 +358,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                             setState(() {});
                           }
                           
-                          gi// Jika selesai geser peta, hitung ulang estimasi//
+                          // Jika selesai geser peta, hitung ulang estimasi//
                           if (!hasGesture && pos.center != null) {
                             _updateLocationAndCalculate(
                               pos.center!.latitude,
