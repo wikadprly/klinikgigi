@@ -10,7 +10,10 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/pay_button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_bank.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_qris.dart';
 
-class ReservasiPembayaranBankPage extends StatefulWidget {
+
+class ReservasiPembayaranPage extends StatefulWidget {
+
+  final String noPemeriksaan;   
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -19,8 +22,10 @@ class ReservasiPembayaranBankPage extends StatefulWidget {
   final String keluhan;
   final int total;
 
-  const ReservasiPembayaranBankPage({
+  const ReservasiPembayaranPage({
     Key? key,
+    // 🔥 Wajib diisi
+    required this.noPemeriksaan, 
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -31,12 +36,12 @@ class ReservasiPembayaranBankPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ReservasiPembayaranBankPage> createState() =>
-      _ReservasiPembayaranBankPageState();
+  State<ReservasiPembayaranPage> createState() =>
+      _ReservasiPembayaranPageState();
 }
 
-class _ReservasiPembayaranBankPageState
-    extends State<ReservasiPembayaranBankPage> {
+class _ReservasiPembayaranPageState
+    extends State<ReservasiPembayaranPage> {
   String? selectedMethod; // "bank" / "qris"
 
   @override
@@ -55,7 +60,7 @@ class _ReservasiPembayaranBankPageState
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   Text(
-                    "Kode Pembayaran",
+                    "Metode Pembayaran", // Ganti judul biar sesuai konteks
                     style: AppTextStyles.heading.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -68,6 +73,31 @@ class _ReservasiPembayaranBankPageState
               ),
 
               const SizedBox(height: 35),
+
+              // ===== KODE PEMBAYARAN =====
+              // Menampilkan No Pemeriksaan (RSV-...) agar user tau
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      "Kode Booking",
+                      style: AppTextStyles.label.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      widget.noPemeriksaan, // 🔥 Tampilkan Kode RSV Disini
+                      style: AppTextStyles.heading.copyWith(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
 
               // ===== DETAIL PENDAFTARAN =====
               Text(
@@ -162,7 +192,7 @@ class _ReservasiPembayaranBankPageState
 
               // ===== METODE PEMBAYARAN =====
               Text(
-                "Metode Pembayaran",
+                "Pilih Metode Pembayaran",
                 style: AppTextStyles.heading.copyWith(
                   color: AppColors.textLight,
                   fontSize: 16,
@@ -213,7 +243,10 @@ class _ReservasiPembayaranBankPageState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ReservasiPembayaranBank2Page(
+                        builder: (_) => ReservasiPembayaranBankPage(
+                          // 🔥 JANGAN LUPA TERUSKAN KODE RSV KE HALAMAN SELANJUTNYA
+                          noPemeriksaan: widget.noPemeriksaan, 
+                          
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -229,6 +262,9 @@ class _ReservasiPembayaranBankPageState
                       context,
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranQrisPage(
+                          // 🔥 TERUSKAN KODE RSV JUGA
+                          noPemeriksaan: widget.noPemeriksaan, 
+
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,

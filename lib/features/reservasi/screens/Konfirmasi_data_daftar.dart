@@ -15,6 +15,10 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
   final String keluhan;
   final int total;
 
+  // 1. TAMBAHAN WAJIB (Supaya reservasi_screen tidak merah)
+  final int jadwalId;
+  final String dokterId;
+
   const KonfirmasiReservasiSheet({
     super.key,
     required this.namaPasien,
@@ -25,6 +29,9 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
     required this.jam,
     required this.keluhan,
     required this.total,
+    // Wajib diisi agar error merah hilang
+    required this.jadwalId,
+    required this.dokterId,
   });
 
   @override
@@ -55,7 +62,8 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ReservasiProvider>(context, listen: false);
+    // Gunakan Provider.of agar UI bisa update saat loading
+    final provider = Provider.of<ReservasiProvider>(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 25),
@@ -68,21 +76,17 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _dragHandle(),
-
             const SizedBox(height: 5),
             _titleSection(),
             const SizedBox(height: 20),
-
             _buildCardSection(),
-
             const SizedBox(height: 18),
             _keluhanField(provider),
-
             const SizedBox(height: 22),
             _totalBox(),
-
             const SizedBox(height: 25),
-            _actionButtons(provider),
+            // Kirim context ke sini
+            _actionButtons(context, provider), 
           ],
         ),
       ),
@@ -217,14 +221,15 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
     );
   }
 
-  Widget _actionButtons(ReservasiProvider provider) {
+  Widget _actionButtons(BuildContext context, ReservasiProvider provider) {
     return Row(
       children: [
         Expanded(
           child: SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              // Disable tombol Batal kalau lagi loading
+              onPressed: provider.isLoading ? null : () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[700],
                 shape: RoundedRectangleBorder(
@@ -243,32 +248,73 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
           child: SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ReservasiPembayaranBankPage(
-                      namaLengkap: widget.namaPasien,
-                      poli: widget.poli,
-                      dokter: widget.dokter,
-                      tanggal: widget.tanggal,
-                      jam: widget.jam,
-                      keluhan: keluhanController.text,
-                      total: widget.total,
-                    ),
-                  ),
-                );
-              },
+              // 2. PERBAIKAN LOGIC TOMBOL BAYAR
+              onPressed: provider.isLoading 
+                ? null 
+                : () async {
+                  // A. Siapkan data untuk dikirim ke Backend
+                  final requestData = {
+                    'rekam_medis_id': widget.rekamMedis,
+                    'dokter_id': widget.dokterId, // Kirim ID asli
+                    'jadwal_id': widget.jadwalId, // Kirim ID asli
+                    'tanggal_pesan': widget.tanggal,
+                    'keluhan': keluhanController.text,
+                    'metode_pembayaran': 'Transfer Bank',
+                    'jenis_pasien': 'Umum',
+                  };
+
+                  // B. Panggil API (Tunggu sampai dapat balasan)
+                  final result = await provider.buatReservasi(requestData);
+
+                  // C. Kalau Sukses (result ada isinya)
+                  if (result != null && context.mounted) {
+                    Navigator.pop(context); // Tutup Sheet Konfirmasi
+
+                    // D. Pindah ke Halaman Pembayaran BAWA DATA HASIL DARI API
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReservasiPembayaranPage(
+                          // Ini dia No Pemeriksaan yang dicari!
+                          // Didapat dari backend setelah tombol ditekan
+                          noPemeriksaan: result['no_pemeriksaan'], 
+                          
+                          // Data lain buat tampilan
+                          namaLengkap: widget.namaPasien,
+                          poli: widget.poli,
+                          dokter: widget.dokter,
+                          tanggal: widget.tanggal,
+                          jam: widget.jam,
+                          keluhan: keluhanController.text,
+                          total: widget.total,
+                        ),
+                      ),
+                    );
+                  } else if (context.mounted) {
+                    // Kalau gagal
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(provider.errorMessage ?? "Gagal melakukan booking"),
+                        backgroundColor: Colors.red,
+                      )
+                    );
+                  }
+                },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.gold,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                "Bayar",
-                style: TextStyle(color: Colors.black),
-              ),
+              child: provider.isLoading 
+                ? const SizedBox(
+                    width: 20, height: 20, 
+                    child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
+                  )
+                : const Text(
+                  "Bayar",
+                  style: TextStyle(color: Colors.black),
+                ),
             ),
           ),
         )
