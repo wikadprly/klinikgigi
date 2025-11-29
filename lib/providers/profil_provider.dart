@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/services/profil_service.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'dart:io';
 
 class ProfilProvider with ChangeNotifier {
   final ProfilService _service = ProfilService();
@@ -79,6 +80,66 @@ class ProfilProvider with ChangeNotifier {
       return false;
     } catch (e) {
       errorMessage = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateProfilePicture(File imageFile) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      String? token = await SharedPrefsHelper.getToken();
+      if (token == null) {
+        errorMessage = "Token tidak ditemukan";
+        return false;
+      }
+
+      final result = await _service.updateProfilePicture(token, imageFile);
+
+      if (result["success"] == true) {
+        await fetchProfil(token);
+        return true;
+      }
+
+      errorMessage = result["message"] ?? "Gagal mengupdate foto profil";
+      return false;
+    } catch (e) {
+      errorMessage = e.toString();
+      print("Error updating profile picture: $e");
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> removeProfilePicture() async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      String? token = await SharedPrefsHelper.getToken();
+      if (token == null) {
+        errorMessage = "Token tidak ditemukan";
+        return false;
+      }
+
+      final result = await _service.deleteProfilePicture(token);
+
+      if (result["success"] == true) {
+        await fetchProfil(token);
+        return true;
+      }
+
+      errorMessage = result["message"] ?? "Gagal menghapus foto profil";
+      return false;
+    } catch (e) {
+      errorMessage = e.toString();
+      print("Error removing profile picture: $e");
       return false;
     } finally {
       isLoading = false;
