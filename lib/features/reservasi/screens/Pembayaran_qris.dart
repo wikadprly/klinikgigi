@@ -4,10 +4,10 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi.dart';
 
 class ReservasiPembayaranQrisPage extends StatelessWidget {
+  final String noPemeriksaan;
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -18,6 +18,7 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
 
   const ReservasiPembayaranQrisPage({
     super.key,
+    required this.noPemeriksaan,
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -89,7 +90,7 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
               const SizedBox(height: 10),
 
               Text(
-                "Kadaluarsa dalam",
+                "Kode Booking:", // Ganti judul biar jelas
                 style: AppTextStyles.label.copyWith(
                   fontSize: 14,
                   color: AppColors.textLight,
@@ -97,9 +98,10 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                "Jatuh Tempo pada 17:06, 4 Nov 2025",
+                noPemeriksaan, // 🔥 Tampilkan Kode RSV di sini juga
                 style: AppTextStyles.label.copyWith(
-                  fontSize: 14,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                   color: AppColors.goldDark,
                 ),
               ),
@@ -188,28 +190,31 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 18),
+              
               // ✅ Button Selesai
               AuthButton(
-              text: "Selesai",
-              onPressed: () async {
-                final reservasiData = {
-                  'nama': namaLengkap,
-                  'poli': poli,
-                  'dokter': dokter,
-                  'tanggal': tanggal,
-                  'jam': jam,
-                  'keluhan': keluhan,
-                  'biaya': total.toString(),
-                };
+                text: "Selesai",
+                onPressed: () async {
+                  final reservasiData = {
+                    'noPemeriksaan': noPemeriksaan,
+                    'nama': namaLengkap,
+                    'poli': poli,
+                    'dokter': dokter,
+                    'tanggal': tanggal,
+                    'jam': jam,
+                    'keluhan': keluhan,
+                    'biaya': total.toString(),
+                  };
 
-                await Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TampilanAkhirReservasi(data: reservasiData),
-                  ),
-                );
-              },
-            ),
+                  await Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      // Pastikan halaman ini siap terima data
+                      builder: (_) => TampilanAkhirReservasi(data: reservasiData),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

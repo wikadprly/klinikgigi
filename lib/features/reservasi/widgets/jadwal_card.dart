@@ -8,10 +8,8 @@ class ScheduleCardWidget extends StatelessWidget {
   final String hari;
   final String jam;
 
-  final int quota;           
-  final int kuotaTerpakai;   
-
-  int get kuotaSisa => quota - kuotaTerpakai; 
+  final int quota;
+  final int kuotaTerpakai;
 
   final VoidCallback onTap;
 
@@ -28,6 +26,13 @@ class ScheduleCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Cek apakah kuota penuh
+    // Jika terpakai >= quota, berarti penuh.
+    bool isFull = kuotaTerpakai >= quota;
+
+    // 2. Hitung sisa untuk ditampilkan (Opsional, kalau mau tampilkan sisa)
+    // int sisa = quota - kuotaTerpakai; 
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 15),
@@ -92,10 +97,12 @@ class ScheduleCardWidget extends StatelessWidget {
               const Icon(Icons.group, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
-                "Kuota : $kuotaSisa/$quota",
+                // Tampilan: "Kuota : 0/2" (Terpakai / Total) sesuai screenshotmu sebelumnya
+                "Kuota : $kuotaTerpakai/$quota", 
                 style: AppTextStyles.label.copyWith(
-                  color: AppColors.textLight,
+                  color: isFull ? Colors.red : AppColors.textLight, // Merah jika penuh
                   fontSize: 14,
+                  fontWeight: isFull ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ],
@@ -107,20 +114,23 @@ class ScheduleCardWidget extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              onTap: onTap,
+              // 3. Matikan onTap jika penuh
+              onTap: isFull ? null : onTap, 
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold,
+                  // 4. Ubah warna jadi abu-abu jika penuh
+                  color: isFull ? Colors.grey : AppColors.gold,
                   borderRadius: BorderRadius.circular(22),
                 ),
-                child: const Text(
-                  "Pilih",
+                child: Text(
+                  // 5. Ubah teks jadi "Penuh" jika penuh
+                  isFull ? "Penuh" : "Pilih",
                   style: TextStyle(
-                    color: Colors.black,
+                    color: isFull ? Colors.white : Colors.black,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),

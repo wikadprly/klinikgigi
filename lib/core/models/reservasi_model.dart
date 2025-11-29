@@ -1,5 +1,6 @@
 class ReservasiModel {
   final String noPemeriksaan;
+  final String noAntrian;
   final String pasienId;
   final String dokterId;
   final int jadwalId;
@@ -23,6 +24,7 @@ class ReservasiModel {
 
   ReservasiModel({
     required this.noPemeriksaan,
+    this.noAntrian = '-', //
     required this.pasienId,
     required this.dokterId,
     required this.jadwalId,
@@ -47,6 +49,9 @@ class ReservasiModel {
   factory ReservasiModel.fromJson(Map<String, dynamic> json) {
     return ReservasiModel(
       noPemeriksaan: json['no_pemeriksaan'] ?? '',
+      // 🔥 Tangkap data dari Backend disini
+      noAntrian: json['no_antrian']?.toString() ?? '-', 
+      
       pasienId: json['pasien_id'] ?? '',
       dokterId: json['dokter_id'] ?? '',
       jadwalId: json['jadwal_id'] ?? 0,
@@ -76,6 +81,7 @@ class ReservasiModel {
   Map<String, dynamic> toJson() {
     return {
       'no_pemeriksaan': noPemeriksaan,
+      'no_antrian': noAntrian, //
       'pasien_id': pasienId,
       'dokter_id': dokterId,
       'jadwal_id': jadwalId,
