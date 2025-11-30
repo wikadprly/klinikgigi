@@ -7,7 +7,8 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi.dart';
 
-class ReservasiPembayaranBank2Page extends StatelessWidget {
+class ReservasiPembayaranBankPage extends StatelessWidget {
+  final String noPemeriksaan;
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -16,8 +17,9 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
   final String keluhan;
   final int total;
 
-  const ReservasiPembayaranBank2Page({
+  const ReservasiPembayaranBankPage({
     super.key,
+    required this.noPemeriksaan,
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -277,6 +279,7 @@ class ReservasiPembayaranBank2Page extends StatelessWidget {
                 text: 'Selesai',
                 onPressed: () async {
                   final Map<String, dynamic> reservasiData = {
+                    'noPemeriksaan': noPemeriksaan,
                     'nama': namaLengkap,
                     'poli': poli,
                     'dokter': dokter,

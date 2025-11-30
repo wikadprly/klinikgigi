@@ -8,6 +8,7 @@ import 'package:flutter_klinik_gigi/core/services/reservasi_service.dart';
 class ReservasiProvider extends ChangeNotifier {
   final ReservasiService _reservasiService = ReservasiService();
 
+  // State Variables
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -22,11 +23,13 @@ class ReservasiProvider extends ChangeNotifier {
   List<MasterJadwalModel> _jadwalList = [];
   List<ReservasiModel> _riwayatList = [];
 
+  // Getters
   List<MasterPoliModel> get poliList => _poliList;
   List<MasterDokterModel> get dokterList => _dokterList;
   List<MasterJadwalModel> get jadwalList => _jadwalList;
   List<ReservasiModel> get riwayatList => _riwayatList;
 
+  // Selection State
   MasterPoliModel? _selectedPoli;
   MasterDokterModel? _selectedDokter;
 
@@ -40,8 +43,12 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 🔹 Update Logic: Reset data bawahannya jika Poli berubah
   void setSelectedPoli(MasterPoliModel? poli) {
     _selectedPoli = poli;
+    _selectedDokter = null; // Reset dokter terpilih
+    _dokterList = [];       // Reset list dokter
+    _jadwalList = [];       // Reset jadwal
     notifyListeners();
   }
 
@@ -50,6 +57,7 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 1. Fetch Daftar Poli
   Future<void> fetchPoli() async {
     _isLoading = true;
     notifyListeners();
@@ -65,6 +73,7 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 2. Fetch Dokter by Poli
   Future<void> fetchDokterByPoli(String kodePoli) async {
     _isLoading = true;
     notifyListeners();
@@ -80,17 +89,23 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 3. Fetch Jadwal (DIPERBAIKI ✅)
+  // Menyesuaikan dengan parameter Service baru
   Future<void> fetchJadwal({
-    required String kodeDokter,
-    required String kodePoli,
-    required String tanggalReservasi,
+    required String kodePoli, 
+    String? kodeDokter, 
+    String? tanggalReservasi,
   }) async {
     _isLoadingJadwal = true;
+    _jadwalList = []; // Bersihkan dulu sebelum load baru
     notifyListeners();
+    
     try {
+      // Panggil service dengan Named Parameters
       _jadwalList = await _reservasiService.getJadwal(
-        kodeDokter,
-        tanggalReservasi,
+        kodePoli: kodePoli,
+        kodeDokter: kodeDokter,
+        tanggalReservasi: tanggalReservasi,
       );
       _errorMessage = null;
     } catch (e) {
@@ -98,27 +113,32 @@ class ReservasiProvider extends ChangeNotifier {
       _errorMessage = 'Gagal memuat jadwal dokter';
       if (kDebugMode) print('fetchJadwal Error: $e');
     }
+    
     _isLoadingJadwal = false;
     notifyListeners();
   }
 
-  Future<bool> buatReservasi(Map<String, dynamic> data) async {
+  // 4. Buat Reservasi (DIPERBAIKI ✅)
+  // Mengembalikan Map? agar UI bisa dapat data booking (no_pemeriksaan)
+  Future<Map<String, dynamic>?> buatReservasi(Map<String, dynamic> data) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final success = await _reservasiService.createReservasi(data);
+      // Return value dari service sekarang adalah Map?
+      final result = await _reservasiService.createReservasi(data);
       _errorMessage = null;
-      return success;
+      return result;
     } catch (e) {
       _errorMessage = 'Gagal membuat reservasi';
       if (kDebugMode) print('buatReservasi Error: $e');
-      return false;
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  // 5. Riwayat Reservasi
   Future<void> fetchRiwayat(String rekamMedisId) async {
     _isLoading = true;
     notifyListeners();
@@ -134,6 +154,7 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 6. Update Pembayaran
   Future<bool> updatePembayaran(
     String noPemeriksaan,
     Map<String, dynamic> data,
@@ -164,6 +185,7 @@ class ReservasiProvider extends ChangeNotifier {
     _riwayatList = [];
     _selectedPoli = null;
     _selectedDokter = null;
+    keluhan = "";
     _errorMessage = null;
     _isLoading = false;
     notifyListeners();

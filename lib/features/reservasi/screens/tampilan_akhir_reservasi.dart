@@ -3,7 +3,7 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
+import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart'; // Import MainScreen
 
 class TampilanAkhirReservasi extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -13,10 +13,11 @@ class TampilanAkhirReservasi extends StatelessWidget {
     required this.data,
   });
 
-  // --- DETAIL ROW ---
+  // --- DETAIL ROW HELPER ---
   Widget detailRow({
     required String label,
     required String value,
+    bool isBold = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -31,7 +32,7 @@ class TampilanAkhirReservasi extends StatelessWidget {
               label,
               style: AppTextStyles.label.copyWith(
                 color: AppColors.textLight,
-                fontSize: 15.5,
+                fontSize: 14.5,
               ),
             ),
           ),
@@ -43,9 +44,9 @@ class TampilanAkhirReservasi extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: AppTextStyles.input.copyWith(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w700,
-                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                color: isBold ? AppColors.gold : Colors.white,
               ),
             ),
           ),
@@ -56,6 +57,9 @@ class TampilanAkhirReservasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ambil data (aman dari null)
+    final noPemeriksaan = data['noPemeriksaan'] ?? '-';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -67,27 +71,25 @@ class TampilanAkhirReservasi extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 
-                // BACK BUTTON
+                // JARAK ATAS
+                const SizedBox(height: 20), 
+
+                // TOMBOL KEMBALI
                 Align(
                   alignment: Alignment.topLeft,
                   child: BackButtonWidget(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ReservasiScreen(),
-                        ),
-                      );
+                    onPressed: () async {
+                      await _keMenuUtama(context);
                     },
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
 
                 // ICON CHECK
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: 90,
+                  height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -99,40 +101,107 @@ class TampilanAkhirReservasi extends StatelessWidget {
                   child: const Center(
                     child: Icon(
                       Icons.check_rounded,
-                      size: 55,
+                      size: 50,
                       color: AppColors.gold,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
                 // TITLE
                 Text(
                   "Pendaftaran Berhasil",
                   textAlign: TextAlign.center,
                   style: AppTextStyles.heading.copyWith(
-                    fontSize: 24,
+                    fontSize: 22,
                     color: AppColors.textLight,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
                 Text(
-                  "Pendaftaran Anda telah berhasil disimpan.\nSilakan datang sesuai jadwal yang tertera di bawah ini.",
+                  "Data Anda telah tersimpan.\nLakukan pembayaran agar mendapatkan Nomor Antrian.",
                   textAlign: TextAlign.center,
                   style: AppTextStyles.label.copyWith(
-                    color: AppColors.gold,
-                    fontSize: 14.5,
-                    height: 1.6,
+                    color: Colors.white60,
+                    fontSize: 14,
+                    height: 1.5,
                   ),
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 30),
 
-                // CARD DETAIL
+                // 2. CARD UTAMA (KODE BOOKING & NO ANTRIAN)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardDark,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.goldDark, width: 1.5),
+                  ),
+                  child: Column(
+                    children: [
+                      // --- KODE PEMBAYARAN ---
+                      Text(
+                        "KODE BOOKING / PEMBAYARAN",
+                        style: AppTextStyles.label.copyWith(
+                          color: Colors.white54,
+                          fontSize: 12,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        noPemeriksaan, // Munculkan No RSV disini
+                        style: AppTextStyles.heading.copyWith(
+                          color: AppColors.gold,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+
+                      const Divider(color: Colors.white24, height: 30),
+
+                      // --- NOMOR ANTRIAN (LOGIKA DOSEN) ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Nomor Antrian:",
+                            style: AppTextStyles.label.copyWith(
+                              fontSize: 15,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              "Menunggu Lunas", // Placeholder
+                              style: TextStyle(
+                                color: Colors.amberAccent,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // CARD DETAIL LAINNYA
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -141,79 +210,48 @@ class TampilanAkhirReservasi extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.cardDark,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.goldDark, width: 1.4),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      detailRow(
-                        label: "No. Pemeriksaan :",
-                        value: data["no_pemeriksaan"] ?? "-",
-                      ),
-                      const Divider(
-                        color: AppColors.goldDark,
-                        height: 26,
-                        thickness: 1,
-                      ),
-
-                      detailRow(
-                        label: "Nama :",
-                        value: data["nama"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Waktu Layanan :",
-                        value: data["jam"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Hari/Tanggal :",
-                        value: data["tanggal"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Dokter :",
-                        value: data["dokter"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Poli :",
-                        value: data["poli"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Keluhan :",
-                        value: data["keluhan"] ?? "-",
-                      ),
-
-                      detailRow(
-                        label: "Biaya Administrasi :",
-                        value: "Rp ${data["biaya"] ?? "0"}",
-                      ),
+                      detailRow(label: "Nama Pasien :", value: data["nama"] ?? "-"),
+                      detailRow(label: "Dokter :", value: data["dokter"] ?? "-"),
+                      detailRow(label: "Poli :", value: data["poli"] ?? "-"),
+                      detailRow(label: "Jadwal :", value: "${data["tanggal"]} (${data["jam"]})"),
+                      const Divider(color: Colors.white12, height: 20),
+                      detailRow(label: "Total Biaya :", value: "Rp ${data["biaya"] ?? "0"}", isBold: true),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 40),
 
-                // BUTTON LIHAT RIWAYAT
+                // 3. BUTTON SELESAI (KE MENU UTAMA)
                 AuthButton(
-                text: ButtonText.lihatRiwayat,
-                onPressed: () async {
-                  await Navigator.pushNamed(
-                    context,
-                    "/riwayat_detail",
-                    arguments: data,
-                  );
-                },
-              ),
+                  text: ButtonText.selesai, // Pakai konstanta
+                  onPressed: () async { 
+                    await _keMenuUtama(context);
+                  },
+                ),
+                
                 const SizedBox(height: 40),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _keMenuUtama(BuildContext context) async {
+    await Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainScreen(), // Panggil MainScreen standar
+      ),
+      (route) => false, // Hapus semua riwayat halaman sebelumnya
     );
   }
 }
