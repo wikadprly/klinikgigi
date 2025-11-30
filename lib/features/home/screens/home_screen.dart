@@ -6,6 +6,8 @@ import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek
 import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:flutter_klinik_gigi/core/models/promo_model.dart';
+import 'package:flutter_klinik_gigi/core/services/promo_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class GradientMask extends StatelessWidget {
@@ -45,11 +47,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Pasien> _pasien;
   final PasienService _pasienService = PasienService();
+  late Future<List<PromoModel>> _promoFuture;
+  final PromoService _promoService = PromoService();
 
   @override
   void initState() {
     super.initState();
     _pasien = _pasienService.getPasienByUserId(widget.userId);
+    _promoFuture = _fetchPromos();
+  }
+
+  Future<List<PromoModel>> _fetchPromos() async {
+    try {
+      return await _promoService.fetchPromos();
+    } catch (e) {
+      print('Error fetching promos in screen: $e');
+      return []; // Return empty list on error
+    }
   }
 
   @override
@@ -86,40 +100,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCustomAppBar(BuildContext context) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
-      const Text('Home', style: AppTextStyles.heading),
-      Row(
-        children: [
-          // ===============================================
-          // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
-          // ===============================================
-          GestureDetector(
-            onTap: () {
-              // Navigasi ke halaman PointRewardScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PointRewardScreen(),
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/point.svg', // Ikon Poin
-              width: 35.0,
-              height: 35.0,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
+        const Text('Home', style: AppTextStyles.heading),
+        Row(
+          children: [
+            // ===============================================
+            // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
+            // ===============================================
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman PointRewardScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PointRewardScreen()),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/point.svg', // Ikon Poin
+                width: 35.0,
+                height: 35.0,
+              ),
             ),
-          ),
-          
-          // SizedBox (spasi) dan IconButton (mail) dihapus
-          
-        ],
-      ),
-    ],
-  );
-}
+
+            // SizedBox (spasi) dan IconButton (mail) dihapus
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildUserInfo(BuildContext context) {
     return FutureBuilder<Pasien>(
@@ -352,19 +363,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoSection(BuildContext context) {
-    final List<Map<String, String>> promos = [
-      {
-        "image": "assets/images/poster2.png",
-        "title": "Promo Bleaching",
-        "subtitle": "Diskon 50% untuk perawatan bleaching",
-      },
-      {
-        "image": "assets/images/poster.png",
-        "title": "Scaling Hemat",
-        "subtitle": "Pembersihan karang gigi mulai 150rb",
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -378,20 +376,32 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         SizedBox(
           height: 220,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: promos.length,
-            itemBuilder: (context, index) {
-              final promo = promos[index];
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index == promos.length - 1 ? 0 : 16,
-                ),
-                child: _buildPromoCard(
-                  imagePath: promo['image']!,
-                  title: promo['title']!,
-                  subtitle: promo['subtitle']!,
-                ),
+          child: FutureBuilder<List<PromoModel>>(
+            future: _promoFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('Tidak ada promo saat ini.'));
+              }
+
+              final promos = snapshot.data!;
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: promos.length,
+                itemBuilder: (context, index) {
+                  final promo = promos[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index == promos.length - 1 ? 0 : 16,
+                    ),
+                    child: _buildPromoCard(promo: promo),
+                  );
+                },
               );
             },
           ),
@@ -400,11 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPromoCard({
-    required String imagePath,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildPromoCard({required PromoModel promo}) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.75,
       child: Card(
@@ -414,26 +420,39 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              imagePath,
-              height: 130,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            promo.gambarBanner != null && promo.gambarBanner!.startsWith('http')
+                ? Image.network(
+                    promo.gambarBanner!,
+                    height: 130,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 130,
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image_not_supported),
+                    ),
+                  )
+                : Container(
+                    height: 130,
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image_not_supported),
+                  ),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    promo.judulPromo,
                     style: AppTextStyles.heading.copyWith(fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    promo.deskripsi,
                     style: AppTextStyles.label.copyWith(fontSize: 12),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
