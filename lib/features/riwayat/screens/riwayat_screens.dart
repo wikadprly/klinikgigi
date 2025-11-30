@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/riwayat_card.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
@@ -105,7 +106,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               "no_rekam_medis":
                   item["no_rekam_medis"] ?? item["rekam_medis"] ?? "-",
               "foto": item["foto"] ?? "",
-              "status": item["status_reservasi"] ?? "-",
+              "status": item["status_pembayaran"] ?? "-",
+              "statusreservasi": item["status_reservasi"] ?? "-",
+              "no_antrian": item["no_antrian"] ?? "-",
+              "keluhan": item["keluhan"] ?? "-",
             };
           }).toList();
           isLoading = false;
@@ -146,11 +150,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             children: [
               const Text(
                 "Riwayat",
-                style: TextStyle(
-                  color: AppColors.gold,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
+                style: AppTextStyles.heading,
               ),
               const SizedBox(height: 12),
 
@@ -182,6 +182,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       final data = riwayatData[index];
                       return RiwayatCard(
                         noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
+                            .toString(),
+                        noAntrian: (data["no_antrian"] ?? "Menunggu Pembayaran")
                             .toString(),
                         dokter: (data["dokter"] ?? "-").toString(),
                         tanggal: (data["tanggal"] ?? "-").toString(),
