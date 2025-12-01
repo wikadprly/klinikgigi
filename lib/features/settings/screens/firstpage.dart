@@ -7,6 +7,8 @@ import 'panduanpage.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/ubahsandi_one.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
+import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -96,7 +98,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _menuItem(Icons.person, "Profil Saya", () {}),
+          _menuItem(Icons.person, "Profil Saya", () async {
+            final token = await SharedPrefsHelper.getToken() ?? '';
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ProfilePage(token: token)),
+            );
+          }),
+
           _divider(),
           _menuItem(Icons.file_copy, "Rekam Medis", () {}),
           _divider(),
@@ -110,7 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _menuItem(Icons.notifications, "Notifikasi", () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const NotificationSettingsPage()),
+              MaterialPageRoute(
+                builder: (_) => const NotificationSettingsPage(),
+              ),
             );
           }),
           _divider(),
@@ -207,75 +219,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
- // ============================
-// POPUP LOGOUT (SUDAH DIBENERIN)
-// ============================
-void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) {
-      return Dialog(
-        backgroundColor: AppColors.cardDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.gold),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Keluar",
-                style: AppTextStyles.heading.copyWith(
-                  color: AppColors.gold,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Apakah anda ingin keluar?",
-                style: AppTextStyles.label.copyWith(color: AppColors.textLight),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 22),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.goldDark,
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-
-                      // ARAHKAN KE STARTSCREEN & HAPUS HISTORY
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const StartScreen()),
-                        (Route<dynamic> route) => false,
-                      );
-                    },
-                    child: const Text("Ya"),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.textMuted,
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: const Text("Tidak"),
-                  ),
-                ],
-              ),
-            ],
+  // ============================
+  // POPUP LOGOUT (SUDAH DIBENERIN)
+  // ============================
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: AppColors.cardDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppColors.gold),
           ),
-        ),
-      );
-    },
-  );
-}
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Keluar",
+                  style: AppTextStyles.heading.copyWith(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "Apakah anda ingin keluar?",
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textLight,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.goldDark,
+                        foregroundColor: Colors.black,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+
+                        // ARAHKAN KE STARTSCREEN & HAPUS HISTORY
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const StartScreen(),
+                          ),
+                          (Route<dynamic> route) => false,
+                        );
+                      },
+                      child: const Text("Ya"),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.textMuted,
+                        foregroundColor: Colors.black,
+                      ),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text("Tidak"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

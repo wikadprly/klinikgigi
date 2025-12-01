@@ -8,6 +8,9 @@ class ProfileProvider with ChangeNotifier {
 
   Map<String, dynamic>? user;
   Map<String, dynamic>? rekamMedis;
+  String? _namaAsuransi;
+  String? _noPeserta;
+  String? _statusAktif;
   bool isLoading = false;
 
   // Ambil profil user
@@ -20,6 +23,10 @@ class ProfileProvider with ChangeNotifier {
     if (result["success"] == true) {
       user = result["data"]["user"];
       rekamMedis = result["data"]["rekam_medis"];
+      // Map optional insurance fields returned by the API
+      _namaAsuransi = result["data"]["nama_asuransi"]?.toString();
+      _noPeserta = result["data"]["no_peserta"]?.toString();
+      _statusAktif = result["data"]["status_aktif"]?.toString();
     }
 
     isLoading = false;
@@ -58,10 +65,15 @@ class ProfilProvider extends ProfileProvider {
   Map<String, dynamic>? get profilData => user;
   Map<String, dynamic>? get rekamMedisData => rekamMedis;
 
-  // Optional fields used in UI; provide null defaults.
-  String? get namaAsuransi => null;
-  String? get noPeserta => null;
-  String? get statusAktif => null;
+  // Optional fields returned by API
+  String? get namaAsuransiValue => _namaAsuransi;
+  String? get noPesertaValue => _noPeserta;
+  String? get statusAktifValue => _statusAktif;
+
+  // Legacy getters expected by UI (keep names stable)
+  String? get namaAsuransi => _namaAsuransi;
+  String? get noPeserta => _noPeserta;
+  String? get statusAktif => _statusAktif;
 
   String? get errorMessage => null;
 
