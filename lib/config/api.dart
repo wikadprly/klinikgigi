@@ -31,4 +31,12 @@ class ApiEndpoint {
   static const String notaPembayaran = "$baseUrl/nota/pembayaran";
   static String notaInvoice(String noPemeriksaan) =>
       "$baseUrl/nota/invoice/$noPemeriksaan";
+
+  // HOME CARE (optional endpoints used by HomeCareService)
+  static const String homeCareCalculate = "$baseUrl/homecare/calculate";
+  static const String homeCareBook = "$baseUrl/homecare/book";
+  static String homeCareConfirmPayment(int bookingId) =>
+      "$baseUrl/homecare/confirm/$bookingId";
+  static String homeCareTracking(int bookingId) =>
+      "$baseUrl/homecare/tracking/$bookingId";
 }

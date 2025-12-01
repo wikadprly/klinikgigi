@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'nota_pelunasan.dart'; // Pastikan import ini ada
+import 'tagihan_page.dart';
 
 class PembayaranQrisScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -231,9 +231,8 @@ class _PembayaranQrisScreenState extends State<PembayaranQrisScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TagihanPage(
-                              noPemeriksaan: _bookingCode,
-                            ),
+                            builder: (context) =>
+                                TagihanPage(noPemeriksaan: _bookingCode),
                           ),
                         );
                       },

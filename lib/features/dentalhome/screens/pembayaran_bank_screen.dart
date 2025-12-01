@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import '../../../core/services/home_care_service.dart';
-import 'nota_pelunasan.dart'; // Pastikan import ini ada
+import 'tagihan_page.dart';
 
 class PembayaranBankScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -383,9 +382,8 @@ class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TagihanPage(
-                              noPemeriksaan: _bookingCode,
-                            ),
+                            builder: (context) =>
+                                TagihanPage(noPemeriksaan: _bookingCode),
                           ),
                         );
                       },
