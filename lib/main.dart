@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
 import 'package:provider/provider.dart';
 
 // Providers
@@ -89,10 +88,6 @@ class KlinikGigiApp extends StatelessWidget {
         // Home
         '/main_screen': (context) => const MainScreen(),
 
-        //dentalhome
-        '/nota_pelunasan': (context) => const TagihanPage(),
-
-        
 
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),

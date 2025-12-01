@@ -23,4 +23,12 @@ class ApiEndpoint {
 
   static String updatePembayaran(String noPemeriksaan) =>
       "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
+
+  // 🔹 NOTA PELUNASAN
+  static String notaDetail(String noPemeriksaan) =>
+      "$baseUrl/nota/detail/$noPemeriksaan";
+  static const String notaMetodePembayaran = "$baseUrl/nota/metode-pembayaran";
+  static const String notaPembayaran = "$baseUrl/nota/pembayaran";
+  static String notaInvoice(String noPemeriksaan) =>
+      "$baseUrl/nota/invoice/$noPemeriksaan";
 }
