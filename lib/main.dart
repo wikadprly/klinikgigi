@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/payment_method.dart';
 import 'package:provider/provider.dart';
 import 'features/auth/screens/start.dart';
 import 'features/auth/screens/masuk.dart';
@@ -49,7 +50,7 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
 
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/payment_method',
 
       routes: {
         // Rute '/start' akan memuat StartScreen
@@ -73,6 +74,8 @@ class KlinikGigiApp extends StatelessWidget {
             const UbahKataSandiKonfirmasiPage(),
         '/notifikasi.dart': (context) => const NotificationSettingsPage(),
         '/otp_screen': (context) => const OtpScreen(),
+        '/payment_method':(context) => const PaymentPage()
+        
       },
     );
   }
