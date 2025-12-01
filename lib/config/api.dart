@@ -23,6 +23,9 @@ class ApiEndpoint {
 
   static String updatePembayaran(String noPemeriksaan) =>
       "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
+  
+  // HOMECARE
+  static const homecareJadwal = "$baseUrl/homecare/jadwal";
 }
 
 class ApiConfig {
