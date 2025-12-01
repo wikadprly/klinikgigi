@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import '../../../core/services/home_care_service.dart';
+import 'nota_pelunasan.dart'; // Pastikan import ini ada
 
 class PembayaranBankScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -12,255 +15,466 @@ class PembayaranBankScreen extends StatefulWidget {
 }
 
 class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
+  final HomeCareService _service = HomeCareService();
+
+  bool _isLoading = true;
+  String _virtualAccountNumber = "880098765432";
+  String _bookingCode =
+      "RSV-HC-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+  String _nominal = "0";
+
+  @override
+  void initState() {
+    super.initState();
+    _nominal = widget.bookingData['rincianBiaya']['estimasi_total'].toString();
+    _prosesBooking();
+  }
+
+  Future<void> _prosesBooking() async {
+    try {
+      // Simulasi delay API
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Jika API sudah siap, uncomment kode di bawah:
+      /*
+      final result = await _service.createBooking(
+        masterJadwalId: widget.bookingData['masterJadwalId'],
+        tanggal: widget.bookingData['tanggal'],
+        // ... parameter lain
+        metodePembayaran: 'transfer',
+      );
+      if (mounted) {
+        setState(() {
+           _bookingCode = result['no_reservasi'] ?? _bookingCode;
+           _virtualAccountNumber = result['payment_info']['va_number'] ?? _virtualAccountNumber;
+        });
+      }
+      */
+    } catch (e) {
+      debugPrint("Error creating booking: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> data = widget.bookingData;
-    final String nominal = data['rincianBiaya']['estimasi_total'].toString();
-    final String virtualAccount = "1234567890"; // Ini akan diganti dengan nomor VA dari API
-    
+    // Helper data
+    final data = widget.bookingData;
+    final biaya = data['rincianBiaya'];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        title: const Text("Metode Pembayaran", style: AppTextStyles.heading),
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textLight,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textLight,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Transfer Bank",
-          style: AppTextStyles.heading,
-        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Card Timer
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: _isLoading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Sisa Waktu Pembayaran",
-                    style: AppTextStyles.label,
-                  ),
+                  CircularProgressIndicator(color: AppColors.gold),
+                  SizedBox(height: 16),
                   Text(
-                    "23 jam 59 menit",
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    "Membuat Pesanan...",
+                    style: TextStyle(color: AppColors.textMuted),
                   ),
                 ],
               ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Card Informasi Bank
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 10),
+
+                  // ===== 1. KODE BOOKING =====
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Kode Booking",
+                          style: AppTextStyles.label.copyWith(
+                            color: Colors.white70,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.account_balance,
-                          color: AppColors.textLight,
+                        const SizedBox(height: 5),
+                        Text(
+                          _bookingCode,
+                          style: AppTextStyles.heading.copyWith(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        "BCA Virtual Account",
-                        style: AppTextStyles.label,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () {
-                      // Fungsi untuk menyalin nomor rekening ke clipboard
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Nomor rekening disalin: $virtualAccount")),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.inputBorder,
+
+                  const SizedBox(height: 25),
+
+                  // ===== 2. DETAIL PENDAFTARAN =====
+                  Text(
+                    "Detail Pendaftaran",
+                    style: AppTextStyles.heading.copyWith(
+                      color: AppColors.textLight,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardDark,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.inputBorder),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildDetailRow("Layanan", "Home Care Gigi"),
+                        _buildDetailRow("Dokter", data['namaDokter']),
+                        _buildDetailRow(
+                          "Waktu",
+                          "${data['tanggal']} • ${data['jamPraktek']}",
+                        ),
+                        _buildDetailRow(
+                          "Alamat",
+                          data['alamat'],
+                          isMultiLine: true,
+                        ),
+                        _buildDetailRow("Keluhan", data['keluhan']),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // ===== 3. RINCIAN PEMBAYARAN =====
+                  Text(
+                    "Rincian Pembayaran",
+                    style: AppTextStyles.heading.copyWith(
+                      color: AppColors.textLight,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardDark,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.inputBorder),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildDetailRow(
+                          "Biaya Layanan",
+                          _formatRupiah(biaya['biaya_layanan']),
+                        ),
+                        _buildDetailRow(
+                          "Transport (${biaya['jarak_km']} km)",
+                          _formatRupiah(biaya['biaya_transport']),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Divider(color: Colors.white24),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Total Pembayaran",
+                              style: TextStyle(color: AppColors.textLight),
+                            ),
+                            Text(
+                              _formatRupiah(biaya['estimasi_total']),
+                              style: const TextStyle(
+                                color: AppColors.gold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // ===== 4. AREA TRANSFER BANK (VIRTUAL ACCOUNT) =====
+                  Text(
+                    "Lakukan Pembayaran",
+                    style: AppTextStyles.heading.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardDark,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.gold,
+                      ), // Highlight border
+                    ),
+                    child: Column(
+                      children: [
+                        // Timer Sederhana
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.timer,
+                                size: 16,
+                                color: AppColors.gold,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Sisa Waktu: 23 Jam 59 Menit",
+                                style: TextStyle(
+                                  color: AppColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.account_balance,
+                                color: AppColors.gold,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              "BCA Virtual Account",
+                              style: TextStyle(
+                                color: AppColors.textLight,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Nomor VA
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.inputBorder),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _virtualAccountNumber,
+                                style: const TextStyle(
+                                  color: AppColors.gold,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(
+                                    ClipboardData(text: _virtualAccountNumber),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Nomor VA Disalin"),
+                                    ),
+                                  );
+                                },
+                                child: const Icon(
+                                  Icons.copy,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Instruksi Dropdown
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      title: const Text(
+                        "Lihat Petunjuk Transfer",
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 14,
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            virtualAccount,
-                            style: AppTextStyles.input.copyWith(
-                              color: AppColors.gold,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
+                      children: [
+                        _buildInstructionStep("1. Buka aplikasi BCA Mobile"),
+                        _buildInstructionStep(
+                          "2. Pilih m-Transfer > BCA Virtual Account",
+                        ),
+                        _buildInstructionStep(
+                          "3. Masukkan nomor: $_virtualAccountNumber",
+                        ),
+                        _buildInstructionStep("4. Masukkan PIN Anda"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Tombol Aksi
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // 🔥 NAVIGASI KE NOTA PELUNASAN
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotaPelunasanScreen(
+                              transactionData: {
+                                'kode_booking': _bookingCode,
+                                'nominal': _nominal,
+                                'metode': 'Transfer Bank (BCA)',
+                                'waktu': DateTime.now(),
+                              },
                             ),
                           ),
-                          Icon(
-                            Icons.copy,
-                            color: AppColors.gold,
-                            size: 20,
-                          ),
-                        ],
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cek Status Pembayaran",
+                        style: AppTextStyles.button,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Rp ${int.parse(nominal).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{3})$'), (Match m) => '.${m[1]}').replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (Match m) => '.${m[1]}')}",
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            
-            const SizedBox(height: 20),
-            
-            // Bagian Instruksi
-            ExpansionTile(
-              title: const Text(
-                "Petunjuk Transfer mBanking",
-                style: AppTextStyles.label,
-              ),
-              children: [
-                _buildInstructionStep("1. Buka aplikasi BCA Mobile", 1),
-                _buildInstructionStep("2. Pilih menu 'm-Transfer'", 2),
-                _buildInstructionStep("3. Pilih 'BCA Virtual Account'", 3),
-                _buildInstructionStep("4. Masukkan nomor Virtual Account di atas", 4),
-                _buildInstructionStep("5. Masukkan jumlah pembayaran sesuai nominal", 5),
-                _buildInstructionStep("6. Ikuti instruksi selanjutnya", 6),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            ExpansionTile(
-              title: const Text(
-                "Petunjuk Transfer ATM",
-                style: AppTextStyles.label,
-              ),
-              children: [
-                _buildInstructionStep("1. Masukkan kartu debit BCA Anda", 1),
-                _buildInstructionStep("2. Pilih Bahasa", 2),
-                _buildInstructionStep("3. Masukkan PIN ATM Anda", 3),
-                _buildInstructionStep("4. Pilih 'Transfer'", 4),
-                _buildInstructionStep("5. Pilih 'Ke Rek. BCA Virtual Account'", 5),
-                _buildInstructionStep("6. Ikuti instruksi selanjutnya", 6),
-              ],
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Tombol Selesai dan Kembali ke Beranda
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldGradient,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Arahkan ke halaman transaksi berhasil setelah pembayaran
-                          // Untuk sementara kembali ke beranda
-                          Navigator.of(context).pushReplacementNamed('/dashboard');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          "Selesai",
-                          style: AppTextStyles.button,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacementNamed('/dashboard');
-                      },
-                      child: Text(
-                        "Kembali ke Beranda",
-                        style: AppTextStyles.label.copyWith(
-                          color: AppColors.gold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
-  
-  Widget _buildInstructionStep(String instruction, int stepNumber) {
+
+  // --- Widgets Kecil ---
+
+  Widget _buildDetailRow(
+    String label,
+    String value, {
+    bool isMultiLine = false,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "$stepNumber.",
-            style: AppTextStyles.label.copyWith(
-              color: AppColors.textMuted,
-              fontSize: 12,
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
           ),
-          const SizedBox(width: 8),
+          const Text(": ", style: TextStyle(color: AppColors.textMuted)),
           Expanded(
             child: Text(
-              instruction,
-              style: AppTextStyles.label.copyWith(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: isMultiLine ? 3 : 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
                 color: AppColors.textLight,
-                fontSize: 12,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildInstructionStep(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("• ", style: TextStyle(color: AppColors.textMuted)),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatRupiah(dynamic nominal) {
+    return "Rp ${nominal.toString().replaceAllMapped(RegExp(r'(\d{3})$'), (m) => '.${m[1]}').replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (m) => '.${m[1]}')}";
   }
 }

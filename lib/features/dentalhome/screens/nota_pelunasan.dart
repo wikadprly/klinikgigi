@@ -1,278 +1,278 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:intl/intl.dart';
 
-class TagihanPage extends StatefulWidget {
-  const TagihanPage({super.key});
-
-  @override
-  State<TagihanPage> createState() => _TagihanPageState();
-}
-
-class _TagihanPageState extends State<TagihanPage> {
-  String metode = "tunai";
+class NotaPelunasanScreen extends StatelessWidget {
+  final Map<String, dynamic> transactionData;
+  const NotaPelunasanScreen({super.key, required this.transactionData});
 
   @override
   Widget build(BuildContext context) {
+    // Extract & Format Data
+    final String kodeBooking = transactionData['kode_booking'] ?? '-';
+    final String metode = transactionData['metode'] ?? '-';
+    final String nominal = transactionData['nominal'].toString();
+
+    // Handle Waktu
+    DateTime waktuBayar;
+    if (transactionData['waktu'] is DateTime) {
+      waktuBayar = transactionData['waktu'];
+    } else if (transactionData['waktu'] is String) {
+      waktuBayar =
+          DateTime.tryParse(transactionData['waktu']) ?? DateTime.now();
+    } else {
+      waktuBayar = DateTime.now();
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1B1B),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
 
-      // ================================
-      //          APP BAR FIX
-      // ================================
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1B1B1B),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "Rincian Tagihan Anda",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================================
-            //    INFORMASI PASIEN & INVOICE
-            // ================================
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2A),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _buildRow("Nama Pasien", "Farel0000"),
-                  const SizedBox(height: 8),
-                  _buildRow("ID Invoice", "#INV–3K–231024–001"),
-                  const SizedBox(height: 8),
-                  _buildRow("Tanggal", "3 November 2025"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ================================
-            //    RINCIAN PERAWATAN
-            // ================================
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2A),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Rincian Perawatan",
-                    style: TextStyle(
+              // --- 1. Indikator Sukses ---
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: const BoxDecoration(
+                      color: AppColors.gold,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
                       color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                      size: 48,
                     ),
                   ),
-                  const SizedBox(height: 12),
-
-                  _buildRow("Scaling Gigi", "Rp 500.000"),
-                  const SizedBox(height: 6),
-                  _buildRow("Tambal Komposit", "Rp 750.000"),
-
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 1,
-                    color: Colors.grey.shade700,
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildRow("Subtotal", "Rp 1.250.000"),
-                  const SizedBox(height: 6),
-                  _buildRow("Uang Booking", "-Rp 25.000"),
-
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 1,
-                    color: Colors.grey.shade700,
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildRowBold("Total Akhir", "Rp 1.225.000",
-                      color: Colors.yellow),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ================================
-            //     PILIH METODE PEMBAYARAN
-            // ================================
-            const Text(
-              "Pilih Metode Pelunasan",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildMetodePembayaran(
-                  icon: Icons.money,
-                  label: "Tunai",
-                  selected: metode == "tunai",
-                  onTap: () => setState(() => metode = "tunai"),
-                ),
-                _buildMetodePembayaran(
-                  icon: Icons.account_balance,
-                  label: "Transfer",
-                  selected: metode == "transfer",
-                  onTap: () => setState(() => metode = "transfer"),
-                ),
-                _buildMetodePembayaran(
-                  icon: Icons.qr_code_scanner,
-                  label: "E-wallet",
-                  selected: metode == "ewallet",
-                  onTap: () => setState(() => metode = "ewallet"),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 28),
-
-            // ================================
-            //     TOMBOL SELESAIKAN PEMBAYARAN
-            // ================================
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                onPressed: () {
-                  // Arahkan ke halaman "Pembayaran Berhasil"
-                  // Navigator.push(context, MaterialPageRoute(builder: (c) => PembayaranBerhasilPage()));
-                },
-                child: const Text(
-                  "Selesaikan Pembayaran",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 24),
 
-            Center(
-              child: TextButton(
-                onPressed: () {},
-                child: const Text(
-                  "Unduh Invoice",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    decoration: TextDecoration.underline,
+              Text(
+                "Pembayaran Berhasil!",
+                style: AppTextStyles.heading.copyWith(
+                  fontSize: 22,
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Terima kasih, pembayaran Anda telah terverifikasi.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+              ),
+
+              const SizedBox(height: 40),
+
+              // --- 2. Kartu Rincian Transaksi ---
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.cardDark,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.inputBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildReceiptRow(
+                      "Kode Booking",
+                      kodeBooking,
+                      isBold: true,
+                      valueColor: Colors.white,
+                    ),
+                    _buildDivider(),
+                    _buildReceiptRow(
+                      "Tanggal",
+                      DateFormat('dd MMM yyyy').format(waktuBayar),
+                    ),
+                    _buildReceiptRow(
+                      "Waktu",
+                      DateFormat('HH:mm').format(waktuBayar),
+                    ),
+                    _buildReceiptRow("Metode Bayar", metode),
+                    _buildReceiptRow(
+                      "Status",
+                      "LUNAS",
+                      valueColor: Colors.greenAccent,
+                      isBold: true,
+                    ),
+                    _buildDivider(),
+                    _buildReceiptRow(
+                      "Total Bayar",
+                      _formatRupiah(nominal),
+                      isTotal: true,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 50),
+
+              // --- 3. Tombol Aksi ---
+
+              // Tombol Unduh Bukti (Opsional)
+              Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.gold),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Nota berhasil disimpan ke galeri"),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.download_rounded,
+                    color: AppColors.gold,
+                  ),
+                  label: Text(
+                    "Unduh Bukti Bayar",
+                    style: AppTextStyles.button.copyWith(color: AppColors.gold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  // WIDGET UNTUK KOTAK PEMBAYARAN
-  Widget _buildMetodePembayaran({
-    required IconData icon,
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 95,
-        height: 95,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? Colors.yellow : Colors.transparent,
-            width: 2,
+              const SizedBox(height: 16),
+
+              // Tombol Kembali ke Beranda
+              Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: AppColors.goldGradient,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Reset route ke dashboard (menghapus stack sebelumnya)
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    "Kembali ke Beranda",
+                    style: AppTextStyles.button,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: selected ? Colors.yellow : Colors.white, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.yellow : Colors.white,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  // ================================
-  //   SMALL WIDGET HELPER
-  // ================================
+  // --- Widgets Helper ---
 
-  Widget _buildRow(String left, String right) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(left, style: const TextStyle(color: Colors.grey)),
-        Text(
-          right,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ],
+  Widget _buildReceiptRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    bool isTotal = false,
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: isTotal ? AppColors.textLight : AppColors.textMuted,
+              fontSize: isTotal ? 16 : 13,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color:
+                  valueColor ??
+                  (isTotal ? AppColors.gold : AppColors.textLight),
+              fontSize: isTotal ? 18 : 14,
+              fontWeight: isBold || isTotal ? FontWeight.bold : FontWeight.w500,
+              letterSpacing: isBold ? 0.5 : 0,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildRowBold(String left, String right, {Color color = Colors.white}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          left,
-          style: TextStyle(
-              color: color, fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        Text(
-          right,
-          style: TextStyle(
-              color: color, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-      ],
+  Widget _buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Divider(
+        color: Colors.white.withValues(alpha: 0.1),
+        thickness: 1,
+        height: 1,
+      ),
     );
+  }
+
+  String _formatRupiah(String nominal) {
+    // Menghapus .0 jika ada
+    double value = double.tryParse(nominal) ?? 0;
+    String formatted = value
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'(\d{3})$'), (Match m) => '.${m[1]}')
+        .replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (Match m) => '.${m[1]}');
+    return "Rp $formatted";
   }
 }

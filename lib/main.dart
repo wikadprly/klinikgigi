@@ -94,7 +94,7 @@ class KlinikGigiApp extends StatelessWidget {
         '/main_screen': (context) => const MainScreen(),
 
         //dentalhome
-        '/nota_pelunasan': (context) => const TagihanPage(),
+        // '/nota_pelunasan': (context) => const TagihanPage(),
 
         // Dental Home Care
         '/dentalhome/jadwal': (context) => const SchedulePage(),

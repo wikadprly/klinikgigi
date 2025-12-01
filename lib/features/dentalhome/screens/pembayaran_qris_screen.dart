@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../core/services/home_care_service.dart';
+import 'nota_pelunasan.dart'; // Pastikan import ini ada
 
 class PembayaranQrisScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -13,199 +15,307 @@ class PembayaranQrisScreen extends StatefulWidget {
 }
 
 class _PembayaranQrisScreenState extends State<PembayaranQrisScreen> {
+  final HomeCareService _service = HomeCareService();
+  bool _isLoading = true;
+  String _qrContent = "KlinikGigi-HC-${DateTime.now().millisecondsSinceEpoch}";
+  String _bookingCode =
+      "RSV-HC-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+  String _nominal = "0";
+
+  @override
+  void initState() {
+    super.initState();
+    _nominal = widget.bookingData['rincianBiaya']['estimasi_total'].toString();
+    _prosesBooking();
+  }
+
+  Future<void> _prosesBooking() async {
+    try {
+      await Future.delayed(const Duration(seconds: 2));
+      // Logika API (uncomment jika siap)
+      /*
+      final result = await _service.createBooking( ... );
+      setState(() {
+         _bookingCode = result['no_reservasi'];
+         _qrContent = result['qr_string'];
+      });
+      */
+    } catch (e) {
+      debugPrint("Error QRIS: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> data = widget.bookingData;
-    final String nominal = data['rincianBiaya']['estimasi_total'].toString();
-    
+    // Helper Data
+    final data = widget.bookingData;
+    final biaya = data['rincianBiaya'];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        title: const Text("Metode Pembayaran", style: AppTextStyles.heading),
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textLight,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textLight,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Pembayaran QRIS",
-          style: AppTextStyles.heading,
-        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Header Status
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Menunggu Pembayaran",
-                    style: AppTextStyles.label,
-                  ),
-                  Text(
-                    "Rp ${int.parse(nominal).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{3})$'), (Match m) => '.${m[1]}').replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (Match m) => '.${m[1]}')}",
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Info Kedaluwarsa
-            Text(
-              "Jatuh Tempo pada 23:59 WIB",
-              style: AppTextStyles.label.copyWith(
-                color: AppColors.textMuted,
-                fontSize: 12,
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Card QRIS
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.gold,
-                  width: 1,
-                ),
-              ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  QrImageView(
-                    data: "klinik-gigi-${data['masterJadwalId']}-${DateTime.now().millisecondsSinceEpoch}",
-                    version: QrVersions.auto,
-                    size: 200.0,
-                    eyeStyle: QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: AppColors.gold,
-                    ),
-                    dataModuleStyle: QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: AppColors.gold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Scan QRIS untuk Pembayaran",
-                    style: AppTextStyles.label.copyWith(
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Tombol Simpan Kode QR
-            Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  // Fungsi untuk menyimpan gambar QR ke galeri
-                  // Implementasi menyimpan gambar QR akan dilakukan nanti
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Fitur simpan QR belum diimplementasikan")),
-                  );
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.download,
-                      color: AppColors.gold,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Simpan Kode QR",
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Tombol Selesai dan Kembali ke Beranda
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldGradient,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Arahkan ke halaman transaksi berhasil setelah pembayaran
-                          // Untuk sementara kembali ke beranda
-                          Navigator.of(context).pushReplacementNamed('/dashboard');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 10),
+
+                  // ===== 1. KODE BOOKING =====
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Kode Booking",
+                          style: AppTextStyles.label.copyWith(
+                            color: Colors.white70,
                           ),
                         ),
-                        child: Text(
-                          "Selesai",
-                          style: AppTextStyles.button,
+                        const SizedBox(height: 5),
+                        Text(
+                          _bookingCode,
+                          style: AppTextStyles.heading.copyWith(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacementNamed('/dashboard');
-                      },
-                      child: Text(
-                        "Kembali ke Beranda",
-                        style: AppTextStyles.label.copyWith(
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // ===== 2. DETAIL PENDAFTARAN =====
+                  Text("Detail Pendaftaran", style: _sectionTitleStyle),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: _cardDecoration,
+                    child: Column(
+                      children: [
+                        _buildDetailRow("Layanan", "Home Care Gigi"),
+                        _buildDetailRow("Dokter", data['namaDokter']),
+                        _buildDetailRow(
+                          "Waktu",
+                          "${data['tanggal']} • ${data['jamPraktek']}",
+                        ),
+                        _buildDetailRow(
+                          "Alamat",
+                          data['alamat'],
+                          isMultiLine: true,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // ===== 3. RINCIAN PEMBAYARAN =====
+                  Text("Rincian Pembayaran", style: _sectionTitleStyle),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: _cardDecoration,
+                    child: Column(
+                      children: [
+                        _buildDetailRow(
+                          "Biaya Layanan",
+                          _formatRupiah(biaya['biaya_layanan']),
+                        ),
+                        _buildDetailRow(
+                          "Transport",
+                          _formatRupiah(biaya['biaya_transport']),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Divider(color: Colors.white24),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Total Pembayaran",
+                              style: TextStyle(color: AppColors.textLight),
+                            ),
+                            Text(
+                              _formatRupiah(biaya['estimasi_total']),
+                              style: const TextStyle(
+                                color: AppColors.gold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // ===== 4. AREA QRIS =====
+                  Text("Scan QRIS", style: _sectionTitleStyle),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
                           color: AppColors.gold,
-                        ),
+                          width: 4,
+                        ), // Border Emas Tebal
+                      ),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/logo_klinik_kecil.png',
+                            height: 30,
+                            errorBuilder: (c, o, s) => const SizedBox(),
+                          ),
+                          const SizedBox(height: 10),
+                          QrImageView(
+                            data: _qrContent,
+                            version: QrVersions.auto,
+                            size: 220.0,
+                            backgroundColor: Colors.white,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Scan QRIS untuk Bayar",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            "Berlaku untuk semua e-Wallet",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Tombol Selesai
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // 🔥 NAVIGASI KE NOTA PELUNASAN
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotaPelunasanScreen(
+                              transactionData: {
+                                'kode_booking': _bookingCode,
+                                'nominal': _nominal,
+                                'metode': 'QRIS',
+                                'waktu': DateTime.now(),
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cek Status Pembayaran",
+                        style: AppTextStyles.button,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
-        ),
+    );
+  }
+
+  // Styles & Helpers
+  TextStyle get _sectionTitleStyle => AppTextStyles.heading.copyWith(
+    color: AppColors.textLight,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+  );
+
+  BoxDecoration get _cardDecoration => BoxDecoration(
+    color: AppColors.cardDark,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: AppColors.inputBorder),
+  );
+
+  Widget _buildDetailRow(
+    String label,
+    String value, {
+    bool isMultiLine = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ),
+          const Text(": ", style: TextStyle(color: AppColors.textMuted)),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: isMultiLine ? 3 : 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  String _formatRupiah(dynamic nominal) {
+    return "Rp ${nominal.toString().replaceAllMapped(RegExp(r'(\d{3})$'), (m) => '.${m[1]}').replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (m) => '.${m[1]}')}";
   }
 }
