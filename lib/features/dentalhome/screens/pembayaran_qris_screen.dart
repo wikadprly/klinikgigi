@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../core/services/home_care_service.dart';
 import 'nota_pelunasan.dart'; // Pastikan import ini ada
 
 class PembayaranQrisScreen extends StatefulWidget {
@@ -14,14 +15,17 @@ class PembayaranQrisScreen extends StatefulWidget {
 }
 
 class _PembayaranQrisScreenState extends State<PembayaranQrisScreen> {
+  final HomeCareService _service = HomeCareService();
   bool _isLoading = true;
   String _qrContent = "KlinikGigi-HC-${DateTime.now().millisecondsSinceEpoch}";
   String _bookingCode =
       "RSV-HC-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+  String _nominal = "0";
 
   @override
   void initState() {
     super.initState();
+    _nominal = widget.bookingData['rincianBiaya']['estimasi_total'].toString();
     _prosesBooking();
   }
 
@@ -231,8 +235,13 @@ class _PembayaranQrisScreenState extends State<PembayaranQrisScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TagihanPage(
-                              noPemeriksaan: _bookingCode,
+                            builder: (context) => NotaPelunasanScreen(
+                              transactionData: {
+                                'kode_booking': _bookingCode,
+                                'nominal': _nominal,
+                                'metode': 'QRIS',
+                                'waktu': DateTime.now(),
+                              },
                             ),
                           ),
                         );

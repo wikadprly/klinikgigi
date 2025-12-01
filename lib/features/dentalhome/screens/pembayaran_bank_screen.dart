@@ -15,14 +15,18 @@ class PembayaranBankScreen extends StatefulWidget {
 }
 
 class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
+  final HomeCareService _service = HomeCareService();
+
   bool _isLoading = true;
   String _virtualAccountNumber = "880098765432";
   String _bookingCode =
       "RSV-HC-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+  String _nominal = "0";
 
   @override
   void initState() {
     super.initState();
+    _nominal = widget.bookingData['rincianBiaya']['estimasi_total'].toString();
     _prosesBooking();
   }
 
@@ -379,12 +383,17 @@ class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        // 🔥 NAVIGASI KE NOTA PELUNASAN
+                        // NAVIGASI KE NOTA PELUNASAN
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TagihanPage(
-                              noPemeriksaan: _bookingCode,
+                            builder: (context) => NotaPelunasanScreen(
+                              transactionData: {
+                                'kode_booking': _bookingCode,
+                                'nominal': _nominal,
+                                'metode': 'Transfer Bank (BCA)',
+                                'waktu': DateTime.now(),
+                              },
                             ),
                           ),
                         );

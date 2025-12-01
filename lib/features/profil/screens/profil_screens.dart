@@ -132,12 +132,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
   // =======================================================================
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ProfilProvider>(context, listen: false);
+    final provider = Provider.of<ProfileProvider>(context, listen: false);
 
     // Fetch profile data when the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("ProfilScreen: Calling fetchProfilFromToken");
-      if (provider.profilData == null) {
+      if (provider.profileData == null) {
         provider.fetchProfilFromToken();
       }
     });
@@ -145,7 +145,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Consumer<ProfilProvider>(
+        child: Consumer<ProfileProvider>(
           builder: (context, provider, child) {
             print("ProfilScreen: Consumer rebuilding - isLoading: ${provider.isLoading}, userData: ${provider.userData}");
 
