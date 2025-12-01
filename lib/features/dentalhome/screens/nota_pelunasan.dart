@@ -1,341 +1,189 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/core/services/nota_service.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/nota_provider.dart';
+import 'pembayaran_berhasil_pelunasan.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
-class TagihanPage extends StatefulWidget {
-  final String noPemeriksaan;
+class NotaPelunasanScreen extends StatefulWidget {
+  final int idTransaksi;
 
-  const TagihanPage({
-    super.key,
-    required this.noPemeriksaan,
-  });
+  const NotaPelunasanScreen({super.key, required this.idTransaksi});
 
   @override
-  State<TagihanPage> createState() => _TagihanPageState();
+  State<NotaPelunasanScreen> createState() => _NotaPelunasanScreenState();
 }
 
-class _TagihanPageState extends State<TagihanPage> {
-  String metode = "tunai";
-  late NotaService _notaService;
-  bool _isLoading = false;
-
+class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
   @override
   void initState() {
     super.initState();
-    _notaService = NotaService();
+    Provider.of<InvoiceProvider>(context, listen: false)
+        .loadInvoice(widget.idTransaksi);
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<InvoiceProvider>(context);
 
-  Widget _buildMetodePembayaran({
-    required IconData icon,
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 95,
-        height: 95,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? Colors.yellow : Colors.transparent,
-            width: 2,
-          ),
-        ),
+    if (provider.loading || provider.invoice == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator(color: Colors.amber)),
+      );
+    }
+
+    final inv = provider.invoice!;
+
+    return Scaffold(
+      backgroundColor: Color(0xFF141218),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: BackButton(color: Colors.white),
+        title: Text("Rincian Tagihan Anda", style: TextStyle(color: Colors.white)),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: selected ? Colors.yellow : Colors.white, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.yellow : Colors.white,
-                fontSize: 14,
-              ),
-            ),
+            _header(inv),
+            SizedBox(height: 20),
+            _detail(inv),
+            SizedBox(height: 20),
+            _metode(provider),
+            SizedBox(height: 20),
+            _btnBayar(provider),
           ],
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1B1B1B),
+  Widget _header(inv) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: _box(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _row("Nama Pasien", inv.namaPasien),
+          SizedBox(height: 8),
+          _row("ID Invoice", inv.invoiceId),
+          SizedBox(height: 8),
+          _row("Tanggal", inv.tanggal),
+        ],
+      ),
+    );
+  }
 
- 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1B1B1B),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "Rincian Tagihan Anda",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+  Widget _detail(inv) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: _box(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Rincian Perawatan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          SizedBox(height: 12),
+
+          ...inv.items.map((i) => _row(i.nama, "Rp ${i.harga}")),
+
+          Divider(color: Colors.white24),
+          _row("Subtotal", "Rp ${inv.subtotal}"),
+          _row("Uang Booking", "-Rp ${inv.booking}"),
+
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Total Akhir", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text("Rp ${inv.totalAkhir}", style: TextStyle(color: Colors.amber, fontSize: 18)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metode(provider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Pilih Metode Pelunasan", style: TextStyle(color: Colors.white70)),
+        SizedBox(height: 10),
+        Row(
+          children: [
+            _metodeBtn(provider, "Tunai"),
+            SizedBox(width: 10),
+            _metodeBtn(provider, "Transfer"),
+            SizedBox(width: 10),
+            _metodeBtn(provider, "E-wallet"),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _metodeBtn(provider, String metode) {
+    final aktif = provider.metodePembayaran == metode;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => provider.setMetode(metode),
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: aktif ? Colors.amber.withOpacity(0.2) : Colors.transparent,
+            border: Border.all(color: aktif ? Colors.amber : Colors.white24),
+          ),
+          child: Center(
+            child: Text(metode, style: TextStyle(color: Colors.white)),
           ),
         ),
       ),
-
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-            
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildRow("Nama Pasien", "Farel0000"),
-                        const SizedBox(height: 8),
-                        _buildRow("ID Invoice", "#INV–3K–231024–001"),
-                        const SizedBox(height: 8),
-                        _buildRow("Tanggal", "3 November 2025"),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                 
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Rincian Perawatan",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildRow("Scaling Gigi", "Rp 500.000"),
-                        const SizedBox(height: 6),
-                        _buildRow("Tambal Komposit", "Rp 750.000"),
-
-                        const SizedBox(height: 12),
-                        Container(
-                          height: 1,
-                          color: Colors.grey.shade700,
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildRow("Subtotal", "Rp 1.250.000"),
-                        const SizedBox(height: 6),
-                        _buildRow("Uang Booking", "-Rp 25.000"),
-
-                        const SizedBox(height: 12),
-                        Container(
-                          height: 1,
-                          color: Colors.grey.shade700,
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildRowBold("Total Akhir", "Rp 1.225.000",
-                            color: Colors.yellow),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                 
-                  const Text(
-                    "Pilih Metode Pelunasan",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildMetodePembayaran(
-                        icon: Icons.money,
-                        label: "Tunai",
-                        selected: metode == "tunai",
-                        onTap: () => setState(() => metode = "tunai"),
-                      ),
-                      _buildMetodePembayaran(
-                        icon: Icons.account_balance,
-                        label: "Transfer",
-                        selected: metode == "transfer",
-                        onTap: () => setState(() => metode = "transfer"),
-                      ),
-                      _buildMetodePembayaran(
-                        icon: Icons.qr_code_scanner,
-                        label: "E-wallet",
-                        selected: metode == "ewallet",
-                        onTap: () => setState(() => metode = "ewallet"),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.yellow,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                              setState(() => _isLoading = true);
-                              try {
-                                await _notaService.submitPembayaran(
-                                  widget.noPemeriksaan,
-                                  metode,
-                                );
-
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Pembayaran berhasil!'),
-                                    ),
-                                  );
-                                  Navigator.pop(context, true);
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error: $e'),
-                                    ),
-                                  );
-                                }
-                              } finally {
-                                if (mounted) {
-                                  setState(() => _isLoading = false);
-                                }
-                              }
-                            },
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.black,
-                                ),
-                              ),
-                            )
-                          : const Text(
-                              "Selesaikan Pembayaran",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Center(
-                    child: TextButton(
-                      onPressed: () async {
-                        try {
-                          await _notaService
-                              .downloadInvoice(widget.noPemeriksaan);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Invoice berhasil diunduh!'),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: $e'),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text(
-                        "Unduh Invoice",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
     );
   }
 
-  Widget _buildRow(String left, String right) {
+  Widget _btnBayar(provider) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          padding: EdgeInsets.symmetric(vertical: 14),
+          shape: StadiumBorder(),
+        ),
+        onPressed: () async {
+          bool ok = await provider.bayar(widget.idTransaksi);
+
+          if (ok) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PembayaranBerhasilScreen(invoice: provider.invoice!)),
+            );
+          }
+        },
+        child: Text("Selesaikan Pembayaran", style: TextStyle(color: Colors.black)),
+      ),
+    );
+  }
+
+  Widget _row(String l, String r) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(left, style: const TextStyle(color: Colors.grey)),
-        Text(
-          right,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        Text(l, style: TextStyle(color: Colors.white70)),
+        Text(r, style: TextStyle(color: Colors.white)),
       ],
     );
   }
 
-  Widget _buildRowBold(String left, String right, {Color color = Colors.white}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          left,
-          style: TextStyle(
-              color: color, fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        Text(
-          right,
-          style: TextStyle(
-              color: color, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-      ],
+  BoxDecoration _box() {
+    return BoxDecoration(
+      color: Color(0xFF1E1B22),
+      borderRadius: BorderRadius.circular(12),
     );
   }
 }

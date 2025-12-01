@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 // Providers
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/providers/nota_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -16,6 +18,9 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 
 // Home Screens
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -23,6 +28,9 @@ import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens
 // Riwayat
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens.dart';
 import 'package:flutter_klinik_gigi/features/riwayat/screens/riwayat_screens_detail.dart';
+
+// Reward
+import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 
 // Settings
 import 'package:flutter_klinik_gigi/features/settings/screens/firstpage.dart';
@@ -54,9 +62,7 @@ void main() async {
         ChangeNotifierProvider<ReservasiProvider>(
           create: (_) => ReservasiProvider(),
         ),
-        ChangeNotifierProvider<ProfileProvider>(
-          create: (_) => ProfileProvider(),
-        ),
+        ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -83,11 +89,40 @@ class KlinikGigiApp extends StatelessWidget {
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
-        
+
 
         // Home
         '/main_screen': (context) => const MainScreen(),
 
+        // Dental Home Care
+        '/dentalhome/jadwal': (context) => const SchedulePage(),
+        '/dentalhome/input_lokasi': (context) {
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          return InputLokasiScreen(
+            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
+            tanggal: arguments?['tanggal'] ?? '',
+            namaDokter: arguments?['namaDokter'] ?? '',
+            jamPraktek: arguments?['jamPraktek'] ?? '',
+          );
+        },
+        '/dentalhome/pembayaran': (context) {
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          return PembayaranHomeCareScreen(
+            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
+            tanggal: arguments?['tanggal'] ?? '',
+            namaDokter: arguments?['namaDokter'] ?? '',
+            jamPraktek: arguments?['jamPraktek'] ?? '',
+            keluhan: arguments?['keluhan'] ?? '',
+            alamat: arguments?['alamat'] ?? '',
+            latitude: arguments?['latitude'] ?? 0.0,
+            longitude: arguments?['longitude'] ?? 0.0,
+            rincianBiaya: arguments?['rincianBiaya'] ?? {},
+          );
+        },
 
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),
@@ -101,23 +136,33 @@ class KlinikGigiApp extends StatelessWidget {
           return RiwayatDetailScreen(data: data ?? {});
         },
 
+        // Reward
+        '/point_reward': (context) => const PointRewardScreen(),
+
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one.dart': (context) =>
+        '/ubahsandi_one': (context) =>
             const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two.dart': (context) =>
+        '/ubahsandi_two': (context) =>
             const UbahKataSandi2Page(resetToken: "sample_token"),
-        '/notifikasi.dart': (context) => const NotificationSettingsPage(),
-        '/panduanpage.dart': (context) => const PanduanPage(),
-        '/panduanlogin.dart': (context) => const PanduanLoginPage(),
-        '/panduanhomedental.dart': (context) =>
-            const PanduanHomeDentalCarePage(),
-        '/panduanreservasi.dart': (context) => const PanduanReservasiPage(),
-        '/panduaneditprofil.dart': (context) => const PanduanEditProfilScreen(),
-        '/panduanubahsandi.dart': (context) => const PanduanUbahSandiScreen(),
+        '/notifikasi': (context) => const NotificationSettingsPage(),
+        '/panduanpage': (context) => const PanduanPage(),
+        '/panduanlogin': (context) => const PanduanLoginPage(),
+        '/panduanhomedental': (context) => const PanduanHomeDentalCarePage(),
+        '/panduanreservasi': (context) => const PanduanReservasiPage(),
+        '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
+        '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
 
         //Profile
-        '/first_page': (context) => const ProfilePage(),
+        '/profil_screens': (context) {
+          return FutureBuilder<String?>(
+            future: SharedPrefsHelper.getToken(),
+            builder: (context, snapshot) {
+              String token = snapshot.data ?? '';
+              return ProfilePage(token: token);
+            },
+          );
+        },
         '/two_page': (context) => const EditProfilPage2(),
       },
     );

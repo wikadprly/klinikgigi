@@ -33,7 +33,10 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Future<void> _onContinuePressed(OtpProvider otpProvider, ResetPasswordProvider resetProvider) async {
+  Future<void> _onContinuePressed(
+    OtpProvider otpProvider,
+    ResetPasswordProvider resetProvider,
+  ) async {
     final otp = _otpController.text.trim();
 
     if (otp.isEmpty) {
@@ -88,10 +91,7 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
             ),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: AppColors.gold,
-                  width: 2,
-                ),
+                bottom: BorderSide(color: AppColors.gold, width: 2),
               ),
             ),
           );
@@ -115,7 +115,10 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
             backgroundColor: AppColors.background,
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -186,7 +189,8 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
                       text: otpProvider.loading ? "Memproses..." : "Lanjut",
                       onPressed: otpProvider.loading
                           ? null
-                          : () => _onContinuePressed(otpProvider, resetProvider),
+                          : () =>
+                                _onContinuePressed(otpProvider, resetProvider),
                     ),
                     const SizedBox(height: 20),
                     Center(
@@ -204,10 +208,14 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
                             onTap: otpProvider.loading
                                 ? null
                                 : () async {
-                                    final result = await otpProvider.requestOtp(widget.email);
-                                    _show(result.success
-                                        ? "Kode OTP telah dikirim ulang"
-                                        : "Gagal mengirim ulang kode");
+                                    final result = await otpProvider.requestOtp(
+                                      widget.email,
+                                    );
+                                    _show(
+                                      result.success
+                                          ? "Kode OTP telah dikirim ulang"
+                                          : "Gagal mengirim ulang kode",
+                                    );
                                   },
                             child: Text(
                               "Kirim ulang",
@@ -217,7 +225,7 @@ class _UbahKataSandi1PageState extends State<UbahKataSandi1Page> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),

@@ -41,23 +41,89 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
       "alamat": alamatController.text,
     };
 
-    final success = await profil.updateProfil(token, data);
+      final success = await profil.updateProfil(token, data);
 
-    setState(() => isSaving = false);
+      if (success) {
+        _showSuccess("Informasi profil berhasil diperbarui");
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      } else {
+        _showError(profil.errorMessage ?? "Gagal menyimpan data");
+      }
+    } catch (e) {
+      _showError("Terjadi error: $e");
+      print("❌ Save data error: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isSaving = false);
+      }
+    }
+  }
 
-    if (success) {
-      Navigator.pop(context);
+  bool _validateForm() {
+    if (namaController.text.trim().isEmpty) {
+      _showError("Nama lengkap tidak boleh kosong");
+      return false;
+    }
+
+    if (noHpController.text.trim().isEmpty) {
+      _showError("Nomor telepon tidak boleh kosong");
+      return false;
+    }
+
+    if (emailController.text.trim().isEmpty) {
+      _showError("Email tidak boleh kosong");
+      return false;
+    }
+
+    // Validasi format email
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(emailController.text.trim())) {
+      _showError("Format email tidak valid");
+      return false;
+    }
+
+    // Validasi nomor telepon (minimal 10 digit)
+    if (noHpController.text.trim().length < 10) {
+      _showError("Nomor telepon harus minimal 10 digit");
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Informasi tambahan berhasil diperbarui")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal menyimpan data")),
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
       );
     }
   }
 
-  Widget inputField(IconData icon, TextEditingController controller, String hint) {
+  void _showSuccess(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Widget inputField(
+    IconData icon,
+    TextEditingController controller,
+    String hint, {
+    bool isDateField = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Container(
       height: 46,
       decoration: BoxDecoration(
@@ -70,14 +136,18 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
           Icon(icon, color: AppColors.goldDark, size: 20),
           const SizedBox(width: 12),
           Expanded(
-            child: TextField(
+            child: TextFormField(
               controller: controller,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: hint,
                 hintStyle: const TextStyle(color: Colors.white54),
+                errorStyle: const TextStyle(color: Colors.red),
               ),
+              keyboardType: keyboardType,
+              readOnly: isDateField,
+              onTap: isDateField ? () => _selectDate(controller) : null,
             ),
           ),
         ],
@@ -85,20 +155,44 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     );
   }
 
+  Future<void> _selectDate(TextEditingController controller) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.tryParse(controller.text) ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.goldDark,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child ?? const SizedBox(),
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      controller.text =
+          "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // HEADER — TIDAK DIPINDAH
+              // HEADER
               Row(
                 children: [
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
@@ -112,14 +206,13 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                     ),
                   ),
                   const Spacer(),
-                  const SizedBox(width: 40),
+                  const SizedBox(width: 40), // Untuk balance spacing
                 ],
               ),
 
-              // FORM DIGESER KE BAWAH DIKIT
               const SizedBox(height: 40),
 
-              // LABEL
+              // FORM TITLE
               const Text(
                 "Informasi Dasar",
                 style: TextStyle(
@@ -129,52 +222,90 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
 
-              // INPUT FIELDS
-              inputField(Icons.person, genderController, "Nama Lengkap"),
-              const SizedBox(height: 12),
+              // FORM FIELDS
+              Column(
+                children: [
+                  inputField(Icons.person, namaController, "Nama Lengkap"),
+                  const SizedBox(height: 16),
 
-              inputField(Icons.phone, birthController, "Nomor Telepon"),
-              const SizedBox(height: 12),
+                  inputField(
+                    Icons.phone,
+                    noHpController,
+                    "Nomor Telepon",
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
 
-              inputField(Icons.email, birthController, "Email"),
-              const SizedBox(height: 12),
+                  inputField(
+                    Icons.email,
+                    emailController,
+                    "Email",
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
 
-              inputField(Icons.calendar_today, birthController, "Tanggal Lahir"),
-              const SizedBox(height: 12),
+                  inputField(
+                    Icons.calendar_today,
+                    birthController,
+                    "Tanggal Lahir",
+                    isDateField: true,
+                  ),
+                  const SizedBox(height: 16),
 
-              inputField(Icons.home, alamatController, "Alamat"),
+                  inputField(Icons.home, alamatController, "Alamat"),
+                ],
+              ),
 
-              // BIAR FORM TIDAK MELEKAT KE TOMBOL
-              const SizedBox(height: 60),
+              const SizedBox(height: 40),
 
-              // TOMBOL SIMPAN 
+              // SAVE BUTTON
               Padding(
                 padding: const EdgeInsets.only(bottom: 40),
-                child: Center(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.goldDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.goldDark,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      onPressed: isSaving ? null : saveData,
-                      child: isSaving
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text(
-                              "Simpan",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      elevation: 2,
                     ),
+                    onPressed: isSaving ? null : saveData,
+                    child: isSaving
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                "Menyimpan...",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const Text(
+                            "Simpan Perubahan",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -183,5 +314,15 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    namaController.dispose();
+    noHpController.dispose();
+    emailController.dispose();
+    birthController.dispose();
+    alamatController.dispose();
+    super.dispose();
   }
 }
