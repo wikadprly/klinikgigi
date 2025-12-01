@@ -45,6 +45,19 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
     setState(() => _isProcessing = true);
 
     try {
+      // Validate token before attempting booking so we can fail early with clear message
+      final tokenValid = await _service.validateToken();
+      if (!tokenValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sesi Anda telah berakhir. Silakan login kembali.'),
+          ),
+        );
+        setState(() => _isProcessing = false);
+        // Navigate back to root so user can login
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        return;
+      }
       // Create booking and get the booking data
       final bookingData = await _service.createBooking(
         masterJadwalId: widget.masterJadwalId,
@@ -72,7 +85,8 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                 'latitude': widget.latitude,
                 'longitude': widget.longitude,
                 'rincianBiaya': widget.rincianBiaya,
-                'bookingId': bookingData['id'], // Pass the booking ID for confirmation
+                'bookingId':
+                    bookingData['id'], // Pass the booking ID for confirmation
               },
             ),
           ),
@@ -92,7 +106,8 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                 'latitude': widget.latitude,
                 'longitude': widget.longitude,
                 'rincianBiaya': widget.rincianBiaya,
-                'bookingId': bookingData['id'], // Pass the booking ID for confirmation
+                'bookingId':
+                    bookingData['id'], // Pass the booking ID for confirmation
               },
             ),
           ),
@@ -100,11 +115,14 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
       }
     } catch (e) {
       // Cek apakah error adalah Unauthorized (401)
-      if (e.toString().contains('401') || e.toString().toLowerCase().contains('unauthorized')) {
+      if (e.toString().contains('401') ||
+          e.toString().toLowerCase().contains('unauthorized')) {
         // Tampilkan pesan bahwa sesi telah habis, tanpa navigasi ke halaman yang tidak ditemukan
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Sesi Anda telah berakhir. Silakan login kembali di halaman utama."),
+            content: Text(
+              "Sesi Anda telah berakhir. Silakan login kembali di halaman utama.",
+            ),
           ),
         );
 
@@ -134,10 +152,7 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textLight,
         elevation: 0,
-        title: Text(
-          "Ringkasan Pembayaran",
-          style: AppTextStyles.heading,
-        ),
+        title: Text("Ringkasan Pembayaran", style: AppTextStyles.heading),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -165,12 +180,16 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                   SizedBox(height: 12),
                   _buildDetailRow(Icons.medical_services, "Poli", "Home Care"),
                   _buildDetailRow(Icons.person, "Dokter", widget.namaDokter),
-                  _buildDetailRow(Icons.calendar_today, "Waktu", "${widget.tanggal} | ${widget.jamPraktek}"),
+                  _buildDetailRow(
+                    Icons.calendar_today,
+                    "Waktu",
+                    "${widget.tanggal} | ${widget.jamPraktek}",
+                  ),
                   _buildDetailRow(Icons.location_on, "Lokasi", widget.alamat),
                 ],
               ),
             ),
-            
+
             SizedBox(height: 20),
 
             // Rincian Pembayaran
@@ -179,7 +198,7 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
               style: AppTextStyles.heading.copyWith(fontSize: 18),
             ),
             SizedBox(height: 12),
-            
+
             Container(
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
@@ -189,11 +208,21 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildPaymentRow("Biaya Layanan Home Care", biaya['biaya_layanan'].toString()),
+                    _buildPaymentRow(
+                      "Biaya Layanan Home Care",
+                      biaya['biaya_layanan'].toString(),
+                    ),
                     SizedBox(height: 8),
-                    _buildPaymentRow("Biaya Transportasi (${biaya['jarak_km']} km)", biaya['biaya_transport'].toString()),
+                    _buildPaymentRow(
+                      "Biaya Transportasi (${biaya['jarak_km']} km)",
+                      biaya['biaya_transport'].toString(),
+                    ),
                     Divider(color: AppColors.textMuted, thickness: 0.5),
-                    _buildPaymentRow("Total Pembayaran", total.toString(), isTotal: true),
+                    _buildPaymentRow(
+                      "Total Pembayaran",
+                      total.toString(),
+                      isTotal: true,
+                    ),
                   ],
                 ),
               ),
@@ -207,18 +236,18 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
               style: AppTextStyles.heading.copyWith(fontSize: 18),
             ),
             SizedBox(height: 12),
-            
+
             // Transfer Bank Option
             Container(
               decoration: BoxDecoration(
-                color: _selectedPayment == 'transfer' 
-                  ? AppColors.gold.withOpacity(0.1) 
-                  : AppColors.cardDark,
+                color: _selectedPayment == 'transfer'
+                    ? AppColors.gold.withOpacity(0.1)
+                    : AppColors.cardDark,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _selectedPayment == 'transfer' 
-                    ? AppColors.gold 
-                    : AppColors.inputBorder,
+                  color: _selectedPayment == 'transfer'
+                      ? AppColors.gold
+                      : AppColors.inputBorder,
                   width: _selectedPayment == 'transfer' ? 2 : 1,
                 ),
               ),
@@ -228,36 +257,34 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                   "Transfer Bank",
                   style: TextStyle(
                     color: AppColors.textLight,
-                    fontWeight: _selectedPayment == 'transfer' 
-                      ? FontWeight.bold 
-                      : FontWeight.normal,
+                    fontWeight: _selectedPayment == 'transfer'
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
                 subtitle: Text(
                   "BCA, Mandiri, BRI, BNI",
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                  ),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
                 value: 'transfer',
                 groupValue: _selectedPayment,
                 onChanged: (val) => setState(() => _selectedPayment = val!),
               ),
             ),
-            
+
             SizedBox(height: 12),
-            
+
             // QRIS Option
             Container(
               decoration: BoxDecoration(
-                color: _selectedPayment == 'qris' 
-                  ? AppColors.gold.withOpacity(0.1) 
-                  : AppColors.cardDark,
+                color: _selectedPayment == 'qris'
+                    ? AppColors.gold.withOpacity(0.1)
+                    : AppColors.cardDark,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _selectedPayment == 'qris' 
-                    ? AppColors.gold 
-                    : AppColors.inputBorder,
+                  color: _selectedPayment == 'qris'
+                      ? AppColors.gold
+                      : AppColors.inputBorder,
                   width: _selectedPayment == 'qris' ? 2 : 1,
                 ),
               ),
@@ -267,16 +294,14 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                   "QRIS",
                   style: TextStyle(
                     color: AppColors.textLight,
-                    fontWeight: _selectedPayment == 'qris' 
-                      ? FontWeight.bold 
-                      : FontWeight.normal,
+                    fontWeight: _selectedPayment == 'qris'
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
                 subtitle: Text(
                   "Gopay, OVO, Dana, LinkAja",
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                  ),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
                 value: 'qris',
                 groupValue: _selectedPayment,
@@ -319,20 +344,13 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: AppColors.textMuted,
-            size: 16,
-          ),
+          Icon(icon, color: AppColors.textMuted, size: 16),
           SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: AppTextStyles.label,
-                ),
+                Text(label, style: AppTextStyles.label),
                 Text(
                   value,
                   style: AppTextStyles.input.copyWith(
@@ -356,10 +374,7 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 14),
           ),
           Text(
             "Rp ${value.replaceAllMapped(RegExp(r'(\d{3})$'), (Match m) => '${m[1]}')}",
@@ -374,7 +389,6 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
     );
   }
 }
-
 
 // Payment Success Screen
 class PaymentSuccessScreen extends StatefulWidget {
@@ -401,10 +415,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         foregroundColor: AppColors.textLight,
         elevation: 0,
         automaticallyImplyLeading: false, // Remove back button
-        title: Text(
-          "Transaksi Berhasil",
-          style: AppTextStyles.heading,
-        ),
+        title: Text("Transaksi Berhasil", style: AppTextStyles.heading),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -418,11 +429,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                 color: AppColors.gold.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.check_circle,
-                color: AppColors.gold,
-                size: 60,
-              ),
+              child: Icon(Icons.check_circle, color: AppColors.gold, size: 60),
             ),
             SizedBox(height: 20),
 
@@ -438,10 +445,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
             Text(
               "Terima kasih telah melakukan pembayaran",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 16),
             ),
 
             SizedBox(height: 30),
@@ -455,10 +459,14 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
               ),
               child: Column(
                 children: [
-                  _buildTransactionDetail("No. Pembayaran", widget.paymentNumber),
+                  _buildTransactionDetail(
+                    "No. Pembayaran",
+                    widget.paymentNumber,
+                  ),
                   SizedBox(height: 16),
-                  _buildTransactionDetail("Metode Pembayaran",
-                    widget.paymentMethod == 'qris' ? "QRIS" : "Transfer Bank"
+                  _buildTransactionDetail(
+                    "Metode Pembayaran",
+                    widget.paymentMethod == 'qris' ? "QRIS" : "Transfer Bank",
                   ),
                   SizedBox(height: 16),
                   _buildTransactionDetail("Status Pembayaran", "Lunas"),
@@ -506,10 +514,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                 onPressed: () {
                   // Navigate to download receipt functionality would go here
                 },
-                child: Text(
-                  "Unduh Bukti",
-                  style: AppTextStyles.button,
-                ),
+                child: Text("Unduh Bukti", style: AppTextStyles.button),
               ),
             ),
           ],
@@ -522,13 +527,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 14,
-          ),
-        ),
+        Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
         Text(
           value,
           style: TextStyle(
