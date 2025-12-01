@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/riwayat_card.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
@@ -27,27 +28,30 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   // 🟦 Fungsi ambil data dari Laravel API dengan filter user yang login
   Future<void> fetchRiwayat() async {
     try {
-      // Ambil user dan token dari SharedPreferences
+      // Ambil user (opsional) dan token dari SharedPreferences
       final user = await SharedPrefsHelper.getUser();
+      final token = await SharedPrefsHelper.getToken();
 
-      if (user == null || user.token == null) {
+      if (token == null) {
         if (kDebugMode) {
-          print('DEBUG: User atau token null');
-          print('User: $user');
+          print('DEBUG: Token null atau tidak tersedia');
+          print('DEBUG: User: $user');
         }
         setState(() {
-          errorMessage =
-              "User tidak ditemukan atau token tidak tersedia. Silakan login kembali.";
+          errorMessage = "Token tidak tersedia. Silakan login kembali.";
           isLoading = false;
         });
         return;
       }
 
-      final token = user.token;
       if (kDebugMode) {
         print('DEBUG: Token diterima: $token');
-        print('DEBUG: User ID: ${user.userId}');
-        print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+        if (user != null) {
+          try {
+            print('DEBUG: User ID: ${user.userId}');
+            print('DEBUG: Rekam Medis ID: ${user.rekamMedisId}');
+          } catch (_) {}
+        }
       }
 
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
@@ -102,7 +106,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               "no_rekam_medis":
                   item["no_rekam_medis"] ?? item["rekam_medis"] ?? "-",
               "foto": item["foto"] ?? "",
-              "status": item["status_reservasi"] ?? "-",
+              "status": item["status_pembayaran"] ?? "-",
+              "statusreservasi": item["status_reservasi"] ?? "-",
+              "no_antrian": item["no_antrian"] ?? "-",
+              "keluhan": item["keluhan"] ?? "-",
             };
           }).toList();
           isLoading = false;
@@ -143,11 +150,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             children: [
               const Text(
                 "Riwayat",
-                style: TextStyle(
-                  color: AppColors.gold,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
+                style: AppTextStyles.heading,
               ),
               const SizedBox(height: 12),
 
@@ -178,11 +181,15 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     itemBuilder: (context, index) {
                       final data = riwayatData[index];
                       return RiwayatCard(
-                        noPemeriksaan: data["no_pemeriksaan"]!,
-                        dokter: data["dokter"]!,
-                        tanggal: data["tanggal"]!,
-                        poli: data["poli"]!,
-                        statusReservasi: data["status_reservasi"]!,
+                        noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
+                            .toString(),
+                        noAntrian: (data["no_antrian"] ?? "Menunggu Pembayaran")
+                            .toString(),
+                        dokter: (data["dokter"] ?? "-").toString(),
+                        tanggal: (data["tanggal"] ?? "-").toString(),
+                        poli: (data["poli"] ?? "-").toString(),
+                        statusReservasi: (data["status_reservasi"] ?? "-")
+                            .toString(),
                         data: data,
                         onTap: () {
                           Navigator.pushNamed(

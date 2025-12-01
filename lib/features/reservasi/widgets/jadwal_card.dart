@@ -8,9 +8,8 @@ class ScheduleCardWidget extends StatelessWidget {
   final String hari;
   final String jam;
 
-  /// Kuota dari backend
-  final int kuotaSisa;
-  final int kuotaTotal;
+  final int quota;
+  final int kuotaTerpakai;
 
   final VoidCallback onTap;
 
@@ -20,51 +19,72 @@ class ScheduleCardWidget extends StatelessWidget {
     required this.namaDokter,
     required this.hari,
     required this.jam,
-    required this.kuotaSisa,
-    required this.kuotaTotal,
+    required this.quota,
+    required this.kuotaTerpakai,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    // 1. Cek apakah kuota penuh
+    // Jika terpakai >= quota, berarti penuh.
+    bool isFull = kuotaTerpakai >= quota;
+
+    // 2. Hitung sisa untuk ditampilkan (Opsional, kalau mau tampilkan sisa)
+    // int sisa = quota - kuotaTerpakai; 
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.cardWarm,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.gold, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nama Poli
+          // POLI
           Text(
             namaPoli,
             style: AppTextStyles.heading.copyWith(
               color: AppColors.gold,
-              fontSize: 16,
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
           const SizedBox(height: 6),
 
-          // Nama Dokter
+          // Dokter
           Text(
             namaDokter,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextStyles.label.copyWith(
+              color: AppColors.textLight,
+              fontSize: 14,
+            ),
           ),
 
           const SizedBox(height: 12),
 
-          // Hari & Jam
+          // Waktu
           Row(
             children: [
               const Icon(Icons.access_time, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
                 "$hari | $jam",
-                style: AppTextStyles.label,
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textLight,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -77,8 +97,13 @@ class ScheduleCardWidget extends StatelessWidget {
               const Icon(Icons.group, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
-                "Kuota : $kuotaSisa/$kuotaTotal",
-                style: AppTextStyles.label,
+                // Tampilan: "Kuota : 0/2" (Terpakai / Total) sesuai screenshotmu sebelumnya
+                "Kuota : $kuotaTerpakai/$quota", 
+                style: AppTextStyles.label.copyWith(
+                  color: isFull ? Colors.red : AppColors.textLight, // Merah jika penuh
+                  fontSize: 14,
+                  fontWeight: isFull ? FontWeight.bold : FontWeight.normal,
+                ),
               ),
             ],
           ),
@@ -88,23 +113,26 @@ class ScheduleCardWidget extends StatelessWidget {
           // Button Pilih
           Align(
             alignment: Alignment.centerRight,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(20),
+            child: GestureDetector(
+              // 3. Matikan onTap jika penuh
+              onTap: isFull ? null : onTap, 
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 22,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(20),
+                  // 4. Ubah warna jadi abu-abu jika penuh
+                  color: isFull ? Colors.grey : AppColors.gold,
+                  borderRadius: BorderRadius.circular(22),
                 ),
-                child: const Text(
-                  "Pilih",
+                child: Text(
+                  // 5. Ubah teks jadi "Penuh" jika penuh
+                  isFull ? "Penuh" : "Pilih",
                   style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                    color: isFull ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ),

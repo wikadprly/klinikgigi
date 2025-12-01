@@ -3,13 +3,12 @@ import 'package:flutter_klinik_gigi/core/models/pasien_model.dart';
 import 'package:flutter_klinik_gigi/core/services/pasien_service.dart';
 import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart';
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
+import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-// import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart'; // Duplikat, bisa dihapus
-// import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart'; // Duplikat, bisa dihapus
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_klinik_gigi/core/models/promo_model.dart';
 import 'package:flutter_klinik_gigi/core/services/promo_service.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class GradientMask extends StatelessWidget {
   const GradientMask({
@@ -48,18 +47,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Pasien> _pasien;
   final PasienService _pasienService = PasienService();
-
-  // ✅ 1. TAMBAHKAN 2 BARIS DEKLARASI INI
-  late Future<List<PromoModel>> _futurePromos;
+  late Future<List<PromoModel>> _promoFuture;
   final PromoService _promoService = PromoService();
 
   @override
   void initState() {
     super.initState();
-    _pasien = _pasienService.getPasienLogin();
+    _pasien = _pasienService.getPasienByUserId(widget.userId);
+    _promoFuture = _fetchPromos();
+  }
 
-    // ✅ 2. TAMBAHKAN 1 BARIS INISIALISASI INI
-    _futurePromos = _promoService.fetchPromos();
+  Future<List<PromoModel>> _fetchPromos() async {
+    try {
+      return await _promoService.fetchPromos();
+    } catch (e) {
+      print('Error fetching promos in screen: $e');
+      return []; // Return empty list on error
+    }
   }
 
   @override
@@ -103,20 +107,25 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('Home', style: AppTextStyles.heading),
         Row(
           children: [
-            IconButton(
-              icon: GradientMask(
-                // Hapus 'const' dari sini
-                gradient: AppColors.goldGradient,
-                child: SvgPicture.asset(
-                  'assets/icons/poin.svg',
-                  height: 28, // Sesuaikan ukuran
-                  width: 28, // Sesuaikan ukuran
-                ),
-              ),
-              onPressed: () {
-                // Tambahkan aksi saat ikon poin ditekan
+            // ===============================================
+            // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
+            // ===============================================
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman PointRewardScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PointRewardScreen()),
+                );
               },
+              child: SvgPicture.asset(
+                'assets/icons/point.svg', // Ikon Poin
+                width: 35.0,
+                height: 35.0,
+              ),
             ),
+
+            // SizedBox (spasi) dan IconButton (mail) dihapus
           ],
         ),
       ],
@@ -354,13 +363,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoSection(BuildContext context) {
-    // ❌ Data dummy sudah dihapus
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        GradientMask(
+          gradient: AppColors.goldGradient,
           child: Text(
             'Promo Menarik',
             style: AppTextStyles.heading.copyWith(fontSize: 18),
@@ -368,124 +375,69 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 220, // Tetapkan tinggi untuk list horizontal
-          // ✅ GANTI DENGAN FutureBuilder
+          height: 220,
           child: FutureBuilder<List<PromoModel>>(
-            future: _futurePromos, // ✅ SEKARANG VARIABEL INI SUDAH ADA
+            future: _promoFuture,
             builder: (context, snapshot) {
-              // 1. Loading State
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-              // 2. Error State
-              else if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Gagal memuat promo: ${snapshot.error}',
-                    style: AppTextStyles.label,
-                  ),
-                );
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
               }
-              // 3. Empty State
-              else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Text(
-                    'Tidak ada promo saat ini',
-                    style: AppTextStyles.label,
-                  ),
-                );
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('Tidak ada promo saat ini.'));
               }
 
-              // 4. Success State (Data ada)
               final promos = snapshot.data!;
-
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: promos.length,
-                // Beri padding di list agar tidak mepet layar
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 itemBuilder: (context, index) {
                   final promo = promos[index];
                   return Padding(
-                    // Beri jarak antar kartu
                     padding: EdgeInsets.only(
                       right: index == promos.length - 1 ? 0 : 16,
                     ),
-                    // ✅ UBAH _buildPromoCard agar menggunakan PromoModel
-                    child: _buildPromoCard(
-                      // Gunakan URL dari server, atau gambar placeholder jika null
-                      imagePath:
-                          promo.gambarBanner ??
-                          'assets/images/poster.png', // Gambar fallback
-                      title: promo.judulPromo,
-                      subtitle: promo.deskripsi,
-                      isNetworkImage:
-                          promo.gambarBanner != null, // Tanda untuk widget Card
-                    ),
+                    child: _buildPromoCard(promo: promo),
                   );
                 },
               );
             },
           ),
         ),
-        const SizedBox(height: 24), // Beri jarak di bawah
       ],
     );
   }
 
-  Widget _buildPromoCard({
-    required String imagePath,
-    required String title,
-    required String subtitle,
-    bool isNetworkImage = false, // ✅ Tambahkan parameter ini
-  }) {
+  Widget _buildPromoCard({required PromoModel promo}) {
     return SizedBox(
-      width: 280, // Lebar kartu promo
+      width: MediaQuery.of(context).size.width * 0.75,
       child: Card(
-        elevation: 3,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: AppColors.cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        clipBehavior:
-            Clip.antiAlias, // Penting untuk rounded corners pada Image
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ BUAT LOGIKA UNTUK MENAMPILKAN GAMBAR DARI JARINGAN (NETWORK)
-            isNetworkImage
+            promo.gambarBanner != null && promo.gambarBanner!.startsWith('http')
                 ? Image.network(
-                    imagePath,
+                    promo.gambarBanner!,
                     height: 130,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    // Error builder jika gambar gagal dimuat
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'assets/images/poster.png', // Gambar fallback
-                        height: 130,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                    // Loading builder
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        height: 130,
-                        width: double.infinity,
-                        color: AppColors.background,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.gold,
-                          ),
-                        ),
-                      );
-                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 130,
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image_not_supported),
+                    ),
                   )
-                : Image.asset(
-                    imagePath, // Tetap gunakan aset lokal jika bukan network
+                : Container(
                     height: 130,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image_not_supported),
                   ),
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -493,14 +445,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    promo.judulPromo,
                     style: AppTextStyles.heading.copyWith(fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    promo.deskripsi,
                     style: AppTextStyles.label.copyWith(fontSize: 12),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

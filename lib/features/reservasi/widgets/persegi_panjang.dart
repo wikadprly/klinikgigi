@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class PersegiPanjang extends StatelessWidget {
   final double width;
@@ -29,10 +28,7 @@ class PersegiPanjang extends StatelessWidget {
         color: backgroundColor ?? AppColors.cardDark,
         borderRadius: BorderRadius.circular(borderRadius),
 
-        border: Border.all(
-          color: AppColors.goldDark, // lebih kontras dan mewah
-          width: 2.0,
-        ),
+        border: Border.all(color: AppColors.goldDark, width: 2.0),
 
         // Sedikit bayangan buat efek depth
         boxShadow: [

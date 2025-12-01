@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
-import 'package:flutter_klinik_gigi/features/auth/widgets/auth_input_field.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 

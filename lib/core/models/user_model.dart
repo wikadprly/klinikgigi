@@ -1,6 +1,4 @@
 // lib/core/models/user_model.dart
-import 'dart:convert';
-
 class UserModel {
   final int userId;
   final String namaPengguna;
@@ -13,7 +11,6 @@ class UserModel {
   final String password;
   final String? createdAt;
   final String? updatedAt;
-  final String? token;
 
   // Constructor
   UserModel({
@@ -28,7 +25,6 @@ class UserModel {
     required this.password,
     this.createdAt,
     this.updatedAt,
-    this.token,
   });
 
   // Parsing dari JSON (data API Laravel)
@@ -51,7 +47,6 @@ class UserModel {
       password: json['password'] ?? '',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      token: json['token'],
     );
   }
 
@@ -69,7 +64,6 @@ class UserModel {
       'password': password,
       'created_at': createdAt,
       'updated_at': updatedAt,
-      'token': token,
     };
   }
 }

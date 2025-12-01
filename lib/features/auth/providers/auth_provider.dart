@@ -28,11 +28,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
 
     if (user != null) {
-      _user = user; // 1. Simpan ke state memori
-
-      // Simpan ke penyimpanan permanen
-      await SharedPrefsHelper.saveUser(user);
-
+      _user = user;
       notifyListeners();
       return true;
     } else {

@@ -38,33 +38,58 @@ class AuthButton extends StatelessWidget {
               }
             },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        duration: const Duration(milliseconds: 220),
+        margin: const EdgeInsets.symmetric(vertical: 12),
+        height: 56,
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+
+          // ✨ Border Warm
+          border: Border.all(
+            color: disabled
+                ? AppColors.cardWarm.withOpacity(0.4)
+                : AppColors.cardWarm,
+            width: 1.2,
+          ),
+
+          // ✨ Gradient Gold (but softer)
           gradient: disabled
               ? LinearGradient(
                   colors: [
-                    AppColors.gold.withOpacity(0.4),
-                    AppColors.goldDark.withOpacity(0.4),
+                    AppColors.goldDark.withOpacity(0.3),
+                    AppColors.gold.withOpacity(0.3),
                   ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 )
               : const LinearGradient(
                   colors: [
-                    AppColors.gold,
                     AppColors.goldDark,
+                    AppColors.gold,
                   ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
-          borderRadius: BorderRadius.circular(30),
+
+          // ✨ Premium soft shadow
+          boxShadow: disabled
+              ? []
+              : [
+                  BoxShadow(
+                    color: AppColors.gold.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
         child: Center(
           child: Text(
             text,
             style: AppTextStyles.button.copyWith(
-              color: AppColors.background,
-              fontWeight: FontWeight.bold,
+              color: AppColors.background, // biar kontras & elegant
+              fontWeight: FontWeight.w700,
+              fontSize: 17,
+              letterSpacing: 0.3,
             ),
           ),
         ),

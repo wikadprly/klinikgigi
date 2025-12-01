@@ -7,21 +7,19 @@ class TransferBankOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const TransferBankOption({
-    super.key,
+    Key? key,
     required this.isSelected,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final bg = AppColors.cardDark;
-
     final borderColor = isSelected
         ? AppColors.goldDark
-        : AppColors.goldDark.withValues(alpha: 0.25);
-
+        : AppColors.goldDark.withOpacity(0.25);
     final innerColor = isSelected
-        ? AppColors.goldDark.withValues(alpha: 0.12)
+        ? AppColors.goldDark.withOpacity(0.12)
         : Colors.transparent;
 
     return GestureDetector(
@@ -36,7 +34,7 @@ class TransferBankOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            //  ikon bank
+            // ikon bank
             Container(
               width: 44,
               height: 30,
@@ -55,7 +53,7 @@ class TransferBankOption extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // teks “Transfer Bank”
+            // teks
             Expanded(
               child: Text(
                 "Transfer Bank",
@@ -74,7 +72,7 @@ class TransferBankOption extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.textLight.withValues(alpha: 0.9),
+                  color: AppColors.textLight.withOpacity(0.9),
                   width: 1.6,
                 ),
                 color: isSelected ? Colors.white : Colors.transparent,

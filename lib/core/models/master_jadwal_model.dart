@@ -1,45 +1,57 @@
-// lib/core/models/master_jadwal_model.dart
-
 class MasterJadwalModel {
-  final int jadwalId;
+  final int id;
   final String kodeDokter;
-  final String namaDokter;
   final String kodePoli;
-  final String namaPoli;
-  final String hari;         // ⬅⬅⬅ TAMBAHKAN INI
+  final String hari;
   final String jamMulai;
   final String jamSelesai;
-  final int kuotaTotal;
-  final int kuotaTerpakai;
-  final int sisaKuota;
+  final String keterangan; // Bisa null
+  final int quota;        // Ini Kuota Total
+  final int kuotaTerpakai; // Tambahan: untuk data yang sudah booking
 
   MasterJadwalModel({
-    required this.jadwalId,
+    required this.id,
     required this.kodeDokter,
-    required this.namaDokter,
     required this.kodePoli,
-    required this.namaPoli,
-    required this.hari,        // ⬅⬅ TAMBAHKAN INI
+    required this.hari,
     required this.jamMulai,
     required this.jamSelesai,
-    required this.kuotaTotal,
-    required this.kuotaTerpakai,
-    required this.sisaKuota,
+    required this.keterangan,
+    required this.quota,
+    this.kuotaTerpakai = 0, // Default 0
   });
 
   factory MasterJadwalModel.fromJson(Map<String, dynamic> json) {
     return MasterJadwalModel(
-      jadwalId: json['jadwal_id'] ?? 0,
-      kodeDokter: json['kode_dokter'] ?? '',
-      namaDokter: json['nama_dokter'] ?? '',
-      kodePoli: json['kode_poli'] ?? '',
-      namaPoli: json['nama_poli'] ?? '',
-      hari: json['hari'] ?? '-',                 // ⬅⬅⬅ BACA DARI API
-      jamMulai: json['jam_mulai'] ?? '',
-      jamSelesai: json['jam_selesai'] ?? '',
-      kuotaTotal: json['kuota_total'] ?? 0,
-      kuotaTerpakai: json['kuota_terpakai'] ?? 0,
-      sisaKuota: json['sisa_kuota'] ?? 0,
+      id: json['jadwal_id'] != null 
+          ? (json['jadwal_id'] is String ? int.parse(json['jadwal_id']) : json['jadwal_id'])
+          : (json['id'] is String ? int.tryParse(json['id']) ?? 0 : json['id'] ?? 0),
+      kodeDokter: json['kode_dokter']?.toString() ?? '',
+      kodePoli: json['kode_poli']?.toString() ?? '',
+      hari: json['hari']?.toString() ?? '', 
+      jamMulai: json['jam_mulai']?.toString() ?? '',
+      jamSelesai: json['jam_selesai']?.toString() ?? '',
+      keterangan: json['keterangan']?.toString() ?? '-',
+      quota: json['kuota_total'] != null
+          ? (json['kuota_total'] is String ? int.parse(json['kuota_total']) : json['kuota_total'])
+          : (json['quota'] is String ? int.tryParse(json['quota']) ?? 0 : json['quota'] ?? 0),
+      kuotaTerpakai: json['kuota_terpakai'] != null
+          ? (json['kuota_terpakai'] is String ? int.parse(json['kuota_terpakai']) : json['kuota_terpakai'])
+          : 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'kode_dokter': kodeDokter,
+      'kode_poli': kodePoli,
+      'hari': hari,
+      'jam_mulai': jamMulai,
+      'jam_selesai': jamSelesai,
+      'keterangan': keterangan,
+      'quota': quota,
+      'kuota_terpakai': kuotaTerpakai,
+    };
   }
 }
