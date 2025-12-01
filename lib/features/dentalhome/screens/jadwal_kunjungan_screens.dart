@@ -5,7 +5,7 @@ import '../widgets/bottom_schedule_card.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-
+import 'package:flutter_klinik_gigi/core/services/homecare_service.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key? key}) : super(key: key);
@@ -19,19 +19,32 @@ class _SchedulePageState extends State<SchedulePage> {
   int selectedMonth = 2;
   int selectedYear = 1;
   int selectedDoctor = 0;
+  final HomeCareService _service = HomeCareService();
+  List<Map<String, String>> doctors = [];
+  bool _loading = false;
 
-  final List<Map<String, String>> doctors = [
-    {
-      'name': 'Drg. Bawa Adiwinarnom, M.Med.Ed., Sp.Ort',
-      'time': 'Senin | 17:30–22:00',
-      'quota': '0/2',
-    },
-    {
-      'name': 'Drg. Raden Ardiansyah, M.Med.Ed., Sp.Ort',
-      'time': 'Senin | 17:00–19:00',
-      'quota': '0/2',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    selectedDay = now.day;
+    selectedMonth = now.month;
+    selectedYear = now.year;
+
+    _loading = true;
+    _service.fetchJadwalForDate(now).then((list) {
+      setState(() {
+        doctors = list;
+        selectedDoctor = 0;
+        _loading = false;
+      });
+    }).catchError((err) {
+      setState(() {
+        doctors = [];
+        _loading = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +67,9 @@ class _SchedulePageState extends State<SchedulePage> {
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: BackButtonWidget(onPressed: () => Navigator.of(context).pop()),
+                          child: BackButtonWidget(
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                         const Center(
                           child: Text(
@@ -70,16 +85,48 @@ class _SchedulePageState extends State<SchedulePage> {
 
                 const SizedBox(height: 20),
 
-                /// Calendar
-                CalendarWidget(
-                  selectedDay: selectedDay,
-                  onDaySelected: (day, month, year) {
-                    setState(() {
-                      selectedDay = day;
-                      selectedMonth = month;
-                      selectedYear = year;
-                    });
-                  },
+                /// =========================
+                ///   CALENDAR WITH BORDER
+                /// =========================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.goldDark, // warna gold sesuai tema
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.black.withOpacity(0.10), 
+                    ),
+                    child: CalendarWidget(
+                      selectedDay: selectedDay,
+                      onDaySelected: (day, month, year) {
+                        setState(() {
+                          selectedDay = day;
+                          selectedMonth = month;
+                          selectedYear = year;
+                          _loading = true;
+                          doctors = [];
+                        });
+
+                        final selDate = DateTime(year, month, day);
+                        _service.fetchJadwalForDate(selDate).then((list) {
+                          setState(() {
+                            doctors = list;
+                            selectedDoctor = 0;
+                            _loading = false;
+                          });
+                        }).catchError((err) {
+                          setState(() {
+                            doctors = [];
+                            _loading = false;
+                          });
+                        });
+                      },
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -96,18 +143,27 @@ class _SchedulePageState extends State<SchedulePage> {
                 const SizedBox(height: 12),
 
                 Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 150),
-                    itemCount: doctors.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) {
-                      return DoctorCard(
-                        doctor: doctors[i],
-                        selected: i == selectedDoctor,
-                        onSelect: () => setState(() => selectedDoctor = i),
-                      );
-                    },
-                  ),
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : doctors.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'Tidak ada dokter tersedia pada tanggal terpilih',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.only(bottom: 150),
+                              itemCount: doctors.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              itemBuilder: (context, i) {
+                                return DoctorCard(
+                                  doctor: doctors[i],
+                                  selected: i == selectedDoctor,
+                                  onSelect: () => setState(() => selectedDoctor = i),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
@@ -119,17 +175,23 @@ class _SchedulePageState extends State<SchedulePage> {
             right: 0,
             bottom: 0,
             child: BottomScheduleCard(
-              doctorName: doctors[selectedDoctor]['name']!,
+              doctorName: doctors.isNotEmpty ? doctors[selectedDoctor]['name']! : '-',
               onConfirm: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text("Konfirmasi"),
-                    content: Text(
-                      "Konfirmasi jadwal pada tanggal $selectedDay?",
+                if (doctors.isNotEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Konfirmasi"),
+                      content: Text(
+                        "Konfirmasi jadwal pada tanggal $selectedDay?",
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Pilih dokter terlebih dahulu')),
+                  );
+                }
               },
             ),
           ),
