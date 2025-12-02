@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import '../../../core/services/home_care_service.dart';
-import 'nota_pelunasan.dart'; // Pastikan import ini ada
+import 'rincian_pembayaran.dart'; // Pastikan import ini ada
 
 class PembayaranBankScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -15,8 +15,6 @@ class PembayaranBankScreen extends StatefulWidget {
 }
 
 class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
-  final HomeCareService _service = HomeCareService();
-
   bool _isLoading = true;
   String _virtualAccountNumber = "880098765432";
   String _bookingCode =
@@ -387,13 +385,14 @@ class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => NotaPelunasanScreen(
-                              transactionData: {
+                            builder: (context) => PaymentDetailScreen(
+                              transaction: {
                                 'kode_booking': _bookingCode,
                                 'nominal': _nominal,
                                 'metode': 'Transfer Bank (BCA)',
                                 'waktu': DateTime.now(),
                               },
+                              invoiceId: _bookingCode,
                             ),
                           ),
                         );

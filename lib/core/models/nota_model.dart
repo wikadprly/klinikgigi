@@ -1,50 +1,25 @@
-class InvoiceItem {
-  final String nama;
-  final int harga;
+import 'treatment_item.dart';
 
-  InvoiceItem({
-    required this.nama,
-    required this.harga,
-  });
-
-  factory InvoiceItem.fromJson(Map<String, dynamic> json) {
-    return InvoiceItem(
-      nama: json['namaPerawatan'],
-      harga: json['harga'],
-    );
-  }
-}
 
 class InvoiceModel {
-  final String namaPasien;
-  final String invoiceId;
-  final String tanggal;
-  final int subtotal;
-  final int booking;
-  final int totalAkhir;
-  final List<InvoiceItem> items;
+final String patientName;
+final String invoiceId;
+final DateTime date;
+final List<TreatmentItem> items;
+final int bookingDiscount;
+final int points;
 
-  InvoiceModel({
-    required this.namaPasien,
-    required this.invoiceId,
-    required this.tanggal,
-    required this.subtotal,
-    required this.booking,
-    required this.totalAkhir,
-    required this.items,
-  });
 
-  factory InvoiceModel.fromJson(Map<String, dynamic> json) {
-    return InvoiceModel(
-      namaPasien: json['namaPasien'],
-      invoiceId: json['invoiceId'],
-      tanggal: json['tanggal'],
-      subtotal: json['subtotal'],
-      booking: json['uangBooking'],
-      totalAkhir: json['totalAkhir'],
-      items: (json['rincian'] as List)
-          .map((e) => InvoiceItem.fromJson(e))
-          .toList(),
-    );
-  }
+InvoiceModel({
+required this.patientName,
+required this.invoiceId,
+required this.date,
+required this.items,
+this.bookingDiscount = 0,
+this.points = 0,
+});
+
+
+int get subtotal => items.fold(0, (sum, item) => sum + item.price);
+int get total => subtotal - bookingDiscount;
 }

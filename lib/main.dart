@@ -1,4 +1,6 @@
+// Cleaned and fixed version of your main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/payment_method.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
@@ -7,7 +9,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'package:flutter_klinik_gigi/providers/nota_provider.dart';
+
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -21,6 +23,13 @@ import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
+
+// Payment
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/rincian_pembayaran.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/rincian_success.dart';
+import 'package:flutter_klinik_gigi/providers/payment_provider.dart';
+
+
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -44,7 +53,7 @@ import 'package:flutter_klinik_gigi/features/settings/screens/panduanreservasi.d
 import 'package:flutter_klinik_gigi/features/settings/screens/panduaneditprofil.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/panduanubahsandi.dart';
 
-//Profile
+// Profile
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
 
@@ -59,10 +68,10 @@ void main() async {
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
-        ChangeNotifierProvider<ReservasiProvider>(
-          create: (_) => ReservasiProvider(),
-        ),
+        ChangeNotifierProvider<ReservasiProvider>(create: (_) => ReservasiProvider()),
         ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
+        ChangeNotifierProvider<PaymentProvider>(create: (_) => PaymentProvider()),
+
       ],
       child: const KlinikGigiApp(),
     ),
@@ -85,44 +94,47 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/rincian_pembayaran',
+
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
 
-
+    
+    
         // Home
         '/main_screen': (context) => const MainScreen(),
 
-        // Dental Home Care
+        // Dental Home
         '/dentalhome/jadwal': (context) => const SchedulePage(),
+
         '/dentalhome/input_lokasi': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return InputLokasiScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
+            masterJadwalId: args?['masterJadwalId'] ?? 0,
+            tanggal: args?['tanggal'] ?? '',
+            namaDokter: args?['namaDokter'] ?? '',
+            jamPraktek: args?['jamPraktek'] ?? '',
           );
         },
+
         '/dentalhome/pembayaran': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return PembayaranHomeCareScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
-            keluhan: arguments?['keluhan'] ?? '',
-            alamat: arguments?['alamat'] ?? '',
-            latitude: arguments?['latitude'] ?? 0.0,
-            longitude: arguments?['longitude'] ?? 0.0,
-            rincianBiaya: arguments?['rincianBiaya'] ?? {},
+            masterJadwalId: args?['masterJadwalId'] ?? 0,
+            tanggal: args?['tanggal'] ?? '',
+            namaDokter: args?['namaDokter'] ?? '',
+            jamPraktek: args?['jamPraktek'] ?? '',
+            keluhan: args?['keluhan'] ?? '',
+            alamat: args?['alamat'] ?? '',
+            latitude: args?['latitude'] ?? 0.0,
+            longitude: args?['longitude'] ?? 0.0,
+            rincianBiaya: args?['rincianBiaya'] ?? {},
           );
         },
+
+
 
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),
@@ -130,9 +142,7 @@ class KlinikGigiApp extends StatelessWidget {
         // Riwayat
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
-          final data =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return RiwayatDetailScreen(data: data ?? {});
         },
 
@@ -141,10 +151,8 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one': (context) =>
-            const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two': (context) =>
-            const UbahKataSandi2Page(resetToken: "sample_token"),
+        '/ubahsandi_one': (context) => const UbahKataSandi1Page(email: "user@example.com"),
+        '/ubahsandi_two': (context) => const UbahKataSandi2Page(resetToken: "sample_token"),
         '/notifikasi': (context) => const NotificationSettingsPage(),
         '/panduanpage': (context) => const PanduanPage(),
         '/panduanlogin': (context) => const PanduanLoginPage(),
@@ -153,7 +161,7 @@ class KlinikGigiApp extends StatelessWidget {
         '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
         '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
 
-        //Profile
+        // Profil
         '/profil_screens': (context) {
           return FutureBuilder<String?>(
             future: SharedPrefsHelper.getToken(),
@@ -163,7 +171,20 @@ class KlinikGigiApp extends StatelessWidget {
             },
           );
         },
+
         '/two_page': (context) => const EditProfilPage2(),
+
+        // Pembayaran
+        '/rincian_pembayaran': (context) {
+           final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+           return PaymentDetailScreen(
+             transaction: args?['transaction'] ?? {},
+             invoiceId: args?['invoiceId'] ?? '',
+           );
+         },
+
+         '/rincian_success': (context) => const PaymentSuccessScreen(),
+
       },
     );
   }
