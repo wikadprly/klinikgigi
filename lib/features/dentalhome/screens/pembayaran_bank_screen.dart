@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import 'tagihan_page.dart';
+import '../../../core/services/home_care_service.dart';
+import 'nota_pelunasan.dart'; // Pastikan import ini ada
 
 class PembayaranBankScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -14,14 +15,18 @@ class PembayaranBankScreen extends StatefulWidget {
 }
 
 class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
+  final HomeCareService _service = HomeCareService();
+
   bool _isLoading = true;
   String _virtualAccountNumber = "880098765432";
   String _bookingCode =
       "RSV-HC-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+  String _nominal = "0";
 
   @override
   void initState() {
     super.initState();
+    _nominal = widget.bookingData['rincianBiaya']['estimasi_total'].toString();
     _prosesBooking();
   }
 
@@ -382,8 +387,14 @@ class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                TagihanPage(noPemeriksaan: _bookingCode),
+                            builder: (context) => NotaPelunasanScreen(
+                              transactionData: {
+                                'kode_booking': _bookingCode,
+                                'nominal': _nominal,
+                                'metode': 'Transfer Bank (BCA)',
+                                'waktu': DateTime.now(),
+                              },
+                            ),
                           ),
                         );
                       },
