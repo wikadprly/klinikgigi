@@ -378,7 +378,7 @@ class _PembayaranBankScreenState extends State<PembayaranBankScreen> {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        // 🔥 NAVIGASI KE NOTA PELUNASAN
+                        // NAVIGASI KE NOTA PELUNASAN
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

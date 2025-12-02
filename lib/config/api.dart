@@ -8,6 +8,13 @@ class ApiEndpoint {
   static const check = "$baseUrl/check";
 
   // INI DIGABUNG (Diambil dari 'main')
+  // HOME CARE
+  static const homeCareCalculate = "$baseUrl/homecare/calculate";
+  static const homeCareBook = "$baseUrl/homecare/booking";
+  static String homeCareConfirmPayment(int bookingId) =>
+      "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
+  static String homeCareTracking(int bookingId) =>
+      "$baseUrl/homecare/booking/$bookingId/tracking";
   static const String pasien = "$baseUrl/pasien";
   static const String dokter = "$baseUrl/dokter";
 
@@ -33,10 +40,4 @@ class ApiEndpoint {
       "$baseUrl/nota/invoice/$noPemeriksaan";
 
   // HOME CARE (optional endpoints used by HomeCareService)
-  static const String homeCareCalculate = "$baseUrl/homecare/calculate";
-  static const String homeCareBook = "$baseUrl/homecare/book";
-  static String homeCareConfirmPayment(int bookingId) =>
-      "$baseUrl/homecare/confirm/$bookingId";
-  static String homeCareTracking(int bookingId) =>
-      "$baseUrl/homecare/tracking/$bookingId";
 }
