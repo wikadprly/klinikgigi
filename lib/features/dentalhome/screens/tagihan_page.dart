@@ -19,9 +19,16 @@ class TagihanPage extends StatelessWidget {
       }
     }
 
-    // If we have an id, show NotaPelunasanScreen, else show placeholder
+    // If we have an id, show NotaPelunasanScreen with minimal transaction data,
+    // else show placeholder. NotaPelunasanScreen expects a Map `transactionData`.
     if (id != null) {
-      return NotaPelunasanScreen(idTransaksi: id);
+      final Map<String, dynamic> transactionData = {
+        'kode_booking': 'TRX-$id',
+        'metode': 'Unknown',
+        'nominal': 0,
+        'waktu': DateTime.now(),
+      };
+      return NotaPelunasanScreen(transactionData: transactionData);
     }
 
     return Scaffold(
