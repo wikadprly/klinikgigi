@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'pembayaran_qris_screen.dart';
 import 'pembayaran_bank_screen.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'package:flutter_klinik_gigi/config/api.dart';
 
 class PembayaranHomeCareScreen extends StatefulWidget {
   final int masterJadwalId;
@@ -36,36 +42,120 @@ class PembayaranHomeCareScreen extends StatefulWidget {
 class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
   String _selectedPayment = 'transfer';
 
-  void _lanjutKeLayarPembayaran() {
-    final Map<String, dynamic> dataBookingMentah = {
-      'masterJadwalId': widget.masterJadwalId,
-      'tanggal': widget.tanggal,
-      'namaDokter': widget.namaDokter,
-      'jamPraktek': widget.jamPraktek,
-      'keluhan': widget.keluhan,
-      'alamat': widget.alamat,
-      'latitude': widget.latitude,
-      'longitude': widget.longitude,
-      'rincianBiaya': widget.rincianBiaya,
-      'metodePembayaran': _selectedPayment,
-    };
+  Future<void> _lanjutKeLayarPembayaran() async {
+    // 1. Tampilkan Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
 
-    if (_selectedPayment == 'qris') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              PembayaranQrisScreen(bookingData: dataBookingMentah),
+    final url = Uri.parse(ApiEndpoint.homeCareBook);
+
+    // Ambil User & Token
+    final token = await SharedPrefsHelper.getToken();
+    final user = await SharedPrefsHelper.getUser(); // <--- Ambil Data User
+
+    // Validasi Login Dasar
+    if (token == null || user == null) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data user tidak ditemukan. Silakan login ulang.'),
         ),
       );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              PembayaranBankScreen(bookingData: dataBookingMentah),
+      return;
+    }
+
+    // Validasi Rekam Medis ID (Penting!)
+    // Pastikan model UserModel Anda memiliki field rekamMedisId atau id yang merujuk ke rekam medis
+    // Sesuaikan 'rekamMedisId' dengan nama variabel di UserModel Anda.
+    // Jika di UserModel namanya 'id', pakai 'id'. Jika 'rekam_medis_id', pakai itu.
+    final rekamMedisId = user.rekamMedisId;
+
+    if (rekamMedisId == null) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID Rekam Medis tidak ditemukan pada akun ini.'),
         ),
       );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          // --- TAMBAHAN PENTING ---
+          'rekam_medis_id': rekamMedisId, // <--- Kirim ID ini ke Backend
+          // ------------------------
+          'master_jadwal_id': widget.masterJadwalId,
+          'tanggal': widget.tanggal,
+          'keluhan': widget.keluhan,
+          'latitude_pasien': widget.latitude,
+          'longitude_pasien': widget.longitude,
+          'alamat_lengkap': widget.alamat,
+          'metode_pembayaran': _selectedPayment,
+        }),
+      );
+
+      if (mounted) Navigator.pop(context); // Tutup Loading
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ... Logika Sukses (Sama seperti sebelumnya) ...
+        // Copy bagian sukses dari kode sebelumnya
+        final respData = jsonDecode(response.body);
+        final paymentInfo = respData['payment_info'];
+
+        if (paymentInfo != null) {
+          // ... Navigasi ke halaman pembayaran ...
+          final String expiredAt =
+              paymentInfo['expired_at'] ?? DateTime.now().toString();
+          final Map<String, dynamic> instructions =
+              paymentInfo['instructions'] ?? {};
+
+          if (_selectedPayment == 'qris') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PembayaranQrisScreen(
+                  expiredAt: expiredAt,
+                  paymentData: instructions,
+                ),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PembayaranBankScreen(
+                  expiredAt: expiredAt,
+                  paymentData: instructions,
+                  tanggal: widget.tanggal,
+                  alamat: widget.alamat,
+                  keluhan: widget.keluhan,
+                ),
+              ),
+            );
+          }
+        }
+      } else {
+        // Tampilkan error dari backend (misal validation error)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal: ${response.body}')));
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
