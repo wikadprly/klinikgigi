@@ -205,7 +205,7 @@ class NotaPelunasanScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    "Kembali ke Beranda",
+                    "Lihat Timeline Progres",
                     style: AppTextStyles.button,
                   ),
                 ),

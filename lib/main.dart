@@ -98,17 +98,7 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Dental Home Care
         '/dentalhome/jadwal': (context) => const SchedulePage(),
-        '/dentalhome/input_lokasi': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
-          return InputLokasiScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
-          );
-        },
+        '/dentalhome/input_lokasi': (context) => const InputLokasiScreen(),
         '/dentalhome/pembayaran': (context) {
           final arguments =
               ModalRoute.of(context)?.settings.arguments
