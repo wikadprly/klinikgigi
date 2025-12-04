@@ -36,6 +36,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prov = Provider.of<ReservasiProvider>(context, listen: false);
       
+      // Bersihkan data lama biar fresh
+      prov.clearData();
+      
       // Load data Poli saat pertama buka
       await prov.fetchPoli();
 
@@ -220,13 +223,22 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                         );
 
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Jadwal diperbarui"),
-                              backgroundColor: AppColors.gold,
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
+                          if (reservasiProv.jadwalList.isEmpty) {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Jadwal tidak ditemukan."),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Jadwal diperbarui"),
+                                backgroundColor: AppColors.gold,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          }
                         }
                       },
               ),
@@ -278,54 +290,75 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                         );
                         namaDokterTampil = dokterObj.namaLengkap;
                       } catch (_) {
-                         // Fallback jika tidak ketemu
-                         namaDokterTampil = "Dokter ${jadwal.kodeDokter}";
+                          // Fallback jika tidak ketemu
+                          namaDokterTampil = "Dokter ${jadwal.kodeDokter}";
                       }
 
-                      return ScheduleCardWidget(
-                        namaPoli: prov.selectedPoli?.namaPoli ?? '-',
-                        namaDokter: namaDokterTampil, 
-                        hari: jadwal.hari,
-                        jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
-                        
-                        // Sesuai model MasterJadwalModel kamu
-                        quota: jadwal.quota, 
-                        kuotaTerpakai: jadwal.kuotaTerpakai,
+                      // 🔥 LOGIC UI STATUS (Agar tombol tidak bisa diklik jika penuh/libur)
+                      bool isAvailable = jadwal.statusJadwal == 'Tersedia';
+                      String statusText = jadwal.statusJadwal; // 'Tersedia', 'Penuh', 'Libur'
 
-                        onTap: () {
-                          // ⚠️ Validasi Tanggal
-                          if (selectedTanggal == null) {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Harap pilih tanggal terlebih dahulu untuk melakukan booking."),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                            return;
-                          }
-
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) {
-                              return KonfirmasiReservasiSheet(
-                                namaPasien: user?.namaPengguna ?? "-",
-                                rekamMedis: user?.rekamMedisId.toString() ?? "-",
-                                poli: prov.selectedPoli?.namaPoli ?? '-',
-                                dokter: namaDokterTampil, 
-                                tanggal: selectedTanggal!, 
-                                jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
-                                keluhan: "-",
-                                total: 25000,
-                                
-                                // 🔥 SUDAH DIAKTIFKAN:
-                                jadwalId: jadwal.id,          // Ambil ID jadwal
-                                dokterId: jadwal.kodeDokter,  // Ambil kode dokter
+                      return Opacity(
+                        // Bikin agak transparan kalau tidak tersedia biar kelihatan inactive
+                        opacity: isAvailable ? 1.0 : 0.6,
+                        child: ScheduleCardWidget(
+                          namaPoli: prov.selectedPoli?.namaPoli ?? '-',
+                          namaDokter: namaDokterTampil, 
+                          hari: jadwal.hari,
+                          jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+                          quota: jadwal.quota, 
+                          kuotaTerpakai: jadwal.kuotaTerpakai,
+                          
+                          // 🔥 UPDATE DISINI: KIRIM TANGGAL KE WIDGET
+                          // Jika user memilih tanggal, tampilkan. Jika tidak, kosong.
+                          tanggal: selectedTanggal, 
+                          
+                          onTap: () {
+                            // 1. Validasi Tanggal
+                            if (selectedTanggal == null) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Harap pilih tanggal terlebih dahulu untuk melakukan booking."),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
-                            },
-                          );
-                        },
+                              return;
+                            }
+
+                            // 2. 🔥 VALIDASI BARU: CEK STATUS JADWAL
+                            if (!isAvailable) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Maaf, jadwal ini $statusText."),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) {
+                                return KonfirmasiReservasiSheet(
+                                  namaPasien: user?.namaPengguna ?? "-",
+                                  rekamMedis: user?.rekamMedisId.toString() ?? "-",
+                                  poli: prov.selectedPoli?.namaPoli ?? '-',
+                                  dokter: namaDokterTampil, 
+                                  tanggal: selectedTanggal!, 
+                                  jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+                                  keluhan: "-",
+                                  total: 25000,
+                                  
+                                  // Data Backend (Kirim ID Int & String Dokter)
+                                  jadwalId: jadwal.id,          
+                                  dokterId: jadwal.kodeDokter,  
+                                );
+                              },
+                            );
+                          },
+                        ),
                       );
                     },
                   );

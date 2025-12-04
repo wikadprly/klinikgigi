@@ -15,7 +15,7 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
   final String keluhan;
   final int total;
 
-  // 1. TAMBAHAN WAJIB (Supaya reservasi_screen tidak merah)
+  // Data Backend (Wajib)
   final int jadwalId;
   final String dokterId;
 
@@ -29,7 +29,6 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
     required this.jam,
     required this.keluhan,
     required this.total,
-    // Wajib diisi agar error merah hilang
     required this.jadwalId,
     required this.dokterId,
   });
@@ -85,7 +84,6 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
             const SizedBox(height: 22),
             _totalBox(),
             const SizedBox(height: 25),
-            // Kirim context ke sini
             _actionButtons(context, provider), 
           ],
         ),
@@ -248,38 +246,34 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
           child: SizedBox(
             height: 48,
             child: ElevatedButton(
-              // 2. PERBAIKAN LOGIC TOMBOL BAYAR
+              // Logic Tombol Bayar
               onPressed: provider.isLoading 
                 ? null 
                 : () async {
                   // A. Siapkan data untuk dikirim ke Backend
                   final requestData = {
-                    'rekam_medis_id': widget.rekamMedis,
-                    'dokter_id': widget.dokterId, // Kirim ID asli
-                    'jadwal_id': widget.jadwalId, // Kirim ID asli
+                    'rekam_medis_id': widget.rekamMedis, // ID dikirim di sini
+                    'dokter_id': widget.dokterId,
+                    'jadwal_id': widget.jadwalId,
                     'tanggal_pesan': widget.tanggal,
                     'keluhan': keluhanController.text,
                     'metode_pembayaran': 'Transfer Bank',
                     'jenis_pasien': 'Umum',
                   };
 
-                  // B. Panggil API (Tunggu sampai dapat balasan)
+                  // B. Panggil API
                   final result = await provider.buatReservasi(requestData);
 
-                  // C. Kalau Sukses (result ada isinya)
+                  // C. Cek Hasil
                   if (result != null && context.mounted) {
-                    Navigator.pop(context); // Tutup Sheet Konfirmasi
+                    Navigator.pop(context); // Tutup Sheet
 
-                    // D. Pindah ke Halaman Pembayaran BAWA DATA HASIL DARI API
+                    // D. Pindah ke Halaman Pembayaran
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranPage(
-                          // Ini dia No Pemeriksaan yang dicari!
-                          // Didapat dari backend setelah tombol ditekan
                           noPemeriksaan: result['no_pemeriksaan'], 
-                          
-                          // Data lain buat tampilan
                           namaLengkap: widget.namaPasien,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -291,12 +285,12 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
                       ),
                     );
                   } else if (context.mounted) {
-                    // Kalau gagal
+                    // E. Error Handling
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(provider.errorMessage ?? "Gagal melakukan booking"),
                         backgroundColor: Colors.red,
-                      )
+                      ),
                     );
                   }
                 },
