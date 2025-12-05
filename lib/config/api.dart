@@ -9,8 +9,9 @@ class ApiEndpoint {
 
   // INI DIGABUNG (Diambil dari 'main')
   // HOME CARE
+  static const String homeCareJadwalMaster = "$baseUrl/homecare/jadwal-master";
   static const homeCareCalculate = "$baseUrl/homecare/calculate";
-  static const homeCareBook = "$baseUrl/homecare/booking";
+  static const homeCareBook = "$baseUrl/homecare/create-booking";
   static String homeCareConfirmPayment(int bookingId) =>
       "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
   static String homeCareTracking(int bookingId) =>
