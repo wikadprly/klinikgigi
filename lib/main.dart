@@ -20,7 +20,7 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -90,7 +90,6 @@ class KlinikGigiApp extends StatelessWidget {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
 
-
         // Home
         '/main_screen': (context) => const MainScreen(),
 
@@ -101,7 +100,7 @@ class KlinikGigiApp extends StatelessWidget {
           final arguments =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
-          return PembayaranHomeCareScreen(
+          return MidtransHomeCareBookingScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
             namaDokter: arguments?['namaDokter'] ?? '',

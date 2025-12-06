@@ -472,7 +472,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 width: double.infinity,
                 height: 50,
                 decoration: BoxDecoration(
-                  gradient: AppColors.goldGradient,
+                  color: AppColors.gold,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton(
