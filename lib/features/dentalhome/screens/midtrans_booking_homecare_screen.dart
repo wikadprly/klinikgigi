@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart'; // Untuk kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 import 'package:flutter_klinik_gigi/config/api.dart';
+import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-// Pastikan file ini ada
 import 'midtrans_webview_screen.dart';
 
 class MidtransHomeCareBookingScreen extends StatefulWidget {
@@ -49,10 +48,18 @@ class _MidtransHomeCareBookingScreenState
     decimalDigits: 0,
   );
 
+  late final HomeCareService _homeCareService;
+
   // Variable Polling
   Timer? _timerPolling;
   int? _currentBookingId;
   bool _isPolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeCareService = HomeCareService();
+  }
 
   @override
   void dispose() {
@@ -134,61 +141,54 @@ class _MidtransHomeCareBookingScreenState
           const Center(child: CircularProgressIndicator(color: AppColors.gold)),
     );
 
-    final url = Uri.parse(ApiEndpoint.homeCareBook);
-
     try {
-      final token = await SharedPrefsHelper.getToken();
       final user = await SharedPrefsHelper.getUser();
 
-      if (token == null || user == null) {
+      if (user == null) {
         if (mounted) Navigator.pop(context);
         _showSnackbar('Sesi habis. Silakan login ulang.', isError: true);
         return;
       }
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'rekam_medis_id': user.rekamMedisId,
-          'master_jadwal_id': widget.masterJadwalId,
-          'tanggal': widget.tanggal,
-          'keluhan': widget.keluhan,
-          'latitude_pasien': widget.latitude,
-          'longitude_pasien': widget.longitude,
-          'alamat_lengkap': widget.alamat,
-          'metode_pembayaran': 'midtrans',
-        }),
+      if (user.rekamMedisId == null) {
+        if (mounted) Navigator.pop(context);
+        _showSnackbar(
+          'Data pasien tidak lengkap. Silakan perbarui profil.',
+          isError: true,
+        );
+        return;
+      }
+
+      //  Use service instead of direct HTTP
+      final result = await _homeCareService.createBooking(
+        rekamMedisId: user.rekamMedisId!,
+        masterJadwalId: widget.masterJadwalId,
+        tanggal: widget.tanggal,
+        keluhan: widget.keluhan,
+        lat: widget.latitude,
+        lng: widget.longitude,
+        alamat: widget.alamat,
+        metodePembayaran: 'midtrans',
       );
 
       if (mounted) Navigator.pop(context); // Tutup Loading
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final respData = jsonDecode(response.body);
+      // Extract data dari service response
+      if (result['booking'] != null && result['payment_info'] != null) {
+        final booking = result['booking'] as dynamic;
+        final bookingId = booking.id;
+        final redirectUrl = result['payment_info']['redirect_url'];
 
         // Simpan Booking ID untuk Polling
-        if (respData['data'] != null && respData['data']['id'] != null) {
-          _currentBookingId = respData['data']['id'];
-        }
+        _currentBookingId = bookingId;
 
-        // Ambil URL Redirect
-        String? redirectUrl;
-        if (respData['payment_info'] != null) {
-          redirectUrl = respData['payment_info']['redirect_url'];
-        } else if (respData['data'] != null) {
-          redirectUrl = respData['data']['redirect_url'];
-        }
-
-        if (redirectUrl != null) {
+        if (redirectUrl != null && redirectUrl.isNotEmpty) {
           _launchPayment(redirectUrl);
         } else {
           _showSnackbar('Gagal mendapatkan link pembayaran.', isError: true);
         }
       } else {
-        _showSnackbar('Gagal: ${response.body}', isError: true);
+        _showSnackbar('Gagal membuat booking.', isError: true);
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
@@ -210,7 +210,7 @@ class _MidtransHomeCareBookingScreenState
       // B. LOGIKA ANDROID (WebView Dalam Aplikasi)
       if (_currentBookingId != null) _startPollingStatus(_currentBookingId!);
 
-      final result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => MidtransWebViewScreen(url: urlString),
