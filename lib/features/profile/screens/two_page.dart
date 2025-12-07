@@ -141,7 +141,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.goldDark, size: 20),
+          Icon(icon, color: AppColors.gold, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: TextFormField(
@@ -173,7 +173,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppColors.goldDark,
+              primary: AppColors.gold,
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -208,7 +208,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                   const Text(
                     "Edit Profil",
                     style: TextStyle(
-                      color: AppColors.goldDark,
+                      color: AppColors.gold,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -224,7 +224,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
               const Text(
                 "Informasi Dasar",
                 style: TextStyle(
-                  color: AppColors.goldDark,
+                  color: AppColors.gold,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -276,7 +276,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.goldDark,
+                      backgroundColor: AppColors.gold,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
