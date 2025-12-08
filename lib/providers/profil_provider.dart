@@ -13,17 +13,17 @@ class ProfileProvider with ChangeNotifier {
   String? _statusAktif;
   bool isLoading = false;
 
+  // =====================
   // Ambil profil user
+  // =====================
   Future<void> fetchProfile(String token) async {
     isLoading = true;
     notifyListeners();
 
     final result = await _profilService.getProfil(token);
-
     if (result["success"] == true) {
       user = result["data"]["user"];
       rekamMedis = result["data"]["rekam_medis"];
-      // Map optional insurance fields returned by the API
       _namaAsuransi = result["data"]["nama_asuransi"]?.toString();
       _noPeserta = result["data"]["no_peserta"]?.toString();
       _statusAktif = result["data"]["status_aktif"]?.toString();
@@ -33,31 +33,59 @@ class ProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Update profil
+  // =====================
+  // Update data profil (tanpa foto)
+  // =====================
   Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
     final result = await _profilService.updateProfil(token, data);
-
     if (result["success"] == true) {
-      await fetchProfile(token); // refresh data
+      await fetchProfile(token);
       return true;
     }
+    return false;
+  }
 
+  // =====================
+  // Upload / Ganti foto profil
+  // =====================
+  Future<bool> updateProfilePicture(File file) async {
+    final token = await SharedPrefsHelper.getToken();
+    if (token == null) return false;
+
+    final result = await _profilService.updateProfilePicture(token, file);
+    if (result["success"] == true) {
+      await fetchProfile(token);
+      return true;
+    }
+    return false;
+  }
+
+  // =====================
+  // Hapus foto profil
+  // =====================
+  Future<bool> removeProfilePicture() async {
+    final token = await SharedPrefsHelper.getToken();
+    if (token == null) return false;
+
+    final result = await _profilService.deleteProfilePicture(token);
+    if (result["success"] == true) {
+      await fetchProfile(token);
+      return true;
+    }
     return false;
   }
 }
 
-// Compatibility shim: many parts of the app reference `ProfilProvider` (no 'e')
-// and expect a slightly different API (e.g. fetchProfil, userData, profilData).
-// Provide a thin adapter to avoid widespread refactors.
-
+// ============================================================
+// COMPATIBILITY SHIM (biar file2 lama yg pakai nama ProfilProvider tetep jalan)
+// ============================================================
 class ProfilProvider extends ProfileProvider {
   Future<void> fetchProfil(String token) => fetchProfile(token);
 
-  /// Ambil token dari SharedPrefs dan panggil fetchProfil
   Future<void> fetchProfilFromToken() async {
     final token = await SharedPrefsHelper.getToken();
     if (token != null && token.isNotEmpty) {
-      await fetchProfil(token);
+      await fetchProfile(token);
     }
   }
 
@@ -65,25 +93,13 @@ class ProfilProvider extends ProfileProvider {
   Map<String, dynamic>? get profilData => user;
   Map<String, dynamic>? get rekamMedisData => rekamMedis;
 
-  // Optional fields returned by API
   String? get namaAsuransiValue => _namaAsuransi;
   String? get noPesertaValue => _noPeserta;
   String? get statusAktifValue => _statusAktif;
 
-  // Legacy getters expected by UI (keep names stable)
   String? get namaAsuransi => _namaAsuransi;
   String? get noPeserta => _noPeserta;
   String? get statusAktif => _statusAktif;
 
   String? get errorMessage => null;
-
-  // Stubs for image upload/remove used by UI. Implement real logic later.
-  Future<bool> updateProfilePicture(File file) async {
-    // Not implemented: return false so UI shows failure message.
-    return false;
-  }
-
-  Future<bool> removeProfilePicture() async {
-    return false;
-  }
 }
