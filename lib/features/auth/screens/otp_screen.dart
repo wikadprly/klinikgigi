@@ -7,7 +7,9 @@ import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String? email;
+
+  const OtpScreen({super.key, this.email});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -69,8 +71,8 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    // Ambil email dari arguments
-    final email = ModalRoute.of(context)?.settings.arguments as String? ?? "-";
+    // Gunakan email dari parameter widget
+    final email = widget.email ?? "-";
 
     return Scaffold(
       backgroundColor: AppColors.background,
