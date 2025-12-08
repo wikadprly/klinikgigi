@@ -40,5 +40,8 @@ class ApiEndpoint {
   static String notaInvoice(String noPemeriksaan) =>
       "$baseUrl/nota/invoice/$noPemeriksaan";
 
+  // JadwalPraktek
+  static const String jadwalPraktek = "$baseUrl/jadwal-praktek";
+
   // HOME CARE (optional endpoints used by HomeCareService)
 }
