@@ -47,7 +47,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
   // ==========================
   // TOMBOL EDIT PROFIL
   // ==========================
-  Widget editProfileButton({required VoidCallback onTap}) {
+  Widget editProfilButton({required VoidCallback onTap}) {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.goldGradient,
@@ -234,7 +234,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
 
                         Align(
                           alignment: Alignment.center,
-                          child: editProfileButton(onTap: () {
+                          child: editProfilButton(onTap: () {
                             // Navigate to edit profile page
                           }),
                         ),
