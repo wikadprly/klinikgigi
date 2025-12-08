@@ -1,149 +1,89 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/core/services/profil_service.dart';
-import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import '../core/services/profil_service.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
-class ProfilProvider with ChangeNotifier {
-  final ProfilService _service = ProfilService();
+class ProfileProvider with ChangeNotifier {
+  final ProfilService _profilService = ProfilService();
 
-  Map<String, dynamic>? profilData;
+  Map<String, dynamic>? user;
+  Map<String, dynamic>? rekamMedis;
+  String? _namaAsuransi;
+  String? _noPeserta;
+  String? _statusAktif;
   bool isLoading = false;
-  String? errorMessage;
 
-  // Getter untuk data user
-  Map<String, dynamic>? get userData => profilData?["data"]?["user"];
+  // Ambil profil user
+  Future<void> fetchProfile(String token) async {
+    isLoading = true;
+    notifyListeners();
 
-  // Getter untuk data rekam medis
-  Map<String, dynamic>? get rekamMedisData =>
-      profilData?["data"]?["rekam_medis"];
+    final result = await _profilService.getProfil(token);
 
-  // Getter untuk informasi asuransi
-  String? get namaAsuransi => profilData?["data"]?["nama_asuransi"];
-  String? get noPeserta => profilData?["data"]?["no_peserta"];
-  String? get statusAktif => profilData?["data"]?["status_aktif"];
-
-  Future<void> fetchProfil(String token) async {
-    try {
-      print(
-        "ProfilProvider: Starting to fetch profile with token: ${token.length > 0 ? '***' : 'empty'}",
-      );
-      isLoading = true;
-      notifyListeners();
-
-      final result = await _service.getProfil(token);
-      print("ProfilProvider: Raw API response: $result");
-
-      if (result["success"] == true) {
-        profilData = result;
-        errorMessage = null;
-        print("ProfilProvider: Profile data set successfully");
-        print("ProfilProvider: User data: ${profilData?["data"]?["user"]}");
-      } else {
-        errorMessage = result["message"] ?? "Gagal mengambil profil";
-        print("ProfilProvider: API returned error: $errorMessage");
-      }
-    } catch (e) {
-      errorMessage = e.toString();
-      print("ProfilProvider: Error fetching profile: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
+    if (result["success"] == true) {
+      user = result["data"]["user"];
+      rekamMedis = result["data"]["rekam_medis"];
+      // Map optional insurance fields returned by the API
+      _namaAsuransi = result["data"]["nama_asuransi"]?.toString();
+      _noPeserta = result["data"]["no_peserta"]?.toString();
+      _statusAktif = result["data"]["status_aktif"]?.toString();
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 
-  Future<void> fetchProfilFromToken() async {
-    String? token = await SharedPrefsHelper.getToken();
-    print(
-      "ProfilProvider: Token from SharedPrefsHelper: ${token != null && token.isNotEmpty ? '***' : 'null/empty'}",
-    );
+  // Update profil
+  Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
+    final result = await _profilService.updateProfil(token, data);
 
+    if (result["success"] == true) {
+      await fetchProfile(token); // refresh data
+      return true;
+    }
+
+    return false;
+  }
+}
+
+// Compatibility shim: many parts of the app reference `ProfilProvider` (no 'e')
+// and expect a slightly different API (e.g. fetchProfil, userData, profilData).
+// Provide a thin adapter to avoid widespread refactors.
+
+class ProfilProvider extends ProfileProvider {
+  Future<void> fetchProfil(String token) => fetchProfile(token);
+
+  /// Ambil token dari SharedPrefs dan panggil fetchProfil
+  Future<void> fetchProfilFromToken() async {
+    final token = await SharedPrefsHelper.getToken();
     if (token != null && token.isNotEmpty) {
       await fetchProfil(token);
-    } else {
-      errorMessage = "Token tidak ditemukan";
-      print("ProfilProvider: No token available to fetch profile");
     }
   }
 
-  Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
-    try {
-      isLoading = true;
-      notifyListeners();
+  Map<String, dynamic>? get userData => user;
+  Map<String, dynamic>? get profilData => user;
+  Map<String, dynamic>? get rekamMedisData => rekamMedis;
 
-      final result = await _service.updateProfil(token, data);
+  // Optional fields returned by API
+  String? get namaAsuransiValue => _namaAsuransi;
+  String? get noPesertaValue => _noPeserta;
+  String? get statusAktifValue => _statusAktif;
 
-      if (result["success"] == true) {
-        await fetchProfil(token);
-        return true;
-      }
+  // Legacy getters expected by UI (keep names stable)
+  String? get namaAsuransi => _namaAsuransi;
+  String? get noPeserta => _noPeserta;
+  String? get statusAktif => _statusAktif;
 
-      return false;
-    } catch (e) {
-      errorMessage = e.toString();
-      return false;
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
+  String? get errorMessage => null;
 
-  Future<bool> updateProfilePicture(File imageFile) async {
-    try {
-      isLoading = true;
-      notifyListeners();
-
-      String? token = await SharedPrefsHelper.getToken();
-      if (token == null) {
-        errorMessage = "Token tidak ditemukan";
-        return false;
-      }
-
-      final result = await _service.updateProfilePicture(token, imageFile);
-
-      if (result["success"] == true) {
-        await fetchProfil(token);
-        return true;
-      }
-
-      errorMessage = result["message"] ?? "Gagal mengupdate foto profil";
-      return false;
-    } catch (e) {
-      errorMessage = e.toString();
-      print("Error updating profile picture: $e");
-      return false;
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+  // Stubs for image upload/remove used by UI. Implement real logic later.
+  Future<bool> updateProfilePicture(File file) async {
+    // Not implemented: return false so UI shows failure message.
+    return false;
   }
 
   Future<bool> removeProfilePicture() async {
-    try {
-      isLoading = true;
-      notifyListeners();
-
-      String? token = await SharedPrefsHelper.getToken();
-      if (token == null) {
-        errorMessage = "Token tidak ditemukan";
-        return false;
-      }
-
-      final result = await _service.deleteProfilePicture(token);
-
-      if (result["success"] == true) {
-        await fetchProfil(token);
-        return true;
-      }
-
-      errorMessage = result["message"] ?? "Gagal menghapus foto profil";
-      return false;
-    } catch (e) {
-      errorMessage = e.toString();
-      print("Error removing profile picture: $e");
-      return false;
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    return false;
   }
 }

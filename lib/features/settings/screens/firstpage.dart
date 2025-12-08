@@ -10,7 +10,6 @@ import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
-
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -30,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            // FIXED HEADER (tidak menutupi menu lagi)
             Positioned(
               top: 0,
               left: 0,
@@ -46,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
+            // FOTO DAN NAMA
             Positioned(
               top: 95,
               left: 0,
@@ -75,6 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
+            // MENU BOX (TIDAK TERTUTUP HEADER)
             Positioned(
               top: 300,
               left: 25,
@@ -88,67 +90,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _menuBox(BuildContext context, String userEmail) {
-  return FutureBuilder<String?>(
-    future: SharedPrefsHelper.getToken(),
-    builder: (context, snapshot) {
-      final token = snapshot.data ?? '';
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.gold),
+        borderRadius: BorderRadius.circular(10),
+        color: AppColors.cardDark,
+      ),
+      child: Column(
+        children: [
+          _menuItem(Icons.person, "Profil Saya", () async {
+            final token = await SharedPrefsHelper.getToken() ?? '';
 
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.gold),
-          borderRadius: BorderRadius.circular(10),
-          color: AppColors.cardDark,
-        ),
-        child: Column(
-          children: [
-            _menuItem(Icons.person, "Profil Saya", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfilePage(token: token),
-                ),
-              );
-            }),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ProfilePage(token: token)),
+            );
+          }),
 
-            _divider(),
-            _menuItem(Icons.file_copy, "Rekam Medis", () {}),
+          _divider(),
+          _menuItem(Icons.file_copy, "Rekam Medis", () {}),
+          _divider(),
 
-            _divider(),
-            _menuItem(Icons.lock, "Ubah Kata Sandi", () {
-              _showConfirmDialog(context, userEmail);
-            }),
+          // UBAH KATA SANDI — POPUP FIXED
+          _menuItem(Icons.lock, "Ubah Kata Sandi", () {
+            _showConfirmDialog(context, userEmail);
+          }),
 
-            _divider(),
-            _menuItem(Icons.notifications, "Notifikasi", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationSettingsPage(),
-                ),
-              );
-            }),
-
-            _divider(),
-            _menuItem(Icons.help, "Panduan", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PanduanPage(),
-                ),
-              );
-            }),
-
-            _divider(),
-            _menuItem(Icons.logout, "Keluar", () {
-              _showLogoutDialog(context);
-            }),
-          ],
-        ),
-      );
-    },
-  );
-}
-
+          _divider(),
+          _menuItem(Icons.notifications, "Notifikasi", () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const NotificationSettingsPage(),
+              ),
+            );
+          }),
+          _divider(),
+          _menuItem(Icons.help, "Panduan", () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PanduanPage()),
+            );
+          }),
+          _divider(),
+          _menuItem(Icons.logout, "Keluar", () {
+            _showLogoutDialog(context);
+          }),
+        ],
+      ),
+    );
+  }
 
   Widget _menuItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
@@ -163,6 +154,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _divider() => const Divider(color: AppColors.gold, height: 1);
 
+  // ============================
+  // POPUP UBAH KATA SANDI (FIX)
+  // ============================
   void _showConfirmDialog(BuildContext context, String email) {
     showDialog(
       context: context,
@@ -225,6 +219,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // ============================
+  // POPUP LOGOUT (SUDAH DIBENERIN)
+  // ============================
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -252,7 +249,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 Text(
                   "Apakah anda ingin keluar?",
-                  style: AppTextStyles.label.copyWith(color: AppColors.textLight),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textLight,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 22),
@@ -267,6 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         Navigator.pop(dialogContext);
 
+                        // ARAHKAN KE STARTSCREEN & HAPUS HISTORY
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(

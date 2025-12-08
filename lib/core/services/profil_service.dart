@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
 
 class ProfilService {
@@ -66,7 +65,9 @@ class ProfilService {
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Gagal mengupdate profil (Status: ${response.statusCode})',
+          'message':
+              responseData['message'] ??
+              'Gagal mengupdate profil (Status: ${response.statusCode})',
           'error': responseData,
         };
       }

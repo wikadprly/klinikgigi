@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
@@ -8,6 +7,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/providers/nota_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -96,25 +96,13 @@ class KlinikGigiApp extends StatelessWidget {
           return OtpScreen(email: arguments);
         },
 
+
         // Home
         '/main_screen': (context) => const MainScreen(),
 
-        //dentalhome
-        '/nota_pelunasan': (context) => const TagihanPage(),
-
         // Dental Home Care
         '/dentalhome/jadwal': (context) => const SchedulePage(),
-        '/dentalhome/input_lokasi': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
-          return InputLokasiScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
-          );
-        },
+        '/dentalhome/input_lokasi': (context) => const InputLokasiScreen(),
         '/dentalhome/pembayaran': (context) {
           final arguments =
               ModalRoute.of(context)?.settings.arguments

@@ -7,13 +7,15 @@ class ApiEndpoint {
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
 
-  // HOME CARE
-  static const homeCareCalculate = "$baseUrl/homecare/calculate";
-  static const homeCareBook = "$baseUrl/homecare/booking";
-  static String homeCareConfirmPayment(int bookingId) => "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
-  static String homeCareTracking(int bookingId) => "$baseUrl/homecare/booking/$bookingId/tracking";
-
   // INI DIGABUNG (Diambil dari 'main')
+  // HOME CARE
+  static const String homeCareJadwalMaster = "$baseUrl/homecare/jadwal-master";
+  static const homeCareCalculate = "$baseUrl/homecare/calculate";
+  static const homeCareBook = "$baseUrl/homecare/create-booking";
+  static String homeCareConfirmPayment(int bookingId) =>
+      "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
+  static String homeCareTracking(int bookingId) =>
+      "$baseUrl/homecare/booking/$bookingId/tracking";
   static const String pasien = "$baseUrl/pasien";
   static const String dokter = "$baseUrl/dokter";
 
@@ -29,4 +31,14 @@ class ApiEndpoint {
 
   static String updatePembayaran(String noPemeriksaan) =>
       "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
+
+  // 🔹 NOTA PELUNASAN
+  static String notaDetail(String noPemeriksaan) =>
+      "$baseUrl/nota/detail/$noPemeriksaan";
+  static const String notaMetodePembayaran = "$baseUrl/nota/metode-pembayaran";
+  static const String notaPembayaran = "$baseUrl/nota/pembayaran";
+  static String notaInvoice(String noPemeriksaan) =>
+      "$baseUrl/nota/invoice/$noPemeriksaan";
+
+  // HOME CARE (optional endpoints used by HomeCareService)
 }

@@ -1,10 +1,14 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
-import '../../../../core/services/home_care_service.dart';
-import 'dart:async';
 import 'pembayaran_qris_screen.dart';
 import 'pembayaran_bank_screen.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'package:flutter_klinik_gigi/config/api.dart';
 
 class PembayaranHomeCareScreen extends StatefulWidget {
   final int masterJadwalId;
@@ -15,11 +19,10 @@ class PembayaranHomeCareScreen extends StatefulWidget {
   final String alamat;
   final double latitude;
   final double longitude;
-  final Map<String, dynamic>
-  rincianBiaya; // {'biaya_transport', 'biaya_layanan', 'estimasi_total'}
+  final Map<String, dynamic> rincianBiaya;
 
   const PembayaranHomeCareScreen({
-    Key? key,
+    super.key,
     required this.masterJadwalId,
     required this.tanggal,
     required this.namaDokter,
@@ -29,7 +32,7 @@ class PembayaranHomeCareScreen extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.rincianBiaya,
-  }) : super(key: key);
+  });
 
   @override
   State<PembayaranHomeCareScreen> createState() =>
@@ -37,254 +40,196 @@ class PembayaranHomeCareScreen extends StatefulWidget {
 }
 
 class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
-  final HomeCareService _service = HomeCareService();
-  String _selectedPayment = 'transfer'; // Default
-  bool _isProcessing = false;
+  String _selectedPayment = 'transfer';
 
-  Future<void> _bayarSekarang() async {
-    setState(() => _isProcessing = true);
+  Future<void> _lanjutKeLayarPembayaran() async {
+    // 1. Tampilkan Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final url = Uri.parse(ApiEndpoint.homeCareBook);
+
+    // Ambil User & Token
+    final token = await SharedPrefsHelper.getToken();
+    final user = await SharedPrefsHelper.getUser(); // <--- Ambil Data User
+
+    // Validasi Login Dasar
+    if (token == null || user == null) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data user tidak ditemukan. Silakan login ulang.'),
+        ),
+      );
+      return;
+    }
+
+    // Validasi Rekam Medis ID (Penting!)
+    // Pastikan model UserModel Anda memiliki field rekamMedisId atau id yang merujuk ke rekam medis
+    // Sesuaikan 'rekamMedisId' dengan nama variabel di UserModel Anda.
+    // Jika di UserModel namanya 'id', pakai 'id'. Jika 'rekam_medis_id', pakai itu.
+    final rekamMedisId = user.rekamMedisId;
+
+    if (rekamMedisId == null) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID Rekam Medis tidak ditemukan pada akun ini.'),
+        ),
+      );
+      return;
+    }
 
     try {
-      // Create booking and get the booking data
-      final bookingData = await _service.createBooking(
-        masterJadwalId: widget.masterJadwalId,
-        tanggal: widget.tanggal,
-        keluhan: widget.keluhan,
-        lat: widget.latitude,
-        lng: widget.longitude,
-        alamat: widget.alamat,
-        metodePembayaran: _selectedPayment,
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          // --- TAMBAHAN PENTING ---
+          'rekam_medis_id': rekamMedisId, // <--- Kirim ID ini ke Backend
+          // ------------------------
+          'master_jadwal_id': widget.masterJadwalId,
+          'tanggal': widget.tanggal,
+          'keluhan': widget.keluhan,
+          'latitude_pasien': widget.latitude,
+          'longitude_pasien': widget.longitude,
+          'alamat_lengkap': widget.alamat,
+          'metode_pembayaran': _selectedPayment,
+        }),
       );
 
-      // Navigate to the appropriate payment screen based on the selected method
-      if (_selectedPayment == 'qris') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PembayaranQrisScreen(
-              bookingData: {
-                'masterJadwalId': widget.masterJadwalId,
-                'tanggal': widget.tanggal,
-                'namaDokter': widget.namaDokter,
-                'jamPraktek': widget.jamPraktek,
-                'keluhan': widget.keluhan,
-                'alamat': widget.alamat,
-                'latitude': widget.latitude,
-                'longitude': widget.longitude,
-                'rincianBiaya': widget.rincianBiaya,
-                'bookingId': bookingData['id'], // Pass the booking ID for confirmation
-              },
-            ),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PembayaranBankScreen(
-              bookingData: {
-                'masterJadwalId': widget.masterJadwalId,
-                'tanggal': widget.tanggal,
-                'namaDokter': widget.namaDokter,
-                'jamPraktek': widget.jamPraktek,
-                'keluhan': widget.keluhan,
-                'alamat': widget.alamat,
-                'latitude': widget.latitude,
-                'longitude': widget.longitude,
-                'rincianBiaya': widget.rincianBiaya,
-                'bookingId': bookingData['id'], // Pass the booking ID for confirmation
-              },
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      // Cek apakah error adalah Unauthorized (401)
-      if (e.toString().contains('401') || e.toString().toLowerCase().contains('unauthorized')) {
-        // Tampilkan pesan bahwa sesi telah habis, tanpa navigasi ke halaman yang tidak ditemukan
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Sesi Anda telah berakhir. Silakan login kembali di halaman utama."),
-          ),
-        );
+      if (mounted) Navigator.pop(context); // Tutup Loading
 
-        // Reset state untuk mencegah UI tetap dalam mode loading
-        setState(() => _isProcessing = false);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ... Logika Sukses (Sama seperti sebelumnya) ...
+        // Copy bagian sukses dari kode sebelumnya
+        final respData = jsonDecode(response.body);
+        final paymentInfo = respData['payment_info'];
 
-        // Kembalikan ke layar sebelumnya atau ke home screen
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        if (paymentInfo != null) {
+          // ... Navigasi ke halaman pembayaran ...
+          final String expiredAt =
+              paymentInfo['expired_at'] ?? DateTime.now().toString();
+          final Map<String, dynamic> instructions =
+              paymentInfo['instructions'] ?? {};
+
+          if (_selectedPayment == 'qris') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PembayaranQrisScreen(
+                  expiredAt: expiredAt,
+                  paymentData: instructions,
+                ),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PembayaranBankScreen(
+                  expiredAt: expiredAt,
+                  paymentData: instructions,
+                  tanggal: widget.tanggal,
+                  alamat: widget.alamat,
+                  keluhan: widget.keluhan,
+                ),
+              ),
+            );
+          }
+        }
       } else {
+        // Tampilkan error dari backend (misal validation error)
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Gagal booking: $e")));
+        ).showSnackBar(SnackBar(content: Text('Gagal: ${response.body}')));
       }
-    } finally {
-      setState(() => _isProcessing = false);
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final biaya = widget.rincianBiaya;
-    final total = biaya['estimasi_total'];
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textLight,
-        elevation: 0,
-        title: Text(
-          "Ringkasan Pembayaran",
+        title: const Text(
+          "Konfirmasi & Pembayaran",
           style: AppTextStyles.heading,
+        ),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textLight,
+          ),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card Detail Pendaftaran - Premium dark card with gold accents
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Detail Pendaftaran",
-                    style: TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  _buildDetailRow(Icons.medical_services, "Poli", "Home Care"),
-                  _buildDetailRow(Icons.person, "Dokter", widget.namaDokter),
-                  _buildDetailRow(Icons.calendar_today, "Waktu", "${widget.tanggal} | ${widget.jamPraktek}"),
-                  _buildDetailRow(Icons.location_on, "Lokasi", widget.alamat),
-                ],
-              ),
-            ),
-            
-            SizedBox(height: 20),
-
-            // Rincian Pembayaran
+            // --- 1. Detail Pendaftaran ---
             Text(
-              "Rincian Pembayaran",
-              style: AppTextStyles.heading.copyWith(fontSize: 18),
+              "Detail Pendaftaran",
+              style: AppTextStyles.heading.copyWith(fontSize: 16),
             ),
-            SizedBox(height: 12),
-            
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildPaymentRow("Biaya Layanan Home Care", biaya['biaya_layanan'].toString()),
-                    SizedBox(height: 8),
-                    _buildPaymentRow("Biaya Transportasi (${biaya['jarak_km']} km)", biaya['biaya_transport'].toString()),
-                    Divider(color: AppColors.textMuted, thickness: 0.5),
-                    _buildPaymentRow("Total Pembayaran", total.toString(), isTotal: true),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 12),
+            _buildDetailPendaftaranCard(),
+
+            const SizedBox(height: 24),
+
+            // --- 2. Rincian Biaya ---
+            Text(
+              "Rincian Biaya",
+              style: AppTextStyles.heading.copyWith(fontSize: 16),
             ),
+            const SizedBox(height: 12),
+            _buildRincianBiayaCard(),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // Metode Pembayaran
+            // --- 3. Metode Pembayaran ---
             Text(
               "Metode Pembayaran",
-              style: AppTextStyles.heading.copyWith(fontSize: 18),
+              style: AppTextStyles.heading.copyWith(fontSize: 16),
             ),
-            SizedBox(height: 12),
-            
-            // Transfer Bank Option
-            Container(
-              decoration: BoxDecoration(
-                color: _selectedPayment == 'transfer' 
-                  ? AppColors.gold.withOpacity(0.1) 
-                  : AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _selectedPayment == 'transfer' 
-                    ? AppColors.gold 
-                    : AppColors.inputBorder,
-                  width: _selectedPayment == 'transfer' ? 2 : 1,
-                ),
-              ),
-              child: RadioListTile<String>(
-                activeColor: AppColors.gold,
-                title: Text(
-                  "Transfer Bank",
-                  style: TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: _selectedPayment == 'transfer' 
-                      ? FontWeight.bold 
-                      : FontWeight.normal,
-                  ),
-                ),
-                subtitle: Text(
-                  "BCA, Mandiri, BRI, BNI",
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                value: 'transfer',
-                groupValue: _selectedPayment,
-                onChanged: (val) => setState(() => _selectedPayment = val!),
-              ),
-            ),
-            
-            SizedBox(height: 12),
-            
-            // QRIS Option
-            Container(
-              decoration: BoxDecoration(
-                color: _selectedPayment == 'qris' 
-                  ? AppColors.gold.withOpacity(0.1) 
-                  : AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _selectedPayment == 'qris' 
-                    ? AppColors.gold 
-                    : AppColors.inputBorder,
-                  width: _selectedPayment == 'qris' ? 2 : 1,
-                ),
-              ),
-              child: RadioListTile<String>(
-                activeColor: AppColors.gold,
-                title: Text(
-                  "QRIS",
-                  style: TextStyle(
-                    color: AppColors.textLight,
-                    fontWeight: _selectedPayment == 'qris' 
-                      ? FontWeight.bold 
-                      : FontWeight.normal,
-                  ),
-                ),
-                subtitle: Text(
-                  "Gopay, OVO, Dana, LinkAja",
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                value: 'qris',
-                groupValue: _selectedPayment,
-                onChanged: (val) => setState(() => _selectedPayment = val!),
-              ),
+            const SizedBox(height: 12),
+
+            _buildPaymentOption(
+              value: 'transfer',
+              title: "Transfer Bank",
+              subtitle: "BCA, Mandiri, BNI, BRI",
+              icon: Icons.account_balance,
             ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 12),
+
+            _buildPaymentOption(
+              value: 'qris',
+              title: "QRIS",
+              subtitle: "Gopay, OVO, Dana, ShopeePay",
+              icon: Icons.qr_code,
+            ),
+
+            const SizedBox(height: 40),
+
+            // --- Tombol Lanjut ---
             Container(
               width: double.infinity,
               height: 50,
@@ -293,7 +238,7 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ElevatedButton(
-                onPressed: _isProcessing ? null : _bayarSekarang,
+                onPressed: _lanjutKeLayarPembayaran,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
@@ -301,46 +246,66 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  _isProcessing ? "Memproses..." : "Bayar & Konfirmasi",
+                child: const Text(
+                  "Lanjut Pembayaran",
                   style: AppTextStyles.button,
                 ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  // --- Widget: Kartu Detail Pendaftaran ---
+  Widget _buildDetailPendaftaranCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.inputBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoRow("Dokter", widget.namaDokter),
+          _buildInfoRow("Jadwal", "${widget.tanggal} • ${widget.jamPraktek}"),
+          _buildInfoRow("Keluhan", widget.keluhan),
+          _buildInfoRow("Lokasi", widget.alamat, isMultiLine: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool isMultiLine = false}) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: AppColors.textMuted,
-            size: 16,
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
           ),
-          SizedBox(width: 8),
+          const Text(": ", style: TextStyle(color: AppColors.textMuted)),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTextStyles.label,
-                ),
-                Text(
-                  value,
-                  style: AppTextStyles.input.copyWith(
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: isMultiLine ? 3 : 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -348,196 +313,131 @@ class _PembayaranHomeCareScreenState extends State<PembayaranHomeCareScreen> {
     );
   }
 
-  Widget _buildPaymentRow(String label, String value, {bool isTotal = false}) {
+  // --- Widget: Kartu Rincian Biaya ---
+  Widget _buildRincianBiayaCard() {
+    final biaya = widget.rincianBiaya;
+    final layanan = biaya['biaya_layanan'] ?? 0;
+    final transport = biaya['biaya_transport'] ?? 0;
+    final total = biaya['estimasi_total'] ?? 0;
+    final jarak = biaya['jarak_km'] ?? 0;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.inputBorder),
+      ),
+      child: Column(
+        children: [
+          _buildCostRow("Biaya Layanan", layanan),
+          _buildCostRow("Biaya Transport ($jarak km)", transport),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Divider(
+              color: AppColors.textMuted.withValues(alpha: 0.3),
+              thickness: 1,
+            ),
+          ),
+          _buildCostRow("Total Pembayaran", total, isTotal: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCostRow(String label, dynamic value, {bool isTotal = false}) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
+              color: isTotal ? AppColors.textLight : AppColors.textMuted,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              fontSize: isTotal ? 15 : 13,
             ),
           ),
           Text(
-            "Rp ${value.replaceAllMapped(RegExp(r'(\d{3})$'), (Match m) => '${m[1]}')}",
+            "Rp ${value.toString().replaceAllMapped(RegExp(r'(\d{3})$'), (m) => '.${m[1]}').replaceAllMapped(RegExp(r'(\d{3})(?=\d)'), (m) => '.${m[1]}')}",
             style: TextStyle(
               color: isTotal ? AppColors.gold : AppColors.textLight,
-              fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+              fontSize: isTotal ? 16 : 13,
             ),
           ),
         ],
       ),
     );
   }
-}
 
-
-// Payment Success Screen
-class PaymentSuccessScreen extends StatefulWidget {
-  final String paymentNumber;
-  final String paymentMethod;
-
-  const PaymentSuccessScreen({
-    Key? key,
-    required this.paymentNumber,
-    required this.paymentMethod,
-  }) : super(key: key);
-
-  @override
-  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
-}
-
-class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textLight,
-        elevation: 0,
-        automaticallyImplyLeading: false, // Remove back button
-        title: Text(
-          "Transaksi Berhasil",
-          style: AppTextStyles.heading,
+  // --- Widget: Opsi Pembayaran ---
+  Widget _buildPaymentOption({
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedPayment == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPayment = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.gold.withValues(alpha: 0.1)
+              : AppColors.cardDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.gold : Colors.transparent,
+            width: 2,
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
+        child: Row(
           children: [
-            // Success Icon
             Container(
-              width: 100,
-              height: 100,
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.gold.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.check_circle,
-                color: AppColors.gold,
-                size: 60,
+                icon,
+                color: isSelected ? AppColors.gold : AppColors.textLight,
               ),
             ),
-            SizedBox(height: 20),
-
-            Text(
-              "Pembayaran Berhasil!",
-              style: TextStyle(
-                color: AppColors.textLight,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Terima kasih telah melakukan pembayaran",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 16,
-              ),
-            ),
-
-            SizedBox(height: 30),
-
-            // Transaction Summary Card
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-              ),
+            const SizedBox(width: 16),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTransactionDetail("No. Pembayaran", widget.paymentNumber),
-                  SizedBox(height: 16),
-                  _buildTransactionDetail("Metode Pembayaran",
-                    widget.paymentMethod == 'qris' ? "QRIS" : "Transfer Bank"
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                  SizedBox(height: 16),
-                  _buildTransactionDetail("Status Pembayaran", "Lunas"),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-
-            SizedBox(height: 30),
-
-            // Action Buttons
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  // Navigate to track visit functionality would go here
-                  // For now, navigate back to home
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                child: Text(
-                  "Lacak Kunjungan",
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 12),
-
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                gradient: AppColors.goldGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  // Navigate to download receipt functionality would go here
-                },
-                child: Text(
-                  "Unduh Bukti",
-                  style: AppTextStyles.button,
-                ),
-              ),
-            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: AppColors.gold),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTransactionDetail(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            color: AppColors.textLight,
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-        ),
-      ],
     );
   }
 }

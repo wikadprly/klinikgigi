@@ -3,7 +3,6 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
-import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class EditProfilPage2 extends StatefulWidget {
   const EditProfilPage2({super.key});
@@ -13,104 +12,60 @@ class EditProfilPage2 extends StatefulWidget {
 }
 
 class _EditProfilPage2State extends State<EditProfilPage2> {
+  final TextEditingController genderController = TextEditingController();
+  final TextEditingController birthController = TextEditingController();
+  final TextEditingController alamatController = TextEditingController();
   final TextEditingController namaController = TextEditingController();
   final TextEditingController noHpController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController birthController = TextEditingController();
-  final TextEditingController alamatController = TextEditingController();
 
   bool isSaving = false;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
-  }
+    // Ambil data profil setelah frame pertama (agar context siap)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profil = Provider.of<ProfileProvider>(context, listen: false);
 
-  void _loadProfileData() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final profil = Provider.of<ProfilProvider>(context, listen: false);
-
-        // Pastikan data sudah di-load
-        if (profil.profilData == null) {
-          await profil.fetchProfilFromToken();
-        }
-
-        final user = profil.userData;
-
-        print("📋 Loading profile data: ${profil.profilData}");
-
-        setState(() {
-          namaController.text = user?['nama_pengguna']?.toString() ?? "";
-          noHpController.text = user?['no_hp']?.toString() ?? "";
-          emailController.text = user?['email']?.toString() ?? "";
-
-          // Format tanggal lahir
-          final rawDate = user?['tanggal_lahir']?.toString() ?? "";
-          if (rawDate.isNotEmpty) {
-            if (rawDate.contains("T")) {
-              birthController.text = rawDate.split("T")[0];
-            } else {
-              birthController.text = rawDate;
-            }
-          }
-
-          alamatController.text = user?['alamat']?.toString() ?? "";
-        });
-      } catch (e) {
-        print("❌ Error loading profile data: $e");
-      }
+      namaController.text = profil.user?['nama_pengguna'] ?? '';
+      noHpController.text = profil.user?['no_hp'] ?? '';
+      emailController.text = profil.user?['email'] ?? '';
+      genderController.text = profil.user?['jenis_kelamin'] ?? '';
+      birthController.text = profil.user?['tanggal_lahir'] ?? '';
+      alamatController.text = profil.user?['alamat'] ?? '';
     });
   }
 
   Future<void> saveData() async {
-    // Validasi form
-    if (!_validateForm()) return;
-
-    setState(() => isSaving = true);
+    final profil = Provider.of<ProfileProvider>(context, listen: false);
 
     try {
-      final profil = Provider.of<ProfilProvider>(context, listen: false);
+      setState(() => isSaving = true);
 
-      // Ambil token
-      String? token = await SharedPrefsHelper.getToken();
-      if (token == null || token.isEmpty) {
-        _showError("Token tidak ditemukan, silakan login kembali");
-        return;
-      }
+      final token = profil.user?['token'] ?? '';
 
-      // Prepare data untuk API
       final data = {
-        "nama_pengguna": namaController.text.trim(),
-        "no_hp": noHpController.text.trim(),
-        "email": emailController.text.trim(),
-        "tanggal_lahir": birthController.text.isNotEmpty
-            ? birthController.text
-            : null,
-        "alamat": alamatController.text.trim(),
+        'nama_pengguna': namaController.text.trim(),
+        'no_hp': noHpController.text.trim(),
+        'email': emailController.text.trim(),
+        'jenis_kelamin': genderController.text.trim(),
+        'tanggal_lahir': birthController.text.trim(),
+        'alamat': alamatController.text.trim(),
       };
-
-      print("📤 Sending update data: $data");
 
       final success = await profil.updateProfil(token, data);
 
       if (success) {
-        _showSuccess("Informasi profil berhasil diperbarui");
-        if (mounted) {
-          Navigator.pop(context);
-        }
+        _showSuccess('Informasi profil berhasil diperbarui');
+        if (mounted) Navigator.pop(context);
       } else {
-        _showError(profil.errorMessage ?? "Gagal menyimpan data");
+        _showError('Gagal menyimpan data');
       }
     } catch (e) {
-      _showError("Terjadi error: $e");
-      print("❌ Save data error: $e");
+      _showError('Terjadi error: $e');
     } finally {
-      if (mounted) {
-        setState(() => isSaving = false);
-      }
+      if (mounted) setState(() => isSaving = false);
     }
   }
 
