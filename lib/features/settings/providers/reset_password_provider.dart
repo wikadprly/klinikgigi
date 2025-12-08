@@ -1,50 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/services/reset_password_service.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
-class ResetPasswordProvider extends ChangeNotifier {
-  final ResetPasswordService _resetService = ResetPasswordService();
+class ChangePasswordProvider with ChangeNotifier {
+  ResetPasswordService? _service;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  ChangePasswordProvider();
 
-  String? _message;
-  String? get message => _message;
-
-  // Tambahkan properti resetToken
-  String? _resetToken;
-  String? get resetToken => _resetToken;
-
-  // Setter untuk menyimpan token sementara dari halaman OTP
-  void setResetToken(String token) {
-    _resetToken = token;
+  Future<void> initializeService() async {
+    String? token = await SharedPrefsHelper.getToken();
+    print("TOKEN didapat dari SharedPrefsHelper: $token");
+    _service = ResetPasswordService(token ?? "");
     notifyListeners();
   }
 
-  // Fungsi reset password
-  Future<bool> resetPassword({
-    required String token,
-    required String newPassword,
-  }) async {
-    _isLoading = true;
-    _message = null;
+  // GLOBAL LOADING
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
+  }
+
+  // ================= REQUEST OTP =================
+  DateTime? _lastOtpRequestAt;
+  bool _isRequestingOtp = false;
+
+  Future<bool> requestOtp() async {
+    if (_isRequestingOtp) return false;
+
+    // Anti-spam minimal 1 sec
+    if (_lastOtpRequestAt != null &&
+        DateTime.now().difference(_lastOtpRequestAt!).inSeconds < 1) {
+      return false;
+    }
+
+    // Tunggu sampai service diinisialisasi
+    if (_service == null) {
+      await initializeService();
+    }
+
+    _isRequestingOtp = true;
+    _setLoading(true);
+    _lastOtpRequestAt = DateTime.now();
 
     try {
-      final result = await _resetService.resetPassword(
-        token: token,
+      final response = await _service!.requestOtp();
+      print("Request OTP Response: $response");
+
+      return (response["success"] == true ||
+          response["status"] == true ||
+          response["ok"] == true);
+    } finally {
+      _isRequestingOtp = false;
+      _setLoading(false);
+    }
+  }
+
+  // ================= VERIFY OTP =================
+  bool _isVerifyingOtp = false;
+
+  Future<bool> verifyOtp(String otp) async {
+    if (_isVerifyingOtp) return false;
+
+    // Tunggu sampai service diinisialisasi
+    if (_service == null) {
+      await initializeService();
+    }
+
+    _isVerifyingOtp = true;
+    _setLoading(true);
+
+    try {
+      final response = await _service!.verifyOtp(otp: otp);
+      print("Verify OTP Response: $response");
+
+      return (response["success"] == true ||
+          response["status"] == true ||
+          response["verified"] == true);
+    } finally {
+      _isVerifyingOtp = false;
+      _setLoading(false);
+    }
+  }
+
+  // ================= CHANGE PASSWORD =================
+  bool _isChangingPassword = false;
+
+  Future<bool> changePassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    if (_isChangingPassword) return false;
+
+    // Tunggu sampai service diinisialisasi
+    if (_service == null) {
+      await initializeService();
+    }
+
+    _isChangingPassword = true;
+    _setLoading(true);
+
+    try {
+      final response = await _service!.resetPassword(
         newPassword: newPassword,
+        confirmPassword: confirmPassword,
       );
+      print("Change Password Response: $response");
 
-      _isLoading = false;
-      _message = result["message"] ?? "Berhasil mengganti password";
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _isLoading = false;
-      _message = "Gagal mengganti password: $e";
-      notifyListeners();
-      return false;
+      return (response["success"] == true ||
+          response["status"] == true ||
+          response["changed"] == true);
+    } finally {
+      _isChangingPassword = false;
+      _setLoading(false);
     }
   }
 }

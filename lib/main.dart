@@ -89,6 +89,12 @@ class KlinikGigiApp extends StatelessWidget {
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
+        '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
+        '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
+        '/otp_screen': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          return OtpScreen(email: arguments);
+        },
 
         // Home
         '/main_screen': (context) => const MainScreen(),
@@ -132,8 +138,10 @@ class KlinikGigiApp extends StatelessWidget {
         '/firstpage': (context) => const ProfileScreen(),
         '/ubahsandi_one': (context) =>
             const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two': (context) =>
-            const UbahKataSandi2Page(resetToken: "sample_token"),
+        '/ubahsandi_two': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          return UbahKataSandi2Page(email: arguments ?? "user@example.com");
+        },
         '/notifikasi': (context) => const NotificationSettingsPage(),
         '/panduanpage': (context) => const PanduanPage(),
         '/panduanlogin': (context) => const PanduanLoginPage(),
