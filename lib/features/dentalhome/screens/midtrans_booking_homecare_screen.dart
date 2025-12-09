@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
-import 'package:flutter_klinik_gigi/config/api.dart';
-import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'midtrans_webview_screen.dart';
+
+// Import Service & Helpers
+import '../../../core/services/home_care_service.dart';
+import '../../../core/storage/shared_prefs_helper.dart';
+import '../../../theme/colors.dart';
+import 'midtrans_webview_screen.dart'; // Pastikan file ini ada
 
 class MidtransHomeCareBookingScreen extends StatefulWidget {
   final int masterJadwalId;
@@ -50,7 +49,7 @@ class _MidtransHomeCareBookingScreenState
 
   late final HomeCareService _homeCareService;
 
-  // Variable Polling
+  // Variable Polling Status
   Timer? _timerPolling;
   int? _currentBookingId;
   bool _isPolling = false;
@@ -72,9 +71,10 @@ class _MidtransHomeCareBookingScreenState
       _timerPolling!.cancel();
       _timerPolling = null;
     }
+    _isPolling = false;
   }
 
-  // --- LOGIKA POLLING ---
+  // --- LOGIKA POLLING STATUS PEMBAYARAN ---
   void _startPollingStatus(int bookingId) {
     if (_isPolling) return;
     _isPolling = true;
@@ -87,38 +87,27 @@ class _MidtransHomeCareBookingScreenState
 
   Future<void> _checkStatusDiBackend(int bookingId) async {
     try {
-      final token = await SharedPrefsHelper.getToken();
-      final url = Uri.parse('$baseUrl/homecare/booking/$bookingId/status');
+      // Menggunakan service yang baru kita buat
+      final statusData = await _homeCareService.checkPaymentStatus(bookingId);
+      final statusPembayaran = statusData['status_pembayaran'];
 
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+      if (statusPembayaran == 'lunas' ||
+          statusPembayaran == 'settlement' ||
+          statusPembayaran == 'success') {
+        _stopPolling();
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final statusPembayaran = data['data']['status_pembayaran'];
+        if (mounted) {
+          // Tutup dialog loading jika ada
+          Navigator.of(
+            context,
+          ).popUntil((route) => route.settings.name == null || route.isFirst);
 
-        if (statusPembayaran == 'lunas' ||
-            statusPembayaran == 'settlement' ||
-            statusPembayaran == 'success') {
-          _stopPolling();
-          if (mounted) {
-            // Tutup dialog loading jika ada
-            Navigator.of(
-              context,
-            ).popUntil((route) => route.settings.name == null || route.isFirst);
-
-            // Pindah ke Halaman Sukses
-            _navigateToSuccessScreen();
-          }
+          // Pindah ke Halaman Sukses
+          _navigateToSuccessScreen();
         }
       }
     } catch (e) {
-      debugPrint("Error polling: $e");
+      debugPrint("Polling error: $e"); // Silent error log
     }
   }
 
@@ -132,8 +121,9 @@ class _MidtransHomeCareBookingScreenState
     );
   }
 
-  // --- PROSES PEMBAYARAN ---
+  // --- PROSES UTAMA: CREATE BOOKING & DAPATKAN LINK ---
   Future<void> _prosesPembayaranMidtrans() async {
+    // Tampilkan Loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -159,7 +149,7 @@ class _MidtransHomeCareBookingScreenState
         return;
       }
 
-      //  Use service instead of direct HTTP
+      // Panggil Service createBooking
       final result = await _homeCareService.createBooking(
         rekamMedisId: user.rekamMedisId!,
         masterJadwalId: widget.masterJadwalId,
@@ -173,52 +163,77 @@ class _MidtransHomeCareBookingScreenState
 
       if (mounted) Navigator.pop(context); // Tutup Loading
 
-      // Extract data dari service response
-      if (result['booking'] != null && result['payment_info'] != null) {
-        final booking = result['booking'] as dynamic;
-        final bookingId = booking.id;
-        final redirectUrl = result['payment_info']['redirect_url'];
+      // Parsing Response Baru (Map<String, dynamic>)
+      // Struktur: { 'booking': Object, 'payment_info': Map }
+      final bookingObj = result['booking'];
+      final paymentInfo = result['payment_info'];
 
-        // Simpan Booking ID untuk Polling
+      if (bookingObj != null && paymentInfo != null) {
+        final bookingId = bookingObj.id; // Dari Model HomeCareBooking
+        final redirectUrl = paymentInfo['redirect_url'];
+        final noPemeriksaan = bookingObj.noPemeriksaan;
+
+        // Simpan ID untuk Polling
         _currentBookingId = bookingId;
 
         if (redirectUrl != null && redirectUrl.isNotEmpty) {
-          _launchPayment(redirectUrl);
+          // Buka Halaman Pembayaran
+          _launchPayment(redirectUrl, noPemeriksaan);
         } else {
           _showSnackbar('Gagal mendapatkan link pembayaran.', isError: true);
         }
       } else {
-        _showSnackbar('Gagal membuat booking.', isError: true);
+        _showSnackbar('Format respon server tidak valid.', isError: true);
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context);
-      _showSnackbar('Terjadi kesalahan: $e', isError: true);
+      if (mounted) Navigator.pop(context); // Tutup loading jika error
+      _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
     }
   }
 
-  // Launch payment (Hybrid Logic)
-  Future<void> _launchPayment(String urlString) async {
+  // Launch payment (Hybrid Logic: Web vs App)
+  Future<void> _launchPayment(String urlString, String noPemeriksaan) async {
+    // Mulai polling di background
+    if (_currentBookingId != null) _startPollingStatus(_currentBookingId!);
+
     // A. LOGIKA WEB / BROWSER LUAR (Fallback Aman)
     if (kIsWeb) {
       final uri = Uri.parse(urlString);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (_currentBookingId != null) _startPollingStatus(_currentBookingId!);
         if (mounted) _showWaitingPaymentDialog();
       }
     } else {
       // B. LOGIKA ANDROID (WebView Dalam Aplikasi)
-      if (_currentBookingId != null) _startPollingStatus(_currentBookingId!);
-
+      // Kita buka screen WebView khusus
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MidtransWebViewScreen(url: urlString),
+          builder: (context) => MidtransWebViewScreen(
+            url: urlString,
+            noPemeriksaan: noPemeriksaan,
+          ),
         ),
       );
 
-      // Jika user menekan tombol back dari webview, cek status sekali lagi
-      if (_currentBookingId != null) _checkStatusDiBackend(_currentBookingId!);
+      // Setelah user menutup WebView (tekan back/close), cek status sekali lagi
+      if (_currentBookingId != null) {
+        // Tampilkan loading sebentar saat cek status final
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        await _checkStatusDiBackend(_currentBookingId!);
+
+        if (mounted) {
+          Navigator.pop(context); // Tutup loading
+          // Jika belum lunas, biarkan user di halaman ini atau arahkan ke Riwayat
+        }
+      }
     }
   }
 
@@ -258,11 +273,14 @@ class _MidtransHomeCareBookingScreenState
     );
   }
 
-  // --- UI UTAMA (TAMPILAN LENGKAP) ---
+  // --- BUILD UI ---
   @override
   Widget build(BuildContext context) {
     final biaya = widget.rincianBiaya;
-    final total = biaya['estimasi_total'] ?? 0;
+    // Safety check type data karena JSON kadang int kadang double
+    final total = (biaya['estimasi_total'] is int)
+        ? biaya['estimasi_total']
+        : (biaya['estimasi_total'] as double).toInt();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -313,48 +331,7 @@ class _MidtransHomeCareBookingScreenState
             const SizedBox(height: 24),
 
             // 3. Info Metode Pembayaran
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.gold),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2C2C2C),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.payment, color: AppColors.gold),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Pembayaran Online",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          "QRIS, GoPay, ShopeePay, Transfer Bank (VA)",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.check_circle, color: AppColors.gold),
-                ],
-              ),
-            ),
+            _buildPaymentMethodCard(),
           ],
         ),
       ),
@@ -454,6 +431,51 @@ class _MidtransHomeCareBookingScreenState
     );
   }
 
+  Widget _buildPaymentMethodCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gold),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2C2C2C),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.payment, color: AppColors.gold),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Pembayaran Online",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "QRIS, GoPay, ShopeePay, Transfer Bank (VA)",
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.check_circle, color: AppColors.gold),
+        ],
+      ),
+    );
+  }
+
   Widget _rowDetail(String label, String value, {bool isMultiline = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -480,7 +502,10 @@ class _MidtransHomeCareBookingScreenState
     );
   }
 
-  Widget _rowBiaya(String label, int value) {
+  Widget _rowBiaya(String label, dynamic value) {
+    // Safety cast
+    final num val = (value is num) ? value : 0;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -488,7 +513,7 @@ class _MidtransHomeCareBookingScreenState
         children: [
           Text(label, style: const TextStyle(color: Colors.grey)),
           Text(
-            currencyFormatter.format(value),
+            currencyFormatter.format(val),
             style: const TextStyle(color: Colors.white),
           ),
         ],
@@ -497,7 +522,7 @@ class _MidtransHomeCareBookingScreenState
   }
 }
 
-// --- SCREEN SUKSES (Placeholder) ---
+// --- SCREEN SUKSES ---
 class PaymentSuccessScreen extends StatelessWidget {
   final int? bookingId;
   const PaymentSuccessScreen({super.key, this.bookingId});
@@ -534,7 +559,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/home',
+                  '/home', // Ganti dengan route home Anda
                   (route) => false,
                 );
               },
