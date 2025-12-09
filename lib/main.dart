@@ -20,7 +20,7 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -89,7 +89,12 @@ class KlinikGigiApp extends StatelessWidget {
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
-
+        '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
+        '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
+        '/otp_screen': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          return OtpScreen(email: arguments);
+        },
 
         // Home
         '/main_screen': (context) => const MainScreen(),
@@ -101,7 +106,7 @@ class KlinikGigiApp extends StatelessWidget {
           final arguments =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
-          return PembayaranHomeCareScreen(
+          return MidtransHomeCareBookingScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
             namaDokter: arguments?['namaDokter'] ?? '',
@@ -133,8 +138,10 @@ class KlinikGigiApp extends StatelessWidget {
         '/firstpage': (context) => const ProfileScreen(),
         '/ubahsandi_one': (context) =>
             const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two': (context) =>
-            const UbahKataSandi2Page(resetToken: "sample_token"),
+        '/ubahsandi_two': (context) {
+          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          return UbahKataSandi2Page(email: arguments ?? "user@example.com");
+        },
         '/notifikasi': (context) => const NotificationSettingsPage(),
         '/panduanpage': (context) => const PanduanPage(),
         '/panduanlogin': (context) => const PanduanLoginPage(),

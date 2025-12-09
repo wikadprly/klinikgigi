@@ -26,7 +26,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
+            color: AppColors.background,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: AppColors.gold, size: 18),
@@ -47,7 +47,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
   // ==========================
   // TOMBOL EDIT PROFIL
   // ==========================
-  Widget editProfileButton({required VoidCallback onTap}) {
+  Widget editProfilButton({required VoidCallback onTap}) {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.goldGradient,
@@ -96,11 +96,11 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
           child: Column(
             children: [
-              Row(children: const [Icon(Icons.close, color: AppColors.goldDark, size: 26)]),
+              Row(children: const [Icon(Icons.close, color: AppColors.gold, size: 26)]),
               const SizedBox(height: 12),
               const CircleAvatar(radius: 40, backgroundImage: AssetImage("assets/profile.jpg")),
               const SizedBox(height: 16),
-              Container(height: 1, width: double.infinity, color: AppColors.goldDark),
+              Container(height: 1, width: double.infinity, color: AppColors.gold),
               const SizedBox(height: 18),
               _menuItem(icon: Icons.photo, text: "Pilih dari galeri", onTap: () => Navigator.pop(context)),
               const SizedBox(height: 14),
@@ -119,9 +119,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, color: AppColors.goldDark, size: 45),
+          Icon(icon, color: AppColors.gold, size: 45),
           const SizedBox(width: 30),
-          Text(text, style: const TextStyle(color: AppColors.goldDark, fontSize: 25, fontWeight: FontWeight.w500)),
+          Text(text, style: const TextStyle(color: AppColors.gold, fontSize: 25, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -169,7 +169,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         child: BackButtonWidget(onPressed: () => Navigator.pop(context)),
                       ),
                       Center(
-                        child: Text('Profil Saya', style: AppTextStyles.heading.copyWith(color: AppColors.goldDark)),
+                        child: Text('Profil Saya', style: AppTextStyles.heading.copyWith(color: AppColors.gold)),
                       ),
                     ],
                   ),
@@ -188,12 +188,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       const SizedBox(height: 12),
                       Text(
                         user?["nama_pengguna"] ?? "-",
-                        style: AppTextStyles.heading.copyWith(color: AppColors.goldDark),
+                        style: AppTextStyles.heading.copyWith(color: AppColors.gold),
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
                         onTap: () => showEditPhotoModal(context),
-                        child: Text("Edit foto", style: AppTextStyles.input.copyWith(color: AppColors.goldDark, fontSize: 14)),
+                        child: Text("Edit foto", style: AppTextStyles.input.copyWith(color: AppColors.gold, fontSize: 14)),
                       )
                     ],
                   ),
@@ -214,27 +214,27 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         Text("Informasi Dasar", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.person, user?["nama_pengguna"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.person, user?["nama_pengguna"] ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.phone, user?["no_hp"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.phone, user?["no_hp"] ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.email, user?["email"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.email, user?["email"] ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.calendar_today, user?["tanggal_lahir"]?.toString() ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.calendar_today, user?["tanggal_lahir"]?.toString() ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.location_on, provider.rekamMedisData?["alamat"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.location_on, provider.rekamMedisData?["alamat"] ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.man, user?["jenis_kelamin"] ?? "-", textColor: AppColors.goldDark),
+                        infoRow(Icons.man, user?["jenis_kelamin"] ?? "-", textColor: AppColors.gold),
                         const SizedBox(height: 16),
 
                         Align(
                           alignment: Alignment.center,
-                          child: editProfileButton(onTap: () {
+                          child: editProfilButton(onTap: () {
                             // Navigate to edit profile page
                           }),
                         ),
@@ -258,9 +258,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         Text("Asuransi Saya", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
                         const SizedBox(height: 12),
 
-                        Text("Nama Asuransi : ${provider.namaAsuransi ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
-                        Text("Nomor Peserta : ${provider.noPeserta ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
-                        Text("Status : ${provider.statusAktif ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.goldDark)),
+                        Text("Nama Asuransi : ${provider.namaAsuransi ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
+                        Text("Nomor Peserta : ${provider.noPeserta ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
+                        Text("Status : ${provider.statusAktif ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
                       ],
                     ),
                   ),

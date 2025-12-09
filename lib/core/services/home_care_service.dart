@@ -2,13 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
-
-// Pastikan import ini mengarah ke file api.dart yang Anda kirim
 import '../../config/api.dart';
 import '../models/home_care_booking.dart';
 import '../models/validation_exception.dart';
 
-/// Service helper to interact with the HomeCare API endpoints.
 class HomeCareService {
   final Client client;
   final String? tokenOverride;
@@ -16,9 +13,7 @@ class HomeCareService {
   HomeCareService({Client? client, this.tokenOverride})
     : client = client ?? http.Client();
 
-  // ===========================================================================
-  // 1. GET JADWAL DOKTER (FITUR BARU)
-  // ===========================================================================
+  // 1. GET JADWAL DOKTER
   Future<List<dynamic>> getJadwalDokter(String tanggal) async {
     final token = await _getToken();
 
@@ -45,9 +40,7 @@ class HomeCareService {
     }
   }
 
-  // ===========================================================================
-  // 2. HITUNG ESTIMASI BIAYA
-  // ===========================================================================
+  // 2. HITUNG ESTIMASI BIAYA/input lokasi
   Future<Map<String, dynamic>> calculateCost(double lat, double lng) async {
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareCalculate);
@@ -76,11 +69,10 @@ class HomeCareService {
     throw Exception('Gagal menghitung biaya: ${response.body}');
   }
 
-  // ===========================================================================
   // 3. CREATE BOOKING (UPDATED: RETURN MAP)
-  // ===========================================================================
   // Return type diubah menjadi Map agar bisa membawa 'payment_info'
   Future<Map<String, dynamic>> createBooking({
+    required int rekamMedisId,
     required int masterJadwalId,
     required String tanggal,
     required String keluhan,
@@ -104,6 +96,7 @@ class HomeCareService {
     }
 
     final requestBody = jsonEncode({
+      'rekam_medis_id': rekamMedisId,
       'master_jadwal_id': masterJadwalId,
       'tanggal': tanggal,
       'keluhan': keluhan.trim(),
@@ -127,13 +120,23 @@ class HomeCareService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
+      // Backend return 'reservation' dan 'payment_info' directly
+      if (data.containsKey('reservation') &&
+          data['reservation'] is Map<String, dynamic>) {
+        return {
+          'booking': HomeCareBooking.fromJson(
+            Map<String, dynamic>.from(data['reservation']),
+          ),
+          'payment_info': data['payment_info'] ?? {},
+        };
+      }
+
+      // Fallback untuk format dengan 'data' wrapper
       if (data.containsKey('data') && data['data'] is Map<String, dynamic>) {
         return {
-          // Object Booking untuk diproses lebih lanjut jika perlu
           'booking': HomeCareBooking.fromJson(
             Map<String, dynamic>.from(data['data']),
           ),
-          // Data Pembayaran (Expired Time, No VA, QR String) untuk UI Pembayaran
           'payment_info': data['payment_info'] ?? {},
         };
       }
@@ -142,9 +145,7 @@ class HomeCareService {
     throw Exception('Gagal booking: ${response.body}');
   }
 
-  // ===========================================================================
   // 4. VALIDASI TOKEN
-  // ===========================================================================
   Future<bool> validateToken() async {
     final token = await _getToken();
     if (token == null || token.isEmpty) return false;
@@ -164,9 +165,7 @@ class HomeCareService {
     }
   }
 
-  // ===========================================================================
   // 5. KONFIRMASI PEMBAYARAN (MANUAL)
-  // ===========================================================================
   Future<bool> confirmPayment(int bookingId) async {
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareConfirmPayment(bookingId));
@@ -183,9 +182,7 @@ class HomeCareService {
     throw Exception('Gagal konfirmasi pembayaran: ${response.body}');
   }
 
-  // ===========================================================================
   // 6. TRACKING HISTORY
-  // ===========================================================================
   Future<List<Map<String, dynamic>>> getTrackingHistory(int bookingId) async {
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareTracking(bookingId));
@@ -239,7 +236,6 @@ class HomeCareService {
       try {
         final parsed = jsonDecode(response.body);
         final Map errorBody = parsed is Map ? parsed : {};
-        // Laravel biasanya return 'errors' untuk validasi form
         final errorObj = errorBody['error'] ?? errorBody['errors'] ?? null;
 
         if (errorObj is Map) {
@@ -257,7 +253,6 @@ class HomeCareService {
         }
       } catch (e) {
         if (e is ValidationException) rethrow;
-        // Jika parsing gagal, biarkan error generic di bawah yang menangkap
       }
     }
   }
