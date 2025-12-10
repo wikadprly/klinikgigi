@@ -241,25 +241,47 @@ class _MidtransHomeCareBookingScreenState
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text(
-          "Menunggu Pembayaran",
-          style: TextStyle(color: AppColors.gold),
-        ),
-        content: const Text(
-          "Silakan selesaikan pembayaran di browser.\nAplikasi akan otomatis mendeteksi jika berhasil.",
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _stopPolling();
-              Navigator.pop(ctx);
-            },
-            child: const Text("Tutup", style: TextStyle(color: Colors.grey)),
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          backgroundColor: AppColors.cardDark,
+          title: const Text(
+            "Menunggu Pembayaran",
+            style: TextStyle(color: AppColors.gold),
           ),
-        ],
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                "Silakan selesaikan pembayaran di browser.\nAplikasi akan otomatis mendeteksi jika berhasil.",
+                style: TextStyle(color: Colors.white70),
+              ),
+              SizedBox(height: 20),
+              LinearProgressIndicator(color: AppColors.gold, backgroundColor: Colors.white10),
+              SizedBox(height: 10),
+              Text(
+                "Jangan tutup halaman ini",
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Memeriksa status pembayaran..."),
+                    duration: Duration(milliseconds: 1000),
+                  ),
+                );
+                if (_currentBookingId != null) {
+                  await _checkStatusDiBackend(_currentBookingId!);
+                }
+              },
+              child: const Text("Cek Status Manual", style: TextStyle(color: AppColors.gold)),
+            ),
+          ],
+        ),
       ),
     );
   }

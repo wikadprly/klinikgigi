@@ -8,9 +8,9 @@ class ApiEndpoint {
   static const check = "$baseUrl/check";
 
   // HOME CARE
-  static const String homeCareJadwalMaster = "$baseUrl/homecare/jadwal-master";
+  static const String homeCareJadwalMaster = "$baseUrl/homecare/jadwal";
   static const homeCareCalculate = "$baseUrl/homecare/calculate";
-  static const homeCareBook = "$baseUrl/homecare/create-booking";
+  static const homeCareBook = "$baseUrl/homecare/booking";
   static String homeCareConfirmPayment(int bookingId) =>
       "$baseUrl/homecare/booking/$bookingId/konfirmasi-bayar";
   static String homeCareTracking(int bookingId) =>
