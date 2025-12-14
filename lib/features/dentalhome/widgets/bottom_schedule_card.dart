@@ -15,10 +15,17 @@ class BottomScheduleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: const BoxDecoration(
-        color: AppColors.navbarBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -26,23 +33,41 @@ class BottomScheduleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Jadwal Anda:", style: AppTextStyles.input),
-                const SizedBox(height: 8),
-                Text(doctorName, style: AppTextStyles.input),
+                const Text(
+                  "Dokter Pilihan:",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  doctorName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
+          const SizedBox(width: 16),
           ElevatedButton(
             onPressed: onConfirm,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold,
-              foregroundColor: Colors.black,
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              backgroundColor: AppColors.gold, // Solid color only
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
             child: const Text(
-              "Konfirmasi Jadwal",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              "Lanjut",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ],

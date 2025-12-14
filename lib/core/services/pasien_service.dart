@@ -1,12 +1,11 @@
-// lib/core/services/pasien_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_klinik_gigi/config/api.dart'; // Import API Config
 import '../models/pasien_model.dart';
 import '../storage/shared_prefs_helper.dart';
 
 class PasienService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  // Removed hardcoded baseUrl
 
   Future<Pasien> getPasienByUserId(String userId) async {
     // ✅ Ambil token dari SharedPrefs
@@ -16,8 +15,8 @@ class PasienService {
       throw Exception('Token tidak tersedia. Silakan login terlebih dahulu.');
     }
 
-    // ✅ Gunakan endpoint protected /pasien
-    final url = Uri.parse('$baseUrl/pasien');
+    // ✅ Gunakan endpoint protected /pasien dari ApiEndpoint
+    final url = Uri.parse(ApiEndpoint.pasien); // Configured URL
 
     final response = await http.get(
       url,

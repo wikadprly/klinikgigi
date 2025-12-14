@@ -7,6 +7,7 @@ class Pasien {
   final String foto;
   final String rekamMedis;
   final DateTime tanggalLahir;
+  final int poin; // NEW
 
   Pasien({
     required this.id,
@@ -15,6 +16,7 @@ class Pasien {
     required this.foto,
     required this.rekamMedis,
     required this.tanggalLahir,
+    this.poin = 0, // NEW
   });
 
   factory Pasien.fromJson(Map<String, dynamic> json) {
@@ -31,7 +33,7 @@ class Pasien {
     final String foto = (json['file_foto'] ?? json['foto'] ?? 'default.png')
         .toString();
     final String rekamMedis =
-        (json['no_identitas'] ?? json['nik'] ?? json['rekam_medis_id'] ?? '')
+        (json['rekam_medis_id'] ?? json['no_identitas'] ?? json['nik'] ?? '')
             .toString();
 
     // Parse id secara aman
@@ -61,6 +63,7 @@ class Pasien {
       foto: foto,
       rekamMedis: rekamMedis,
       tanggalLahir: tanggalLahir,
+      poin: json['poin'] ?? 0, // NEW
     );
   }
 
