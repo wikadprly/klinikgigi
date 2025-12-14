@@ -80,7 +80,12 @@ class RiwayatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-
+            Container(
+              height: 1.5,
+              width: double.infinity,
+              color: AppColors.gold,
+            ),
+            const SizedBox(height: 8),
             // Dokter
             _infoRow("No. Antrian :", displayNoAntrian()),
             _infoRow("Dokter :", dokter),
