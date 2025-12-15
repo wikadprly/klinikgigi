@@ -42,7 +42,8 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
   }
 
   void _startPolling() {
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    // Dipercepat menjadi 3 detik agar responsif saat status diubah Admin
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _fetchData(silent: true);
     });
   }
