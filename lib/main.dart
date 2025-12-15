@@ -22,6 +22,9 @@ import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_scr
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
 
+// --- TAMBAHAN IMPORT TIMELINE ---
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/timeline_screen.dart'; 
+
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 
@@ -85,21 +88,21 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
+      // --- UPDATE: Ganti initialRoute ke timeline untuk testing ---
+      // Kembalikan ke kode lama (authProvider...) jika sudah selesai testing
+      initialRoute: '/dentalhome/timeline', 
       routes: {
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
 
-
         // Home
         '/main_screen': (context) => const MainScreen(),
 
-        // Dental Home Care
+        // Dental Home Care Flow
         '/dentalhome/jadwal': (context) => const SchedulePage(),
+        
         '/dentalhome/input_lokasi': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return InputLokasiScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
@@ -107,10 +110,9 @@ class KlinikGigiApp extends StatelessWidget {
             jamPraktek: arguments?['jamPraktek'] ?? '',
           );
         },
+        
         '/dentalhome/pembayaran': (context) {
-          final arguments =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return PembayaranHomeCareScreen(
             masterJadwalId: arguments?['masterJadwalId'] ?? 0,
             tanggal: arguments?['tanggal'] ?? '',
@@ -124,15 +126,29 @@ class KlinikGigiApp extends StatelessWidget {
           );
         },
 
+        // --- INI ROUTE BARU YANG KITA TAMBAHKAN AGAR TIMELINE MUNCUL ---
+        '/dentalhome/timeline': (context) => TimelineScreen(
+          // Tombol Back: Kembali ke Menu Utama (karena flow sudah selesai)
+          onBack: () => Navigator.pushNamedAndRemoveUntil(context, '/main_screen', (route) => false),
+          
+          // Tombol Payment: Nanti arahkan ke detail pembayaran jika ada
+          onPayment: () {
+             // Contoh: Navigator.pushNamed(context, '/riwayat'); 
+             print("Logic Pembayaran Akhir");
+          },
+
+          // Tombol Home: Kembali ke Menu Utama
+          onHome: () => Navigator.pushNamedAndRemoveUntil(context, '/main_screen', (route) => false),
+        ),
+        // -------------------------------------------------------------
+
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),
 
         // Riwayat
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
-          final data =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+          final data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           return RiwayatDetailScreen(data: data ?? {});
         },
 
@@ -141,10 +157,8 @@ class KlinikGigiApp extends StatelessWidget {
 
         // Settings
         '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one': (context) =>
-            const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two': (context) =>
-            const UbahKataSandi2Page(resetToken: "sample_token"),
+        '/ubahsandi_one': (context) => const UbahKataSandi1Page(email: "user@example.com"),
+        '/ubahsandi_two': (context) => const UbahKataSandi2Page(resetToken: "sample_token"),
         '/notifikasi': (context) => const NotificationSettingsPage(),
         '/panduanpage': (context) => const PanduanPage(),
         '/panduanlogin': (context) => const PanduanLoginPage(),
