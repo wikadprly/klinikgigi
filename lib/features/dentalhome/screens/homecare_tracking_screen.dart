@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/timeline_progres.dart';
+
 
 class HomeCareTrackingScreen extends StatefulWidget {
   final int bookingId;
@@ -115,7 +117,11 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
                   const SizedBox(height: 30),
 
                   // 2. Timeline
-                  _buildFixedTimeline(),
+                  TimelineProgresModule(
+                  currentStatus: _currentStatus,
+                  doctorName: _doctorName,
+),
+
 
                   const SizedBox(height: 40),
 

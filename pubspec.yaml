@@ -50,6 +50,7 @@ dependencies:
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
   qr_flutter: ^4.1.0
+  timeline_tile: ^2.0.0
   webview_flutter: ^4.4.2
   webview_flutter_android: ^3.13.0
   webview_flutter_wkwebview: ^3.10.1
