@@ -22,6 +22,8 @@ import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/homecare_tracking_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -101,7 +103,8 @@ class KlinikGigiApp extends StatelessWidget {
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
         '/daftar_pasien_baru': (context) => const DaftarPasienBaruPage(),
         '/otp_screen': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments as String?;
           return OtpScreen(email: arguments);
         },
 
@@ -114,6 +117,20 @@ class KlinikGigiApp extends StatelessWidget {
         // Dental Home Care
 >>>>>>> 5d9e6184358908f1df04efd517028d9de62f00af
         '/dentalhome/jadwal': (context) => const SchedulePage(),
+        '/dentalhome/tracking': (context) {
+          final bookingId =
+              ModalRoute.of(context)?.settings.arguments as int? ?? 0;
+          return HomeCareTrackingScreen(bookingId: bookingId);
+        },
+        '/dentalhome/pelunasan': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          return NotaPelunasanScreen(
+            bookingId: args['bookingId'] ?? 0,
+            totalTagihan: args['totalTagihan'] ?? 0,
+          );
+        },
         '/dentalhome/input_lokasi': (context) => const InputLokasiScreen(),
         '/dentalhome/pembayaran': (context) {
           final arguments =
@@ -125,6 +142,8 @@ class KlinikGigiApp extends StatelessWidget {
             namaDokter: arguments?['namaDokter'] ?? '',
             jamPraktek: arguments?['jamPraktek'] ?? '',
             keluhan: arguments?['keluhan'] ?? '',
+            jenisKeluhan: arguments?['jenisKeluhan'],
+            jenisKeluhanLainnya: arguments?['jenisKeluhanLainnya'],
             alamat: arguments?['alamat'] ?? '',
             latitude: arguments?['latitude'] ?? 0.0,
             longitude: arguments?['longitude'] ?? 0.0,
@@ -156,7 +175,8 @@ class KlinikGigiApp extends StatelessWidget {
         '/ubahsandi_one': (context) =>
             const UbahKataSandi1Page(email: "user@example.com"),
         '/ubahsandi_two': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as String?;
+          final arguments =
+              ModalRoute.of(context)?.settings.arguments as String?;
           return UbahKataSandi2Page(email: arguments ?? "user@example.com");
         },
         '/notifikasi': (context) => const NotificationSettingsPage(),

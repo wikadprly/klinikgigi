@@ -17,6 +17,9 @@ class ApiEndpoint {
       "$baseUrl/homecare/booking/$bookingId/tracking";
   static const String pasien = "$baseUrl/pasien";
   static const String dokter = "$baseUrl/dokter";
+  static const String homeCareUserPoints = "$baseUrl/homecare/user-points";
+  static const String homeCarePromos = "$baseUrl/homecare/promos";
+  static const String homeCareSettlement = "$baseUrl/homecare/settlement";
 
   // 🔹 RESERVASI
   static const reservasiCreate = "$baseUrl/reservasi/create";
