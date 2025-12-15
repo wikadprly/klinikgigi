@@ -9,19 +9,8 @@ import 'package:latlong2/latlong.dart';
 import '../../../../core/services/home_care_service.dart';
 
 class InputLokasiScreen extends StatefulWidget {
-  // Data yang dikirim dari halaman sebelumnya (Pilih Dokter)
-  final int masterJadwalId;
-  final String tanggal; // Format YYYY-MM-DD
-  final String namaDokter;
-  final String jamPraktek;
-
-  const InputLokasiScreen({
-    super.key,
-    required this.masterJadwalId,
-    required this.tanggal,
-    required this.namaDokter,
-    required this.jamPraktek,
-  });
+  // Constructor dibuat kosong karena data diambil via Route Arguments
+  const InputLokasiScreen({super.key});
 
   @override
   State<InputLokasiScreen> createState() => _InputLokasiScreenState();
@@ -31,20 +20,29 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
   final HomeCareService _service = HomeCareService();
   final TextEditingController _alamatController = TextEditingController();
 
+  // --- VARIABEL UNTUK MENAMPUNG DATA DARI JADWAL ---
+  int? masterJadwalId;
+  String? tanggal;
+  String? namaDokter;
+  String? jamPraktek;
+  String? spesialis; // Tambahan jika dikirim dari jadwal
+
   double? _latitude;
   double? _longitude;
   bool _isLoading = false;
-  Map<String, dynamic>? _estimasiBiaya; // Menyimpan hasil dari API
+  Map<String, dynamic>? _estimasiBiaya;
 
   // Flutter Map variables
   late MapController _mapController;
   LatLng? _centerLocation;
 
+  // Flag agar pengambilan argumen hanya dilakukan sekali
+  bool _isInitData = true;
+
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-    // Set default location ke null atau biarkan kosong dulu
     _centerLocation = null;
 
     // Ambil lokasi pengguna secara otomatis saat halaman dimuat
@@ -53,12 +51,30 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
     });
   }
 
+  // --- FUNGSI BARU: MENANGKAP ARGUMEN DARI NAVIGATOR ---
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInitData) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+      if (args != null) {
+        masterJadwalId = args['masterJadwalId'];
+        tanggal = args['tanggal'];
+        namaDokter = args['namaDokter'];
+        jamPraktek = args['jamPraktek'];
+        spesialis = args['spesialis']; // Opsional
+      }
+      _isInitData = false;
+    }
+  }
+
   // Fungsi Ambil Lokasi GPS
   Future<void> _getCurrentLocation() async {
     setState(() => _isLoading = true);
 
     try {
-      // Periksa & minta izin lokasi
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -66,13 +82,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
       if (permission == LocationPermission.denied) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Izin lokasi ditolak. Mohon aktifkan izin lokasi untuk aplikasi ini.",
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Izin lokasi ditolak.")));
         }
         return;
       }
@@ -80,17 +92,12 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Izin lokasi ditolak secara permanen. Mohon aktifkan izin lokasi melalui pengaturan aplikasi.",
-              ),
-            ),
+            const SnackBar(content: Text("Izin lokasi ditolak permanen.")),
           );
         }
         return;
       }
 
-      // Ambil dua posisi untuk memilih yang lebih akurat
       Position pos1 = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
       );
@@ -101,10 +108,8 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         desiredAccuracy: LocationAccuracy.bestForNavigation,
       );
 
-      // Pilih posisi dengan akurasi lebih baik
       Position finalPos = pos1.accuracy < pos2.accuracy ? pos1 : pos2;
 
-      // Pindahkan peta ke lokasi yang dipilih
       _mapController.move(LatLng(finalPos.latitude, finalPos.longitude), 16.0);
 
       setState(() {
@@ -113,7 +118,6 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         _centerLocation = LatLng(finalPos.latitude, finalPos.longitude);
       });
 
-      // Update lat-lng + reverse geocode + estimasi biaya
       await _updateLocationAndCalculate(finalPos.latitude, finalPos.longitude);
     } catch (e) {
       if (mounted) {
@@ -126,12 +130,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
     }
   }
 
-  // Fungsi untuk mengupdate lokasi dan menghitung estimasi biaya
   Future<void> _updateLocationAndCalculate(double lat, double lng) async {
     _latitude = lat;
     _longitude = lng;
 
-    // Ambil nama jalan dari koordinat (Reverse Geocoding)
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
       if (placemarks.isNotEmpty) {
@@ -144,15 +146,12 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
             : fullAddress;
       }
     } catch (e) {
-      // Jika gagal dapat nama jalan, gunakan format default
       _alamatController.text =
           "Lokasi (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})";
     }
 
-    // Panggil API Laravel untuk hitung ongkir dengan error handling yang lebih baik
     try {
       final result = await _service.calculateCost(lat, lng);
-
       if (mounted) {
         setState(() {
           _estimasiBiaya = result;
@@ -161,29 +160,19 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
     } catch (e) {
       if (mounted) {
         String errorMessage = "Gagal menghitung estimasi biaya";
-
-        // Jika error berisi HTML (seperti error page Laravel), tampilkan pesan generik
         if (e.toString().contains('<!DOCTYPE html>')) {
-          errorMessage =
-              "Terjadi kesalahan pada server, silakan coba lagi nanti.";
+          errorMessage = "Terjadi kesalahan pada server.";
         } else {
-          errorMessage =
-              "Gagal menghitung estimasi biaya: ${e.toString().split('.').first}";
+          errorMessage = "Gagal menghitung: ${e.toString().split('.').first}";
         }
-
-        // Tampilkan error jika perhitungan gagal
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(errorMessage)));
-        // Kosongkan estimasi biaya jika error
-        setState(() {
-          _estimasiBiaya = null;
-        });
+        setState(() => _estimasiBiaya = null);
       }
     }
   }
 
-  // Fungsi untuk memindahkan peta ke lokasi tertentu
   void _moveToLocation(double lat, double lng) {
     try {
       _mapController.move(LatLng(lat, lng), 15.0);
@@ -191,57 +180,43 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         _centerLocation = LatLng(lat, lng);
       });
     } catch (e) {
-      // Jika terjadi error saat memindahkan peta, log error tapi jangan crash
-      print('Error moving map: $e');
+      debugPrint('Error moving map: $e');
     }
   }
 
-  // Fungsi untuk menghitung ulang estimasi dari lokasi tengah peta saat ini
   void _updateEstimationFromMapCenter() {
     try {
       final camera = _mapController.camera;
-      if (camera != null) {
-        final center = camera.center;
-        _updateLocationAndCalculate(center.latitude, center.longitude);
-      } else if (_centerLocation != null) {
-        // Fallback ke lokasi yang terakhir diketahui
-        _updateLocationAndCalculate(
-          _centerLocation!.latitude,
-          _centerLocation!.longitude,
-        );
-      }
+      final center = camera.center;
+      _updateLocationAndCalculate(center.latitude, center.longitude);
     } catch (e) {
-      print('Error updating estimation from map center: $e');
+      debugPrint('Error updating estimation: $e');
     }
   }
 
   void _lanjutKePembayaran() {
     if (_latitude == null || _estimasiBiaya == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Mohon ambil lokasi terlebih dahulu")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Mohon ambil lokasi terlebih dahulu")),
+      );
       return;
     }
 
-    // Pindah ke halaman Pembayaran membawa semua data using named routes
-    // Field keluhan dihapus karena tidak lagi digunakan
+    // Pindah ke halaman Pembayaran membawa semua data
     Navigator.pushNamed(
       context,
       '/dentalhome/pembayaran',
       arguments: {
-        'masterJadwalId': widget.masterJadwalId,
-        'tanggal': widget.tanggal,
-        'namaDokter': widget.namaDokter,
-        'jamPraktek': widget.jamPraktek,
-        'keluhan':
-            "Permintaan kunjungan home care", // Field keluhan dihapus, gunakan default value
-        'alamat': _alamatController
-            .text, // Alamat sudah ditentukan di _updateLocationAndCalculate
+        // Menggunakan variabel lokal yang sudah diisi dari didChangeDependencies
+        'masterJadwalId': masterJadwalId,
+        'tanggal': tanggal,
+        'namaDokter': namaDokter,
+        'jamPraktek': jamPraktek,
+        'keluhan': "Permintaan kunjungan home care",
+        'alamat': _alamatController.text,
         'latitude': _latitude!,
         'longitude': _longitude!,
-        'rincianBiaya': _estimasiBiaya!, // Data biaya dari API
+        'rincianBiaya': _estimasiBiaya!,
       },
     );
   }
@@ -258,15 +233,11 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
       ),
       body: Stack(
         children: [
-          // Main content
           Padding(
-            padding: const EdgeInsets.only(
-              bottom: 80,
-            ), // Space for bottom button
+            padding: const EdgeInsets.only(bottom: 80),
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Instruction subtitle
                 Text(
                   "Geser peta untuk menentukan lokasi kunjungan Anda",
                   style: AppTextStyles.label.copyWith(
@@ -275,7 +246,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Map Widget with Flutter Map (OpenStreetMap)
+                // Map Widget
                 Container(
                   height: 250,
                   decoration: BoxDecoration(
@@ -289,11 +260,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                       mapController: _mapController,
                       options: MapOptions(
                         initialCenter:
-                            _centerLocation ??
-                            const LatLng(
-                              -0.7893,
-                              113.9213,
-                            ), // Default ke Indonesia (akan segera diganti oleh GPS)
+                            _centerLocation ?? const LatLng(-0.7893, 113.9213),
                         initialZoom: 15.0,
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
@@ -301,16 +268,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         onPositionChanged: (pos, hasGesture) {
                           if (hasGesture && pos.center != null) {
                             _centerLocation = pos.center;
-                            setState(() {});
+                            // setState(() {}); // Optional: update marker real-time
                           }
-
-                          // Jika selesai geser peta, hitung ulang estimasi//
-                          if (!hasGesture && pos.center != null) {
-                            _updateLocationAndCalculate(
-                              pos.center!.latitude,
-                              pos.center!.longitude,
-                            );
-                          }
+                          // Jika user melepas geseran (logic moved to button for better UX)
                         },
                       ),
                       children: [
@@ -320,19 +280,16 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         ),
                         MarkerLayer(
                           markers: [
-                            if (_centerLocation != null)
+                            if (_centerLocation !=
+                                null) // Tampilkan marker di tengah selalu
                               Marker(
                                 width: 50.0,
                                 height: 50.0,
-                                point: _centerLocation!,
-                                child: Icon(
+                                point:
+                                    _centerLocation!, // Ini bisa diambil dari mapController.center
+                                child: const Icon(
                                   Icons.location_on,
-                                  color: Color.fromARGB(
-                                    255,
-                                    255,
-                                    0,
-                                    0,
-                                  ), // Gold color
+                                  color: Colors.red,
                                   size: 40,
                                 ),
                               ),
@@ -345,20 +302,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
                 const SizedBox(height: 8),
 
-                // Petunjuk penggunaan peta
-                Text(
-                  "Gunakan tombol di bawah untuk mengatur lokasi",
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const SizedBox(height: 8),
-
-                // Tombol untuk menghitung ulang estimasi dari lokasi tengah peta saat ini
+                // Tombol Hitung Ulang
                 Container(
                   width: double.infinity,
                   height: 40,
@@ -372,9 +316,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         : _updateEstimationFromMapCenter,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(Icons.calculate, color: AppColors.gold, size: 16),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           "Hitung Ulang Estimasi",
                           style: TextStyle(
@@ -389,8 +333,6 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 ),
 
                 const SizedBox(height: 8),
-
-                // Instruksi untuk pengguna
                 Text(
                   "Geser peta untuk menyesuaikan lokasi, lalu tekan 'Hitung Ulang Estimasi'",
                   style: AppTextStyles.label.copyWith(
@@ -399,11 +341,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
-
                 const SizedBox(height: 20),
 
-                // "Gunakan Lokasi saat ini" button - mengambil lokasi dari GPS dan pindahkan peta ke sana
+                // Tombol Lokasi Saat Ini
                 Container(
                   width: double.infinity,
                   height: 48,
@@ -416,7 +356,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.my_location,
                           color: AppColors.gold,
                           size: 18,
@@ -426,7 +366,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                           _isLoading
                               ? "Mengambil Lokasi..."
                               : "Gunakan Lokasi Anda Saat Ini",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.gold,
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -437,7 +377,8 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                   ),
                 ),
 
-                // Alamat Lokasi (auto-filled, tidak dapat diedit)
+                const SizedBox(height: 12),
+
                 Text(
                   "Alamat Lokasi",
                   style: AppTextStyles.label.copyWith(
@@ -454,10 +395,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                   ),
                   child: TextField(
                     controller: _alamatController,
-                    readOnly: true, // Hanya untuk tampilan, tidak bisa diedit
+                    readOnly: true,
                     decoration: const InputDecoration(
-                      hintText:
-                          "Alamat akan otomatis terisi setelah memilih lokasi",
+                      hintText: "Alamat akan otomatis terisi...",
                       hintStyle: TextStyle(
                         color: Color(0xFF8D8D8D),
                         fontSize: 14,
@@ -471,7 +411,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
                 const SizedBox(height: 20),
 
-                // Estimasi Jarak & Biaya Card
+                // Estimasi Biaya
                 if (_estimasiBiaya != null) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -480,27 +420,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              color: AppColors.gold,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Estimasi Jarak & Biaya",
-                              style: TextStyle(
-                                color: AppColors.textLight,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -518,13 +438,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              "Biaya Transportasi",
-                              style: AppTextStyles.label,
-                            ),
+                            Text("Biaya Transport", style: AppTextStyles.label),
                             Text(
                               "Rp ${_estimasiBiaya!['biaya_transport']}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.gold,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -540,14 +457,14 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
             ),
           ),
 
-          // Sticky Bottom Button
+          // Tombol Konfirmasi
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.background,
                 border: Border(top: BorderSide(color: AppColors.inputBorder)),
               ),
@@ -555,7 +472,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 width: double.infinity,
                 height: 50,
                 decoration: BoxDecoration(
-                  gradient: AppColors.goldGradient,
+                  color: AppColors.gold,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton(
@@ -569,7 +486,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text("Konfirmasi Alamat", style: AppTextStyles.button),
+                  child: const Text(
+                    "Konfirmasi Alamat",
+                    style: AppTextStyles.button,
+                  ),
                 ),
               ),
             ),

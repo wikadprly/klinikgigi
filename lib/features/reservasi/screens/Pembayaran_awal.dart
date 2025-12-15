@@ -10,9 +10,7 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/pay_button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_bank.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_qris.dart';
 
-
 class ReservasiPembayaranPage extends StatefulWidget {
-
   final String noPemeriksaan;   
   final String namaLengkap;
   final String poli;
@@ -24,7 +22,7 @@ class ReservasiPembayaranPage extends StatefulWidget {
 
   const ReservasiPembayaranPage({
     Key? key,
-    // 🔥 Wajib diisi
+    // 🔥 Wajib diisi (Didapat dari Response Backend)
     required this.noPemeriksaan, 
     required this.namaLengkap,
     required this.poli,
@@ -40,8 +38,7 @@ class ReservasiPembayaranPage extends StatefulWidget {
       _ReservasiPembayaranPageState();
 }
 
-class _ReservasiPembayaranPageState
-    extends State<ReservasiPembayaranPage> {
+class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
   String? selectedMethod; // "bank" / "qris"
 
   @override
@@ -60,7 +57,7 @@ class _ReservasiPembayaranPageState
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   Text(
-                    "Metode Pembayaran", // Ganti judul biar sesuai konteks
+                    "Metode Pembayaran", 
                     style: AppTextStyles.heading.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -244,9 +241,8 @@ class _ReservasiPembayaranPageState
                       context,
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranBankPage(
-                          // 🔥 JANGAN LUPA TERUSKAN KODE RSV KE HALAMAN SELANJUTNYA
+                          // 🔥 TERUSKAN DATA PENTING
                           noPemeriksaan: widget.noPemeriksaan, 
-                          
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -262,9 +258,8 @@ class _ReservasiPembayaranPageState
                       context,
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranQrisPage(
-                          // 🔥 TERUSKAN KODE RSV JUGA
+                          // 🔥 TERUSKAN DATA PENTING
                           noPemeriksaan: widget.noPemeriksaan, 
-
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,

@@ -3,7 +3,8 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
-import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart'; // Import MainScreen
+// Pastikan path ini sesuai dengan struktur folder kamu
+import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart'; 
 
 class TampilanAkhirReservasi extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -230,7 +231,7 @@ class TampilanAkhirReservasi extends StatelessWidget {
 
                 // 3. BUTTON SELESAI (KE MENU UTAMA)
                 AuthButton(
-                  text: ButtonText.selesai, // Pakai konstanta
+                  text: "Selesai", // ✅ Diganti string biar aman
                   onPressed: () async { 
                     await _keMenuUtama(context);
                   },
@@ -246,6 +247,7 @@ class TampilanAkhirReservasi extends StatelessWidget {
   }
 
   Future<void> _keMenuUtama(BuildContext context) async {
+    // Pastikan rute '/main' atau MainScreen sudah ada
     await Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(

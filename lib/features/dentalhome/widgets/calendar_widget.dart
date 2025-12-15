@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class CalendarWidget extends StatefulWidget {
   final int selectedDay;
@@ -17,158 +17,159 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  int currentMonth = 11; // November
-  int currentYear = 2025;
+  // State internal untuk navigasi bulan (default ke bulan sekarang)
+  DateTime _currentMonth = DateTime.now();
 
-  List<String> months = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember"
-  ];
-
-  /// Hitung jumlah hari dalam bulan & tahun tertentu
-  int _daysInMonth(int month, int year) {
-    return DateUtils.getDaysInMonth(year, month);
+  @override
+  void initState() {
+    super.initState();
+    // Opsional: Jika ingin mulai langsung di bulan tertentu, set di sini
+    // _currentMonth = DateTime(2025, 11, 1);
   }
 
-  void _nextMonth() {
+  void _changeMonth(int offset) {
     setState(() {
-      if (currentMonth == 12) {
-        currentMonth = 1;
-        currentYear++;
-      } else {
-        currentMonth++;
-      }
+      _currentMonth = DateTime(
+        _currentMonth.year,
+        _currentMonth.month + offset,
+        1,
+      );
     });
-  }
 
-  void _previousMonth() {
-    setState(() {
-      if (currentMonth == 1) {
-        currentMonth = 12;
-        currentYear--;
-      } else {
-        currentMonth--;
-      }
-    });
+    // Reset tanggal terpilih ke 0 atau 1 saat ganti bulan (opsional)
+    // widget.onDaySelected(1, _currentMonth.month, _currentMonth.year);
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalDays = _daysInMonth(currentMonth, currentYear);
+    // Format Bulan & Tahun (Contoh: "November 2025")
+    final String monthYear = DateFormat('MMMM yyyy').format(_currentMonth);
+
+    // Hitung jumlah hari dalam bulan ini
+    final int daysInMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month + 1,
+      0,
+    ).day;
+
+    // Hitung hari pertama bulan ini jatuh pada hari apa (1=Senin, 7=Minggu)
+    final int firstWeekday = DateTime(
+      _currentMonth.year,
+      _currentMonth.month,
+      1,
+    ).weekday;
+
+    // Hitung offset (Kompensasi karena UI kita mulai dari Minggu/Su)
+    // Jika 1st day = Minggu (7), offset 0.
+    // Jika 1st day = Senin (1), offset 1.
+    final int emptySlots = firstWeekday % 7;
 
     return Column(
       children: [
-        // MONTH HEADER with arrows
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: _previousMonth,
-              icon: const Icon(Icons.chevron_left, color: Colors.white),
-            ),
-
-            Text(
-              "${months[currentMonth - 1]} $currentYear",
-              style: AppTextStyles.heading,
-            ),
-
-            IconButton(
-              onPressed: _nextMonth,
-              icon: const Icon(Icons.chevron_right, color: Colors.white),
-            ),
-          ],
+        // --- HEADER BULAN & NAVIGASI ---
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left, color: Colors.white),
+                onPressed: () => _changeMonth(-1),
+              ),
+              Text(
+                monthYear,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right, color: Colors.white),
+                onPressed: () => _changeMonth(1),
+              ),
+            ],
+          ),
         ),
 
-        const SizedBox(height: 10),
-
-        // Weekday labels
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            _WeekdayLabel("Su"),
-            _WeekdayLabel("Mo"),
-            _WeekdayLabel("Tu"),
-            _WeekdayLabel("We"),
-            _WeekdayLabel("Th"),
-            _WeekdayLabel("Fr"),
-            _WeekdayLabel("Sa"),
-          ],
+        // --- NAMA HARI (Su Mo Tu...) ---
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+                .map(
+                  (day) => SizedBox(
+                    width: 40,
+                    child: Text(
+                      day,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
         ),
 
-        const SizedBox(height: 10),
-
-        // Day grid
+        // --- GRID TANGGAL ---
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          itemCount: daysInMonth + emptySlots, // Total kotak = kosong + tgl
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 4,
-            crossAxisSpacing: 4,
+            crossAxisCount: 7, // 7 hari seminggu
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 0,
           ),
-          itemCount: totalDays,
           itemBuilder: (context, index) {
-            final day = index + 1;
-            final isSelected =
-                (day == widget.selectedDay); // or adjust based on month change?
+            // Jika index masih dalam range offset, render kotak kosong
+            if (index < emptySlots) {
+              return Container();
+            }
+
+            final int day = index - emptySlots + 1;
+
+            // Cek apakah ini tanggal yang dipilih
+            // Kita cek juga apakah bulan & tahun di UI sama dengan hari ini (logic sederhana)
+            // Tapi karena parent mengirim selectedDay (int), kita cocokkan int-nya saja
+            // CATATAN: Idealnya parent juga kirim selectedMonth/Year untuk validasi penuh.
+            final bool isSelected = (day == widget.selectedDay);
 
             return GestureDetector(
               onTap: () {
-                widget.onDaySelected(day, currentMonth, currentYear);
+                // Panggil callback ke parent
+                widget.onDaySelected(
+                  day,
+                  _currentMonth.month,
+                  _currentMonth.year,
+                );
               },
-              child: Center(
-                child: isSelected
-                    ? Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.gold,
-                            width: 2,
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(6),
-                        child: Text(
-                          '$day',
-                          style: const TextStyle(
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
-                    : Text('$day', style: AppTextStyles.label),
+              child: Container(
+                margin: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? Colors.transparent : null,
+                  border: isSelected
+                      ? Border.all(color: AppColors.gold, width: 2)
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    day.toString(),
+                    style: TextStyle(
+                      color: isSelected ? AppColors.gold : Colors.white,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
               ),
             );
           },
         ),
       ],
-    );
-  }
-}
-
-class _WeekdayLabel extends StatelessWidget {
-  final String text;
-
-  const _WeekdayLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: Text(
-          text,
-          style: AppTextStyles.label,
-        ),
-      ),
     );
   }
 }

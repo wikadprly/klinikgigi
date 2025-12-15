@@ -1,7 +1,4 @@
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    
     <application
         android:label="flutter_klinik_gigi"
         android:name="${applicationName}"
@@ -35,6 +32,24 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.flutter_klinik_gigi">
+
+        <uses-permission android:name="android.permission.INTERNET"/>
+
+        <queries>
+            <package android:name="gojek.customer.app"/>
+            <package android:name="com.telkom.mwallet"/>
+            <package android:name="ovo.id"/>
+            <package android:name="com.shopeepay.id"/>
+            <intent>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="https" />
+            </intent>
+        </queries>
+        <application ... >
+            </application>
+    </manifest>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

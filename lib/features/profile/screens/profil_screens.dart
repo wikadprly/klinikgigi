@@ -141,9 +141,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         try {
           final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(
-            File(filePath),
-          );
+          bool success = await provider.updateProfilePicture(File(filePath));
 
           Navigator.pop(context); // Close loading
 
@@ -197,9 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         try {
           final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(
-            File(filePath),
-          );
+          bool success = await provider.updateProfilePicture(File(filePath));
 
           Navigator.pop(context);
 
@@ -426,7 +422,7 @@ class _ProfilePageState extends State<ProfilePage> {
               );
             }
 
-            final user = provider.profilData;
+            // final user = provider.profilData; // not used
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

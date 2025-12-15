@@ -7,6 +7,9 @@ class ScheduleCardWidget extends StatelessWidget {
   final String namaDokter;
   final String hari;
   final String jam;
+  
+  // 🔥 TAMBAHAN UI SAJA: Tanggal (Opsional)
+  final String? tanggal; 
 
   final int quota;
   final int kuotaTerpakai;
@@ -19,6 +22,7 @@ class ScheduleCardWidget extends StatelessWidget {
     required this.namaDokter,
     required this.hari,
     required this.jam,
+    this.tanggal, // Boleh null
     required this.quota,
     required this.kuotaTerpakai,
     required this.onTap,
@@ -26,12 +30,8 @@ class ScheduleCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Cek apakah kuota penuh
-    // Jika terpakai >= quota, berarti penuh.
+    // Logic Kuota Penuh
     bool isFull = kuotaTerpakai >= quota;
-
-    // 2. Hitung sisa untuk ditampilkan (Opsional, kalau mau tampilkan sisa)
-    // int sisa = quota - kuotaTerpakai; 
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -74,16 +74,21 @@ class ScheduleCardWidget extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Waktu
+          // Waktu (Hari + Tanggal + Jam)
           Row(
             children: [
               const Icon(Icons.access_time, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
-              Text(
-                "$hari | $jam",
-                style: AppTextStyles.label.copyWith(
-                  color: AppColors.textLight,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  // 🔥 TAMPILKAN TANGGAL DISINI
+                  // Format: "Senin, 2025-12-05 | 08:00 - 12:00"
+                  "${hari}${tanggal != null ? ', $tanggal' : ''} | $jam",
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textLight,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -97,10 +102,9 @@ class ScheduleCardWidget extends StatelessWidget {
               const Icon(Icons.group, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
-                // Tampilan: "Kuota : 0/2" (Terpakai / Total) sesuai screenshotmu sebelumnya
                 "Kuota : $kuotaTerpakai/$quota", 
                 style: AppTextStyles.label.copyWith(
-                  color: isFull ? Colors.red : AppColors.textLight, // Merah jika penuh
+                  color: isFull ? Colors.red : AppColors.textLight,
                   fontSize: 14,
                   fontWeight: isFull ? FontWeight.bold : FontWeight.normal,
                 ),
@@ -114,7 +118,6 @@ class ScheduleCardWidget extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              // 3. Matikan onTap jika penuh
               onTap: isFull ? null : onTap, 
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -122,12 +125,10 @@ class ScheduleCardWidget extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  // 4. Ubah warna jadi abu-abu jika penuh
                   color: isFull ? Colors.grey : AppColors.gold,
                   borderRadius: BorderRadius.circular(22),
                 ),
                 child: Text(
-                  // 5. Ubah teks jadi "Penuh" jika penuh
                   isFull ? "Penuh" : "Pilih",
                   style: TextStyle(
                     color: isFull ? Colors.white : Colors.black,

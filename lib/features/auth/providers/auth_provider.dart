@@ -13,10 +13,15 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   UserModel? get user => _user;
 
-  bool get isLoggedIn => _user != null;
+  String? _token;
+  String? get token => _token;
 
+  bool get isLoggedIn => _user != null && _token != null;
+
+  /// Load user & token when app starts
   Future<void> loadUser() async {
     _user = await SharedPrefsHelper.getUser();
+    _token = await SharedPrefsHelper.getToken();
     notifyListeners();
   }
 
@@ -29,6 +34,7 @@ class AuthProvider extends ChangeNotifier {
 
     if (user != null) {
       _user = user;
+      _token = await SharedPrefsHelper.getToken(); // ambil token
       notifyListeners();
       return true;
     } else {
@@ -39,7 +45,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await SharedPrefsHelper.clearUser();
+    await SharedPrefsHelper.clearToken();
     _user = null;
+    _token = null;
     notifyListeners();
   }
 

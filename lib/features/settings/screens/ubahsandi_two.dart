@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
-import 'package:flutter_klinik_gigi/core/services/reset_password_service.dart';
+import 'package:flutter_klinik_gigi/features/settings/providers/reset_password_provider.dart';
+import 'package:provider/provider.dart';
 
 class UbahKataSandi2Page extends StatefulWidget {
-  final String resetToken;
+  final String email; // Ganti dari resetToken menjadi email
 
   const UbahKataSandi2Page({
     super.key,
-    required this.resetToken,
+    required this.email, // Ganti dari resetToken menjadi email
   });
 
   @override
@@ -20,24 +21,14 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
   final TextEditingController _newPassController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
 
-  final ResetPasswordService _resetService = ResetPasswordService();
-
   bool _obscure1 = true;
   bool _obscure2 = true;
   bool _loading = false;
 
-  @override
-  void dispose() {
-    _newPassController.dispose();
-    _confirmPassController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _onConfirmPressed() async {
+  Future<void> _onConfirmPressed(ChangePasswordProvider provider) async {
     final pass1 = _newPassController.text.trim();
     final pass2 = _confirmPassController.text.trim();
 
-    // VALIDASI
     if (pass1.isEmpty || pass2.isEmpty) {
       _show("Semua kolom harus diisi");
       return;
@@ -53,30 +44,28 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
       return;
     }
 
+    if (provider.isLoading) return;
+
     setState(() => _loading = true);
 
     try {
-      final res = await _resetService.resetPassword(
-        token: widget.resetToken,
+      final success = await provider.changePassword(
         newPassword: pass1,
+        confirmPassword: pass2,
       );
 
-      final success = res["success"] ?? false;
-      final message = res["message"] ?? "Terjadi kesalahan";
-
-      if (!success) {
-        _show(message);
-      } else {
+      if (success) {
         _show("Kata sandi berhasil diperbarui");
-
-        // KEMBALI KE HALAMAN LOGIN ATAU SETTING
+        // Kembali ke halaman sebelumnya atau bisa juga kembali ke login
         Navigator.popUntil(context, (route) => route.isFirst);
+      } else {
+        _show("Gagal mengganti kata sandi");
       }
     } catch (e) {
-      _show("Gagal menghubungi server");
+      _show("Gagal menghubungi server: ${e.toString()}");
+    } finally {
+      setState(() => _loading = false);
     }
-
-    setState(() => _loading = false);
   }
 
   void _show(String msg) {
@@ -85,150 +74,112 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: ListView(
-            children: [
-              // HEADER
-              SizedBox(
-                height: 50,
-                child: Stack(
-                  alignment: Alignment.center,
+    return ChangeNotifierProvider(
+      create: (_) => ChangePasswordProvider()..initializeService(),
+      child: Consumer<ChangePasswordProvider>(
+        builder: (context, provider, _) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: ListView(
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: BackButtonWidget(
-                        onPressed: () => Navigator.pop(context),
+                    SizedBox(
+                      height: 50,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: BackButtonWidget(
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Ubah Kata Sandi",
+                              style: AppTextStyles.heading.copyWith(
+                                color: AppColors.textLight,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Ubah Kata Sandi",
-                        style: AppTextStyles.heading.copyWith(
-                          color: AppColors.textLight,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-              // JUDUL
-              Text(
-                "Buat Kata Sandi baru",
-                style: AppTextStyles.heading.copyWith(
-                  color: AppColors.gold,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-
-              Text(
-                "Pilih Kata Sandi yang unik dan jangan dibagikan ke siapa pun",
-                style: AppTextStyles.label.copyWith(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // PASSWORD BARU
-              _buildPasswordField(
-                controller: _newPassController,
-                label: "Kata Sandi Baru",
-                obscure: _obscure1,
-                onToggle: () => setState(() => _obscure1 = !_obscure1),
-              ),
-
-              const SizedBox(height: 24),
-
-              // KONFIRMASI SANDI
-              _buildPasswordField(
-                controller: _confirmPassController,
-                label: "Konfirmasi Kata Sandi Baru",
-                obscure: _obscure2,
-                onToggle: () => setState(() => _obscure2 = !_obscure2),
-              ),
-
-              const SizedBox(height: 30),
-
-              // BOX TIPS
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.gold),
-                  color: AppColors.white.withOpacity(0.05),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
                     Text(
-                      "Tips bikin Kata Sandi yang aman",
-                      style: AppTextStyles.label.copyWith(
-                        fontWeight: FontWeight.w700,
+                      "Buat Kata Sandi baru",
+                      style: AppTextStyles.heading.copyWith(
                         color: AppColors.gold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    _tip("1. Hindari huruf/nomor berulang & berurutan seperti 1234."),
-                    _tip("2. Jangan memakai nama, tanggal lahir, atau nomor HP."),
-                    _tip("3. Buat kata sandi yang unik dan sulit ditebak."),
-                  ],
-                ),
-              ),
+                    const SizedBox(height: 6),
 
-              const SizedBox(height: 30),
-
-              // KONFIRMASI
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
+                    Text(
+                      "Pilih Kata Sandi yang unik dan jangan dibagikan ke siapa pun",
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.textMuted,
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
-                  onPressed: _loading ? null : _onConfirmPressed,
-                  child: _loading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          "Konfirmasi",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
+
+                    const SizedBox(height: 24),
+
+                    _buildPasswordField(
+                      controller: _newPassController,
+                      label: "Kata Sandi Baru",
+                      obscure: _obscure1,
+                      onToggle: () => setState(() => _obscure1 = !_obscure1),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _buildPasswordField(
+                      controller: _confirmPassController,
+                      label: "Konfirmasi Kata Sandi Baru",
+                      obscure: _obscure2,
+                      onToggle: () => setState(() => _obscure2 = !_obscure2),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
                           ),
                         ),
+                        onPressed: provider.isLoading ? null : () => _onConfirmPressed(provider),
+                        child: provider.isLoading
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : const Text(
+                                "Konfirmasi",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tip(String text) {
-    return Text(
-      text,
-      style: AppTextStyles.label.copyWith(
-        color: AppColors.textMuted,
-        fontSize: 12,
+            ),
+          );
+        },
       ),
     );
   }
