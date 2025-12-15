@@ -32,7 +32,6 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
   // --- Widget Bantuan untuk Detail Jadwal ---
 
   /// Detail jadwal dokter saat Expand ditekan.
-  // PERBAIKAN: Mengubah tipe parameter dari List<JadwalModel> menjadi List<JadwalPraktek>
   Widget _buildJadwalDetail(List<JadwalPraktek> jadwal) {
     if (jadwal.isEmpty) {
       return Padding(
@@ -148,15 +147,19 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
                   ? d.jadwal.first.hari
                   : "-";
 
-              // Tentukan URL foto profil (penanganan default & http/asset)
+              // --- PERBAIKAN FOTO DOKTER: Logika Sederhana ---
+              // Mengambil URL dari API. Diasumsikan API sudah mengirimkan URL Jaringan LENGKAP.
               final String photoUrl =
                   (d.fotoProfil != null && d.fotoProfil!.isNotEmpty)
-                  ? "http://127.0.0.1:8000/${d.fotoProfil!}"
-                  : "assets/images/dr_april.png";
+                  ? d.fotoProfil!
+                  : ""; // String kosong jika tidak ada foto
 
-              final ImageProvider imageProvider = photoUrl.startsWith('http')
+              // 2. Tentukan ImageProvider. NetworkImage hanya jika URL tersedia.
+              final ImageProvider? imageProvider = photoUrl.isNotEmpty
                   ? NetworkImage(photoUrl)
-                  : AssetImage(photoUrl) as ImageProvider;
+                  : null; // null jika tidak ada foto
+
+              // --- AKHIR PERBAIKAN ---
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 20),
@@ -181,20 +184,32 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: AppColors.goldDark,
+                              color: AppColors.goldDark, // Warna latar default
                               borderRadius: BorderRadius.circular(8),
-                              image: DecorationImage(
-                                image: imageProvider,
-                                fit: BoxFit.cover,
-                                onError: photoUrl.startsWith('http')
-                                    ? (exception, stackTrace) {
+                              // Hanya sediakan DecorationImage jika imageProvider tidak null
+                              image: imageProvider != null
+                                  ? DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                      // Tambahkan onError untuk debug, tidak akan crash jika gagal
+                                      onError: (exception, stackTrace) {
                                         debugPrint(
-                                          "Error loading image: $exception",
+                                          "Error loading image from network: $exception",
                                         );
-                                      }
-                                    : null,
-                              ),
+                                      },
+                                    )
+                                  : null, // Jika null, Container hanya akan menampilkan warna latar
                             ),
+                            // Jika tidak ada NetworkImage yang dimuat (imageProvider == null), tampilkan ikon/inisial
+                            child: imageProvider == null
+                                ? const Center(
+                                    child: Icon(
+                                      Icons.person,
+                                      color: AppColors.cardDark,
+                                      size: 40,
+                                    ),
+                                  )
+                                : null,
                           ),
 
                           const SizedBox(width: 16),
@@ -291,7 +306,6 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
                       ),
 
                       // DETAIL JADWAL EXPANDED
-                      // Panggilan ini sekarang mengirim tipe List<JadwalPraktek> ke fungsi yang mengharapkan List<JadwalPraktek>
                       if (isVisible) _buildJadwalDetail(d.jadwal),
                     ],
                   ),
