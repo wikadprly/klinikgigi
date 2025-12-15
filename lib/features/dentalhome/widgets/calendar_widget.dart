@@ -130,38 +130,53 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
             final int day = index - emptySlots + 1;
 
+            // Check Past Dates
+            final DateTime dateToCheck = DateTime(
+              _currentMonth.year,
+              _currentMonth.month,
+              day,
+            );
+            final DateTime now = DateTime.now();
+            final DateTime today = DateTime(now.year, now.month, now.day);
+            final bool isPast = dateToCheck.isBefore(today);
+
             // Cek apakah ini tanggal yang dipilih
-            // Kita cek juga apakah bulan & tahun di UI sama dengan hari ini (logic sederhana)
-            // Tapi karena parent mengirim selectedDay (int), kita cocokkan int-nya saja
-            // CATATAN: Idealnya parent juga kirim selectedMonth/Year untuk validasi penuh.
             final bool isSelected = (day == widget.selectedDay);
 
             return GestureDetector(
-              onTap: () {
-                // Panggil callback ke parent
-                widget.onDaySelected(
-                  day,
-                  _currentMonth.month,
-                  _currentMonth.year,
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? Colors.transparent : null,
-                  border: isSelected
-                      ? Border.all(color: AppColors.gold, width: 2)
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    day.toString(),
-                    style: TextStyle(
-                      color: isSelected ? AppColors.gold : Colors.white,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+              onTap: isPast
+                  ? null
+                  : () {
+                      // Disable click if past
+                      // Panggil callback ke parent
+                      widget.onDaySelected(
+                        day,
+                        _currentMonth.month,
+                        _currentMonth.year,
+                      );
+                    },
+              child: Center(
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? Colors.transparent : null,
+                    border: isSelected
+                        ? Border.all(color: AppColors.gold, width: 2)
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      day.toString(),
+                      style: TextStyle(
+                        color: isPast
+                            ? Colors.grey.withOpacity(0.3)
+                            : (isSelected ? AppColors.gold : Colors.white),
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
                     ),
                   ),
                 ),

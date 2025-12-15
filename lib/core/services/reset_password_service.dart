@@ -5,17 +5,17 @@ class ResetPasswordService {
   final Dio _dio;
 
   ResetPasswordService(String token)
-      : _dio = Dio(
-          BaseOptions(
-            baseUrl: "http://127.0.0.1:8000/api",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json",
-              "Authorization": "Bearer $token",
-            },
-            validateStatus: (status) => status != null && status < 500,
-          ),
-        );
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: "http://127.0.0.1:8000/api",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
 
   Future<Map<String, dynamic>> requestOtp() async {
     final response = await _dio.post("/password/request-change");
@@ -38,7 +38,7 @@ class ResetPasswordService {
       "/password/reset", // FIXED
       data: {
         "password_baru": newPassword,
-        "password_baru_confirmation":confirmPassword,
+        "password_baru_confirmation": confirmPassword,
       }, // FIXED
     );
     return response.data;

@@ -25,7 +25,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
   String? tanggal;
   String? namaDokter;
   String? jamPraktek;
-  String? spesialis; // Tambahan jika dikirim dari jadwal
+  String? spesialis;
+  String? jenisKeluhan; // NEW
+  String? jenisKeluhanLainnya; // NEW
 
   double? _latitude;
   double? _longitude;
@@ -64,7 +66,9 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         tanggal = args['tanggal'];
         namaDokter = args['namaDokter'];
         jamPraktek = args['jamPraktek'];
-        spesialis = args['spesialis']; // Opsional
+        spesialis = args['spesialis'];
+        jenisKeluhan = args['jenisKeluhan']; // Capture
+        jenisKeluhanLainnya = args['jenisKeluhanLainnya']; // Capture
       }
       _isInitData = false;
     }
@@ -212,7 +216,12 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
         'tanggal': tanggal,
         'namaDokter': namaDokter,
         'jamPraktek': jamPraktek,
-        'keluhan': "Permintaan kunjungan home care",
+        'keluhan':
+            jenisKeluhanLainnya ??
+            jenisKeluhan ??
+            "Permintaan kunjungan home care", // Fallback description
+        'jenisKeluhan': jenisKeluhan, // Pass to next screen
+        'jenisKeluhanLainnya': jenisKeluhanLainnya, // Pass to next screen
         'alamat': _alamatController.text,
         'latitude': _latitude!,
         'longitude': _longitude!,
@@ -254,49 +263,51 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.inputBorder, width: 1),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: FlutterMap(
-                      mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter:
-                            _centerLocation ?? const LatLng(-0.7893, 113.9213),
-                        initialZoom: 15.0,
-                        interactionOptions: const InteractionOptions(
-                          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-                        ),
-                        onPositionChanged: (pos, hasGesture) {
-                          if (hasGesture && pos.center != null) {
-                            _centerLocation = pos.center;
-                            // setState(() {}); // Optional: update marker real-time
-                          }
-                          // Jika user melepas geseran (logic moved to button for better UX)
-                        },
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        ),
-                        MarkerLayer(
-                          markers: [
-                            if (_centerLocation !=
-                                null) // Tampilkan marker di tengah selalu
-                              Marker(
-                                width: 50.0,
-                                height: 50.0,
-                                point:
-                                    _centerLocation!, // Ini bisa diambil dari mapController.center
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.red,
-                                  size: 40,
-                                ),
-                              ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: FlutterMap(
+                          mapController: _mapController,
+                          options: MapOptions(
+                            initialCenter:
+                                _centerLocation ??
+                                const LatLng(-0.7893, 113.9213),
+                            initialZoom: 15.0,
+                            interactionOptions: const InteractionOptions(
+                              flags:
+                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                            // Update _centerLocation saat map digeser
+                            onPositionChanged: (pos, hasGesture) {
+                              if (hasGesture && pos.center != null) {
+                                _centerLocation = pos.center;
+                              }
+                            },
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            ),
+                            // MarkerLayer DIHAPUS, diganti Static Icon di Stack
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      // STATIC CENTER PIN
+                      // Icon ini diam di tengah, map yang bergerak di bawahnya
+                      const Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 20.0,
+                        ), // Offset agar ujung pin pas di tengah
+                        child: Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -387,10 +398,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.cardDark,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.inputBorder),
                   ),
                   child: TextField(
@@ -398,12 +409,13 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                     readOnly: true,
                     decoration: const InputDecoration(
                       hintText: "Alamat akan otomatis terisi...",
-                      hintStyle: TextStyle(
-                        color: Color(0xFF8D8D8D),
-                        fontSize: 14,
-                      ),
+                      hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 16),
+                      icon: Icon(
+                        Icons.location_on_outlined,
+                        color: AppColors.gold,
+                      ),
                     ),
                     style: AppTextStyles.input,
                   ),
@@ -414,10 +426,17 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 // Estimasi Biaya
                 if (_estimasiBiaya != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: [AppColors.cardDark, AppColors.cardWarmDark],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: AppColors.gold.withOpacity(0.3),
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -425,26 +444,43 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text("Jarak ke Klinik", style: AppTextStyles.label),
-                            Text(
-                              "${_estimasiBiaya!['jarak_km']} km",
-                              style: AppTextStyles.input.copyWith(
-                                color: AppColors.textLight,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.straighten,
+                                  color: AppColors.textMuted,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "${(_estimasiBiaya!['jarak_km'] ?? 0).toStringAsFixed(1)} km",
+                                  style: AppTextStyles.input.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(color: Colors.white24),
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("Biaya Transport", style: AppTextStyles.label),
                             Text(
-                              "Rp ${_estimasiBiaya!['biaya_transport']}",
+                              "Biaya Transport (PP)",
+                              style: AppTextStyles.label.copyWith(
+                                color: AppColors.gold,
+                              ),
+                            ),
+                            Text(
+                              "Rp ${_estimasiBiaya!['biaya_transport'] ?? '-'}",
                               style: const TextStyle(
                                 color: AppColors.gold,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 18,
                               ),
                             ),
                           ],
@@ -463,32 +499,44 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: AppColors.background,
-                border: Border(top: BorderSide(color: AppColors.inputBorder)),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
               child: Container(
                 width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                height: 55,
                 child: ElevatedButton(
                   onPressed: _estimasiBiaya != null
                       ? _lanjutKePembayaran
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: _estimasiBiaya != null
+                        ? AppColors.gold
+                        : Colors.grey, // Solid Colors
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                   child: const Text(
                     "Konfirmasi Alamat",
-                    style: AppTextStyles.button,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
