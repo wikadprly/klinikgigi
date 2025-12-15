@@ -75,7 +75,7 @@ class RiwayatDetailScreen extends StatelessWidget {
     }
 
     // Cari foto prioritas: users.file_foto -> full_reservasi.user.file_foto -> foto -> pasien.file_foto
-    String imageUrl() {
+    String getImageUrl() {
       final u = data['user'];
       if (u != null) {
         final v = u['file_foto'] ?? u['foto'] ?? u['avatar'];
@@ -105,7 +105,7 @@ class RiwayatDetailScreen extends StatelessWidget {
       return '';
     }
 
-    final imageUrl = imageUrl();
+    final imageUrl = getImageUrl();
 
     return Scaffold(
       backgroundColor: AppColors.background,
