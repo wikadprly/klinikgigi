@@ -1,6 +1,7 @@
+build/
 # Miscellaneous
 *.class
-<<<<<<< HEAD
+*.lock
 *.log
 *.pyc
 *.swp
@@ -28,6 +29,7 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
@@ -44,17 +46,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-=======
-*.lock
-*.log
-*.pyc
-*.swp
-.buildlog/
-.history
 
-
-
-# Flutter repo-specific
+# Flutter repo-specific (kept for repo-level setups)
 /bin/cache/
 /bin/internal/bootstrap.bat
 /bin/internal/bootstrap.sh
@@ -76,16 +69,9 @@ analysis_benchmark.json
 # packages file containing multi-root paths
 .packages.generated
 
-# Flutter/Dart/Pub related
-**/doc/api/
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
 **/generated_plugin_registrant.dart
 .packages
 .pub-preload-cache/
-.pub/
-build/
 flutter_*.png
 linked_*.ds
 unlinked.ds
@@ -152,9 +138,6 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
-# Symbols
-app.*.symbols
-
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
@@ -162,4 +145,3 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
->>>>>>> 08a5cc50645bbfa2606ca7d98be96db42f8cea62
