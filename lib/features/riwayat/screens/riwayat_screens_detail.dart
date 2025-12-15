@@ -193,42 +193,77 @@ class RiwayatDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _item("Waktu Layanan", jam),
-                        _item("Hari/Tanggal", tanggal),
-                        _item("Dokter", dokter),
-                        _item("Poli", poli),
-                        _item("Keluhan", displaykeluhan()),
-                        _item(
-                          "Status Reservasi",
-                          statusReservasi,
-                          valueColor: statusColor1(),
-                        ),
-                        _item(
-                          "Status Pembayaran",
-                          statusPembayaran,
-                          valueColor: statusColor2(),
-                        ),
+                        // Show different layout for homecare
+                        if ((data['jenis_layanan'] ?? '')
+                                .toString()
+                                .toLowerCase() ==
+                            'homecare') ...[
+                          _item("Waktu Layanan", jam),
+                          _item(
+                            "Biaya Reservasi",
+                            "Rp.${data['biaya_reservasi'] ?? data['biaya'] ?? '0'}",
+                          ),
+                          _item(
+                            "Biaya Transport",
+                            "Rp.${data['biaya_transport'] ?? '0'}",
+                          ),
+                          _item(
+                            "Total Biaya",
+                            "Rp.${data['pembayaran_total'] ?? data['biaya'] ?? '0'}",
+                          ),
+                          _item(
+                            "Status Pembayaran",
+                            data['status'] ?? '-',
+                            valueColor: statusColor2(),
+                          ),
+                          _item(
+                            "Status Reservasi",
+                            statusReservasi,
+                            valueColor: statusColor1(),
+                          ),
+                          _item(
+                            "Status Booking",
+                            data['status_booking'] ?? '-',
+                            valueColor: statusColor1(),
+                          ),
+                        ] else ...[
+                          _item("Waktu Layanan", jam),
+                          _item("Hari/Tanggal", tanggal),
+                          _item("Dokter", dokter),
+                          _item("Poli", poli),
+                          _item("Keluhan", displaykeluhan()),
+                          _item(
+                            "Status Reservasi",
+                            statusReservasi,
+                            valueColor: statusColor1(),
+                          ),
+                          _item(
+                            "Status Pembayaran",
+                            statusPembayaran,
+                            valueColor: statusColor2(),
+                          ),
 
-                        const SizedBox(height: 15),
+                          const SizedBox(height: 15),
 
-                        // ===== TOTAL BIAYA =====
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Total Biaya :",
-                              style: AppTextStyles.label,
-                            ),
-                            Text(
-                              "Rp.$biaya",
-                              style: AppTextStyles.heading.copyWith(
-                                color: AppColors.gold,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                          // ===== TOTAL BIAYA =====
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Total Biaya :",
+                                style: AppTextStyles.label,
                               ),
-                            ),
-                          ],
-                        ),
+                              Text(
+                                "Rp.$biaya",
+                                style: AppTextStyles.heading.copyWith(
+                                  color: AppColors.gold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
 
                         const SizedBox(height: 15),
                       ],

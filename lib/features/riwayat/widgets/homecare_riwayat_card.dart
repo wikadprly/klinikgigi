@@ -2,60 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
-class RiwayatCard extends StatelessWidget {
+class HomeCareRiwayatCard extends StatelessWidget {
   final String noPemeriksaan;
   final String dokter;
-  final String tanggal;
-  final String poli;
+  final String jamMulai;
+  final String jamSelesai;
+  final String pembayaranTotal;
+  final String metodePembayaran;
   final String statusReservasi;
-  final String noAntrian;
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
 
-  const RiwayatCard({
+  const HomeCareRiwayatCard({
     super.key,
     required this.noPemeriksaan,
     required this.dokter,
-    required this.tanggal,
-    required this.poli,
+    required this.jamMulai,
+    required this.jamSelesai,
+    required this.pembayaranTotal,
+    required this.metodePembayaran,
     required this.statusReservasi,
-    required this.noAntrian,
     required this.data,
     this.onTap,
   });
 
+  Color statusColor() {
+    final s = statusReservasi.toLowerCase().trim();
+    switch (s) {
+      case 'menunggu':
+        return Colors.orange;
+      case 'dalam_proses':
+      case 'dalam proses':
+        return Colors.blue;
+      case 'selesai':
+        return Colors.green;
+      case 'batal':
+        return Colors.red;
+      default:
+        return AppColors.goldDark;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Color statusColor() {
-      final s = statusReservasi.toLowerCase().trim();
-      switch (s) {
-        case 'menunggu':
-          return Colors.orange;
-        case 'dalam_proses':
-        case 'dalam proses':
-          return Colors.blue;
-        case 'selesai':
-          return Colors.green;
-        case 'batal':
-          return Colors.red;
-        default:
-          return AppColors.goldDark;
-      }
-    }
-
-    String displayNoAntrian() {
-      final v = noAntrian.trim();
-      if (v.isEmpty || v == '-' || v.toLowerCase() == 'null') {
-        return 'Menunggu Pembayaran';
-      }
-      return v;
-    }
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.cardDark,
           border: Border.all(color: AppColors.gold, width: 1),
@@ -64,12 +58,11 @@ class RiwayatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Baris pertama: status + nomor pemeriksaan
             Row(
               children: [
                 Icon(Icons.circle, size: 14, color: statusColor()),
-                const SizedBox(width: 6),
-                const Text("No. Pemeriksaan : "),
+                const SizedBox(width: 8),
+                const Text('No. Pemeriksaan : '),
                 Expanded(
                   child: Text(
                     noPemeriksaan,
@@ -80,17 +73,12 @@ class RiwayatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Container(
-              height: 1.5,
-              width: double.infinity,
-              color: AppColors.gold,
-            ),
+            Container(height: 1.5, color: AppColors.gold),
             const SizedBox(height: 8),
-            // Dokter
-            _infoRow("No. Antrian :", displayNoAntrian()),
-            _infoRow("Dokter :", dokter),
-            _infoRow("Tanggal :", tanggal),
-            _infoRow("Poli :", poli),
+            _infoRow('Dokter', dokter),
+            _infoRow('Waktu', '$jamMulai - $jamSelesai'),
+            _infoRow('Total Pembayaran', 'Rp.$pembayaranTotal'),
+            _infoRow('Metode Pembayaran', metodePembayaran),
           ],
         ),
       ),
@@ -99,7 +87,7 @@ class RiwayatCard extends StatelessWidget {
 
   Widget _infoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(flex: 2, child: Text(label, style: AppTextStyles.label)),
