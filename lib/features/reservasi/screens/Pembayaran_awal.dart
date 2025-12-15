@@ -11,7 +11,7 @@ import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_bank.d
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_qris.dart';
 
 class ReservasiPembayaranPage extends StatefulWidget {
-  final String noPemeriksaan;   
+  final String noPemeriksaan;
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -21,9 +21,9 @@ class ReservasiPembayaranPage extends StatefulWidget {
   final int total;
 
   const ReservasiPembayaranPage({
-    Key? key,
+    super.key,
     // 🔥 Wajib diisi (Didapat dari Response Backend)
-    required this.noPemeriksaan, 
+    required this.noPemeriksaan,
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -31,7 +31,7 @@ class ReservasiPembayaranPage extends StatefulWidget {
     required this.jam,
     required this.keluhan,
     required this.total,
-  }) : super(key: key);
+  });
 
   @override
   State<ReservasiPembayaranPage> createState() =>
@@ -57,7 +57,7 @@ class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   Text(
-                    "Metode Pembayaran", 
+                    "Metode Pembayaran",
                     style: AppTextStyles.heading.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -78,7 +78,9 @@ class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
                   children: [
                     Text(
                       "Kode Booking",
-                      style: AppTextStyles.label.copyWith(color: Colors.white70),
+                      style: AppTextStyles.label.copyWith(
+                        color: Colors.white70,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     Text(
@@ -230,7 +232,9 @@ class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
                   if (selectedMethod == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Pilih metode pembayaran terlebih dahulu"),
+                        content: Text(
+                          "Pilih metode pembayaran terlebih dahulu",
+                        ),
                       ),
                     );
                     return;
@@ -242,7 +246,7 @@ class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranBankPage(
                           // 🔥 TERUSKAN DATA PENTING
-                          noPemeriksaan: widget.noPemeriksaan, 
+                          noPemeriksaan: widget.noPemeriksaan,
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -259,7 +263,7 @@ class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranQrisPage(
                           // 🔥 TERUSKAN DATA PENTING
-                          noPemeriksaan: widget.noPemeriksaan, 
+                          noPemeriksaan: widget.noPemeriksaan,
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -310,8 +314,7 @@ class DetailRow extends StatelessWidget {
   final String title;
   final String value;
 
-  const DetailRow({Key? key, required this.title, required this.value})
-      : super(key: key);
+  const DetailRow({super.key, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {

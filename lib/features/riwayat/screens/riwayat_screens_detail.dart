@@ -92,18 +92,20 @@ class RiwayatDetailScreen extends StatelessWidget {
       }
 
       final direct = data['foto'] ?? data['file_foto'] ?? data['avatar'];
-      if (direct != null && direct.toString().isNotEmpty)
+      if (direct != null && direct.toString().isNotEmpty) {
         return direct.toString();
+      }
 
       final pasienFoto =
           data['pasien']?['file_foto'] ?? data['pasien']?['foto'];
-      if (pasienFoto != null && pasienFoto.toString().isNotEmpty)
+      if (pasienFoto != null && pasienFoto.toString().isNotEmpty) {
         return pasienFoto.toString();
+      }
 
       return '';
     }
 
-    final _imageUrl = imageUrl();
+    final imageUrl = imageUrl();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -121,8 +123,8 @@ class RiwayatDetailScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 35,
-                  backgroundImage: _imageUrl.isNotEmpty
-                      ? NetworkImage(_imageUrl)
+                  backgroundImage: imageUrl.isNotEmpty
+                      ? NetworkImage(imageUrl)
                       : const NetworkImage("https://via.placeholder.com/150"),
                 ),
                 const SizedBox(width: 15),

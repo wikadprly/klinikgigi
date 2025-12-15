@@ -281,7 +281,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                             ),
                             // Update _centerLocation saat map digeser
                             onPositionChanged: (pos, hasGesture) {
-                              if (hasGesture && pos.center != null) {
+                              if (hasGesture) {
                                 _centerLocation = pos.center;
                               }
                             },
@@ -514,7 +514,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                   ),
                 ],
               ),
-              child: Container(
+              child: SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(

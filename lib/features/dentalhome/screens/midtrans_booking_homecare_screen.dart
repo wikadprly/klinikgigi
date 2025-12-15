@@ -9,7 +9,6 @@ import '../../../core/services/home_care_service.dart';
 import '../../../core/storage/shared_prefs_helper.dart';
 import '../../../theme/colors.dart';
 import 'midtrans_webview_screen.dart';
-import 'homecare_tracking_screen.dart'; // Import Tracking Screen
 
 class MidtransHomeCareBookingScreen extends StatefulWidget {
   final int masterJadwalId;
@@ -656,7 +655,7 @@ class _MidtransHomeCareBookingScreenState
                                   subtitle: Padding(
                                     padding: const EdgeInsets.only(top: 4.0),
                                     child: Text(
-                                      "${promo['deskripsi']}\n-${hargaPoin} Poin",
+                                      "${promo['deskripsi']}\n-$hargaPoin Poin",
                                       style: const TextStyle(
                                         color: AppColors.textMuted,
                                         fontSize: 12,

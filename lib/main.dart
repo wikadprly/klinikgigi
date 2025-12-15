@@ -7,7 +7,6 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'package:flutter_klinik_gigi/providers/nota_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';

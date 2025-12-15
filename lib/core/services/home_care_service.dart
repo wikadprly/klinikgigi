@@ -322,7 +322,7 @@ class HomeCareService {
       try {
         final parsed = jsonDecode(response.body);
         final Map errorBody = parsed is Map ? parsed : {};
-        final errorObj = errorBody['error'] ?? errorBody['errors'] ?? null;
+        final errorObj = errorBody['error'] ?? errorBody['errors'];
 
         if (errorObj is Map) {
           final Map<String, List<String>> errors = {};

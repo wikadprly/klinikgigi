@@ -5,7 +5,7 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 class PromoDetailScreen extends StatelessWidget {
   final Map<String, dynamic> promo;
 
-  const PromoDetailScreen({Key? key, required this.promo}) : super(key: key);
+  const PromoDetailScreen({super.key, required this.promo});
 
   @override
   Widget build(BuildContext context) {

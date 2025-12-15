@@ -10,7 +10,7 @@ import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart'; // Import Helper
 
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({Key? key}) : super(key: key);
+  const SchedulePage({super.key});
 
   @override
   State<SchedulePage> createState() => _SchedulePageState();

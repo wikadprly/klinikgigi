@@ -396,8 +396,9 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
       'terverifikasi',
       'menunggu_konfirmasi', // Add capitalization variants just in case
       'Menunggu Konfirmasi',
-    ].contains(status))
+    ].contains(status)) {
       return 1;
+    }
     // 2: OTW
     if (['otw_lokasi', 'dokter_menuju_lokasi'].contains(status)) return 2;
     // 3: In Progress
@@ -407,8 +408,9 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
       'selesai_diperiksa',
       'menunggu_pelunasan',
       'menunggu_pembayaran_obat',
-    ].contains(status))
+    ].contains(status)) {
       return 4;
+    }
     // 5: Lunas
     if (['lunas'].contains(status)) return 5;
 

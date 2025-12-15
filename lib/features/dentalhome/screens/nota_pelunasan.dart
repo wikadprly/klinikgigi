@@ -293,7 +293,7 @@ class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
                       style: const TextStyle(color: Colors.white),
                     ),
                     subtitle: Text(
-                      "${promo['deskripsi']}\n-${hargaPoin} Poin",
+                      "${promo['deskripsi']}\n-$hargaPoin Poin",
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                     trailing: ElevatedButton(
@@ -315,7 +315,7 @@ class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         );

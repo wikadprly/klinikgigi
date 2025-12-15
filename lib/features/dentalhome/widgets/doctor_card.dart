@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class DoctorCard extends StatelessWidget {
   final Map<String, String> doctor;
@@ -8,11 +7,11 @@ class DoctorCard extends StatelessWidget {
   final VoidCallback onSelect;
 
   const DoctorCard({
-    Key? key,
+    super.key,
     required this.doctor,
     required this.selected,
     required this.onSelect,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
