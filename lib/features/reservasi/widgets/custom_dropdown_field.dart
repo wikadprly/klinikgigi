@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../theme/colors.dart';
-// Pastikan path relatif ke AppColors sudah benar
 
 class CustomDropdownField extends StatelessWidget {
   final String label;
@@ -18,54 +17,75 @@ class CustomDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color dropdownBgColor = AppColors.gold;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Label
         Text(
           label,
           style: const TextStyle(
             color: AppColors.textLight,
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
           ),
         ),
+
         const SizedBox(height: 8),
 
+        // Dropdown Wrapper
         Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardDark,
-            borderRadius: BorderRadius.circular(10),
-            // Border emas
-            border: Border.all(color: AppColors.gold, width: 1.5),
+            color: AppColors.cardWarm, // ⬅ Warm tone
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.gold, // ⬅ Gold elegan
+              width: 1.2,
+            ),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              dropdownColor: dropdownBgColor,
+
+              // Background popup
+              dropdownColor: AppColors.cardWarmDark, // ⬅ Lebih gelap, biar kontras
+
               icon: const Icon(
-                Icons.keyboard_arrow_down,
+                Icons.keyboard_arrow_down_rounded,
                 color: AppColors.gold,
+                size: 22,
               ),
-              style: const TextStyle(color: AppColors.textLight, fontSize: 16),
-              items: items.map((e) {
+
+              style: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+
+              items: items.map((item) {
                 return DropdownMenuItem(
-                  value: e,
+                  value: item,
                   child: Text(
-                    e,
+                    item,
                     style: const TextStyle(
                       color: AppColors.textLight,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                   ),
                 );
               }).toList(),
+
               onChanged: onChanged,
-              hint: Text('Pilih', style: TextStyle(color: AppColors.textMuted)),
+
+              hint: const Text(
+                'Pilih',
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
         ),

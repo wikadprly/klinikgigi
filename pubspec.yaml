@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.2
   provider: ^6.1.5+1
-  intl: ^0.20.2
+  intl: 0.19.0
   flutter_svg: ^2.2.1
   carousel_slider: ^5.1.1
   shared_preferences: ^2.5.3
@@ -51,6 +51,11 @@ dependencies:
   latlong2: ^0.9.1
   qr_flutter: ^4.1.0
   timeline_tile: ^2.0.0
+  webview_flutter: ^4.4.2
+  webview_flutter_android: ^3.13.0
+  webview_flutter_wkwebview: ^3.10.1
+  midtrans_sdk: ^1.2.0
+  url_launcher: ^6.2.1
 
 dev_dependencies:
   flutter_test:

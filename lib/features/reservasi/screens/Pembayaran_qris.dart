@@ -4,10 +4,10 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/back_button_circle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/rectangle.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/button.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi.dart';
 
 class ReservasiPembayaranQrisPage extends StatelessWidget {
+  final String noPemeriksaan;
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -18,6 +18,7 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
 
   const ReservasiPembayaranQrisPage({
     super.key,
+    required this.noPemeriksaan,
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -33,215 +34,183 @@ class ReservasiPembayaranQrisPage extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: SingleChildScrollView(
+
+              // 🔙 Header
+              Row(
+                children: [
+                  BackButtonWidget(
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    "Kode Pembayaran",
+                    style: AppTextStyles.heading.copyWith(
+                      fontSize: 20,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              // 💰 Status & Total
+              Text(
+                "Menunggu Pembayaran",
+                style: AppTextStyles.heading.copyWith(
+                  fontSize: 17,
+                  color: AppColors.textLight,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Rp$total",
+                    style: AppTextStyles.heading.copyWith(
+                      fontSize: 22,
+                      color: AppColors.gold,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.access_time,
+                    color: AppColors.gold,
+                    size: 45,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "Kode Booking:", // Ganti judul biar jelas
+                style: AppTextStyles.label.copyWith(
+                  fontSize: 14,
+                  color: AppColors.textLight,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                noPemeriksaan, // 🔥 Tampilkan Kode RSV di sini juga
+                style: AppTextStyles.label.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.goldDark,
+                ),
+              ),
+
+              const SizedBox(height: 26),
+
+              // 🟦 QRIS Box
+              Rectangle(
+                width: double.infinity,
+                height: 420,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       Row(
                         children: [
-                          BackButtonWidget(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              "Kode Pembayaran",
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.heading.copyWith(
-                                color: AppColors.gold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 48),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 💰 STATUS + TOTAL
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                          const Icon(Icons.qr_code, color: AppColors.gold, size: 26),
+                          const SizedBox(width: 10),
                           Text(
-                            "Menunggu Pembayaran",
+                            "QRIS",
                             style: AppTextStyles.heading.copyWith(
                               fontSize: 18,
                               color: AppColors.gold,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "RP.${total.toString()},00",
-                                style: AppTextStyles.heading.copyWith(
-                                  fontSize: 22,
-                                  color: AppColors.gold,
-                                ),
-                              ),
-                              const Icon(
-                                Icons.access_time,
-                                color: AppColors.gold,
-                                size: 60,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            "Kadaluarsa dalam",
-                            style: AppTextStyles.heading.copyWith(
-                              color: AppColors.gold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "Jatuh Tempo pada 17:06, 4 Nov 2025",
-                            style: AppTextStyles.heading.copyWith(
-                              color: AppColors.gold,
-                              fontSize: 14,
-                            ),
-                          ),
                         ],
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
-                      // 🟦 BOX QRIS
-                      Rectangle(
-                        width: double.infinity,
-                        height: 420, // Ini biang kerok utamanya, tapi gpp
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Header QRIS
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.qr_code,
-                                    color: AppColors.gold,
-                                    size: 28,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "QRIS",
-                                    style: AppTextStyles.heading.copyWith(
-                                      fontSize: 18,
-                                      color: AppColors.gold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-
-                              // QR placeholder
-                              Expanded(
-                                child: Center(
-                                  child: Container(
-                                    width: 200,
-                                    height: 200,
-                                    color: AppColors.inputBorder.withOpacity(
-                                      0.3,
-                                    ),
-                                    child: const Icon(
-                                      Icons.qr_code_2,
-                                      size: 180,
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              // 🔽 Simpan Kode QR
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    // logic save nanti disini
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.gold,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Icon(
-                                        Icons.download,
-                                        size: 20,
-                                        color: Colors.black,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        "Simpan Kode",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                      // QR Placeholder
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: AppColors.cardDark,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.goldDark, width: 1),
+                            ),
+                            child: const Icon(
+                              Icons.qr_code_2,
+                              size: 170,
+                              color: AppColors.textMuted,
+                            ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
 
-                      // 🏠 Kembali ke Beranda (INI NGGAK LIXA UBAH)
-                      AuthButton(
-                        text: "Kembali ke Beranda",
-                        onPressed: () async {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ReservasiScreen(),
+                      // Save QR Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.gold,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          );
-                        },
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.download, color: Colors.black, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                "Simpan Kode",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
-
-                      // const Spacer(), <-- SPACER-NYA KITA HAPUS
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
-
+              const SizedBox(height: 18),
+              
+              // ✅ Button Selesai
               AuthButton(
                 text: "Selesai",
                 onPressed: () async {
-                  final Map<String, dynamic> reservasiData = {
+                  final reservasiData = {
+                    'noPemeriksaan': noPemeriksaan,
                     'nama': namaLengkap,
                     'poli': poli,
                     'dokter': dokter,
                     'tanggal': tanggal,
                     'jam': jam,
                     'keluhan': keluhan,
-                    'biaya': total.toString(), // Kirim total sebagai string
+                    'biaya': total.toString(),
                   };
 
-                  Navigator.pushReplacement(
+                  await Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => TampilanAkhirReservasi(
-                        data: reservasiData,
-                      ),
+                      // Pastikan halaman ini siap terima data
+                      builder: (_) => TampilanAkhirReservasi(data: reservasiData),
                     ),
                   );
                 },

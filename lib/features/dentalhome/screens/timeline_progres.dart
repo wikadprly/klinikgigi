@@ -1,180 +1,202 @@
 import 'package:flutter/material.dart';
-import 'package:timeline_tile/timeline_tile.dart';
+import 'package:flutter_klinik_gigi/theme/colors.dart'; // Sesuaikan path ini jika berbeda
 
-// Definisikan warna yang lebih konsisten
-const Color activeColor = Color(0xFFFFC107); // Kuning/Amber terang
-const Color inactiveColor = Color.fromARGB(255, 60, 60, 60); // Abu-abu gelap untuk garis non-aktif
-const Color textColor = Colors.white; // TETAP PUTIH untuk teks biasa
-const Color cardBackground = Color(0xFF2C2C2C); // Warna latar belakang untuk Card Info
-
+/// Widget yang bertanggung jawab hanya untuk menampilkan progress timeline
+/// berdasarkan status yang diterima dari HomeCareTrackingScreen.
 class TimelineProgresModule extends StatelessWidget {
-  const TimelineProgresModule({super.key});
+  final String currentStatus;
+  final String doctorName;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      // Padding di luar
-      padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0), 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. KOTAK HEADER INFORMASI (Card) dengan garis tepi
-          Container(
-            padding: const EdgeInsets.all(20.0),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              // Background Card 
-              color: cardBackground, 
-              borderRadius: BorderRadius.circular(15),
-              // Garis tepi (border) tipis berwarna abu-abu/putih samar
-              border: Border.all(color: Colors.white12, width: 1), 
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "ID Kunjungan: HDC-829292",
-                  style: TextStyle(color: Colors.white60, fontSize: 14),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  "Drg. Agus Suktamo",
-                  style: TextStyle(
-                    // Warna font Dokter menjadi KUNING
-                    color: activeColor, 
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Jadwal: 3 November 2025, 17.00 WIB",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                const Text(
-                  "Perkiraan waktu tiba: 15 menit",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 35),
-          
-          // 2. Timeline Items
-          _TimelineTileItem(
-            isFirst: true,
-            icon: Icons.assignment_ind,
-            title: "Dokter Telah Ditugaskan",
-            subtitle: "Drg. Agus Suktamo akan menangani Anda.",
-            isActive: true, 
-          ),
-
-          _TimelineTileItem(
-            isFirst: false,
-            icon: Icons.location_on,
-            title: "Dokter Dalam Perjalanan",
-            subtitle: "Dokter sedang menuju lokasi Anda.",
-            isActive: true, 
-          ),
-
-          _TimelineTileItem(
-            isFirst: false,
-            icon: Icons.local_hospital,
-            title: "Pemeriksaan Berlangsung",
-            subtitle: "Pemeriksaan belum dimulai.",
-            isActive: false, 
-          ),
-
-          _TimelineTileItem(
-            isFirst: false,
-            isLast: true,
-            icon: Icons.receipt_long,
-            title: "Menunggu Rincian Biaya",
-            subtitle: "Tagihan akan tersedia setelah tindakan selesai.",
-            isActive: false, 
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimelineTileItem extends StatelessWidget {
-  final bool isFirst;
-  final bool isLast;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool isActive;
-
-  const _TimelineTileItem({
-    super.key, // Menambahkan key agar best practice
-    this.isFirst = false,
-    this.isLast = false,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.isActive,
+  const TimelineProgresModule({
+    super.key,
+    required this.currentStatus,
+    required this.doctorName,
   });
 
+  // Helper Level (Dipindahkan dari HomeCareTrackingScreenState)
+  int _statusLevel(String status) {
+    // 1: Assigned / Initial State (Menunggu Dokter)
+    if ([
+      'menunggu', // Default status from DB
+      'menunggu_pembayaran',
+      'Menunggu Pembayaran', // Fallback from main status column
+      'menunggu_dokter',
+      'terverifikasi',
+      'menunggu_konfirmasi', // Add capitalization variants just in case
+      'Menunggu Konfirmasi',
+    ].contains(status)) {
+      return 1;
+    }
+    // 2: OTW
+    if (['otw_lokasi', 'dokter_menuju_lokasi'].contains(status)) return 2;
+    // 3: In Progress
+    if (['sedang_diperiksa', 'dalam_pemeriksaan'].contains(status)) return 3;
+    // 4: Billing / Done
+    if ([
+      'selesai_diperiksa',
+      'menunggu_pelunasan',
+      'menunggu_pembayaran_obat',
+    ].contains(status)) {
+      return 4;
+    }
+    // 5: Lunas
+    if (['lunas'].contains(status)) return 5;
+
+    return 0; // Default pending
+  }
+
+  bool _isFuture(int index, int activeLevel) => index > activeLevel;
+
   @override
   Widget build(BuildContext context) {
-    return TimelineTile(
-      isFirst: isFirst,
-      isLast: isLast,
-      alignment: TimelineAlign.start,
-      indicatorStyle: IndicatorStyle(
-        width: 40,
-        height: 40,
-        indicator: Container(
-          decoration: BoxDecoration(
-            color: isActive ? activeColor : inactiveColor,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Icon(
-              icon,
-              color: isActive ? Colors.black : Colors.white70,
-              size: 20,
-            ),
-          ),
-        ),
-      ),
-      beforeLineStyle: LineStyle(
-        color: isActive ? activeColor : inactiveColor,
-        thickness: 2,
-      ),
-      afterLineStyle: LineStyle( 
-        color: isActive ? activeColor : inactiveColor,
-        thickness: 2,
-      ),
-      endChild: Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 0, bottom: 30.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                // Warna judul status aktif (Kuning)
-                color: isActive ? activeColor : textColor, 
-                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                fontSize: 16,
+    // New Steps:
+    // 0: Menunggu Dokter (Assigned, OTW) -> Level 1 & 2
+    // 1: Pemeriksaan Berlangsung (Sedang Diperiksa) -> Level 3
+    // 2: Menunggu Rincian Biaya (Selesai Diperiksa) -> Level 4
+
+    int activeLevel = -1;
+
+    // Status Logic
+    int level = _statusLevel(currentStatus);
+    if (level >= 1) activeLevel = 0; // Assigned / OTW
+    if (level >= 3) activeLevel = 1; // Diperiksa
+    if (level >= 4) activeLevel = 2; // Selesai / Billing
+
+    final steps = [
+      {
+        'title': 'Menunggu Dokter',
+        'desc': 'Dokter $doctorName akan segera datang.',
+        'activeDesc': 'Dokter sedang dalam perjalanan.',
+        'icon': Icons.directions_walk,
+      },
+      {
+        'title': 'Pemeriksaan Berlangsung',
+        'desc': 'Pemeriksaan belum dimulai.',
+        'activeDesc': 'Dokter sedang melakukan pemeriksaan.',
+        'icon': Icons.medical_services,
+      },
+      {
+        'title': 'Menunggu Rincian Biaya',
+        'desc': 'Tagihan tersedia setelah tindakan selesai.',
+        'activeDesc': 'Tagihan siap dibayar.',
+        'icon': Icons.receipt_long,
+      },
+    ];
+
+    return Column(
+      children: List.generate(steps.length, (index) {
+        final step = steps[index];
+
+        final isPast = index < activeLevel;
+        final isCurrent = index == activeLevel;
+
+        // Colors & Size Logic
+        Color color;
+        Color iconColor;
+        Color borderColor;
+        double scale = 1.0;
+
+        if (isPast) {
+          // Past: Dimmed (Grey/Gold hint)
+          color = Colors.white38;
+          iconColor = Colors.grey;
+          borderColor = Colors.grey.withOpacity(0.5);
+        } else if (isCurrent) {
+          // Current: Bright Gold & Zoomed
+          color = AppColors.gold;
+          iconColor = AppColors.gold;
+          borderColor = AppColors.gold;
+          scale = 1.15; // Zoom Effect
+        } else {
+          // Future: Dark Grey
+          color = Colors.grey.shade700;
+          iconColor = Colors.grey.shade800;
+          borderColor = Colors.grey.shade800;
+        }
+
+        String desc = (isCurrent && step.containsKey('activeDesc'))
+            ? step['activeDesc'] as String
+            : step['desc'] as String;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon & Line
+              Column(
+                children: [
+                  AnimatedScale(
+                    scale: scale,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutBack,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isCurrent
+                            ? AppColors.gold.withOpacity(0.15)
+                            : Colors.transparent,
+                        border: Border.all(color: borderColor, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        step['icon'] as IconData,
+                        color: iconColor,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                  if (index != steps.length - 1)
+                    Expanded(
+                      child: Container(
+                        width: 2,
+                        color: Colors.grey.withOpacity(0.2),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                      ),
+                    ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+              const SizedBox(width: 16),
+              // Text
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 400),
+                    opacity: _isFuture(index, activeLevel) ? 0.5 : 1.0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 400),
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: isCurrent
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                          ),
+                          child: Text(step['title'] as String),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          desc,
+                          style: TextStyle(
+                            color: isCurrent ? Colors.white70 : Colors.white24,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

@@ -7,12 +7,11 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/persegi_panjang_g
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/transfer_bank_option.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/qris_option.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/pay_button.dart';
-
-// ==== IMPORT TAMBAHAN SESUAI PERMINTAAN ====
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_bank.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Pembayaran_qris.dart';
 
-class ReservasiPembayaranBankPage extends StatefulWidget {
+class ReservasiPembayaranPage extends StatefulWidget {
+  final String noPemeriksaan;   
   final String namaLengkap;
   final String poli;
   final String dokter;
@@ -21,8 +20,10 @@ class ReservasiPembayaranBankPage extends StatefulWidget {
   final String keluhan;
   final int total;
 
-  const ReservasiPembayaranBankPage({
+  const ReservasiPembayaranPage({
     Key? key,
+    // 🔥 Wajib diisi (Didapat dari Response Backend)
+    required this.noPemeriksaan, 
     required this.namaLengkap,
     required this.poli,
     required this.dokter,
@@ -33,12 +34,11 @@ class ReservasiPembayaranBankPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ReservasiPembayaranBankPage> createState() =>
-      _ReservasiPembayaranBankPageState();
+  State<ReservasiPembayaranPage> createState() =>
+      _ReservasiPembayaranPageState();
 }
 
-class _ReservasiPembayaranBankPageState
-    extends State<ReservasiPembayaranBankPage> {
+class _ReservasiPembayaranPageState extends State<ReservasiPembayaranPage> {
   String? selectedMethod; // "bank" / "qris"
 
   @override
@@ -57,7 +57,7 @@ class _ReservasiPembayaranBankPageState
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   Text(
-                    "Kode Pembayaran",
+                    "Metode Pembayaran", 
                     style: AppTextStyles.heading.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -70,6 +70,31 @@ class _ReservasiPembayaranBankPageState
               ),
 
               const SizedBox(height: 35),
+
+              // ===== KODE PEMBAYARAN =====
+              // Menampilkan No Pemeriksaan (RSV-...) agar user tau
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      "Kode Booking",
+                      style: AppTextStyles.label.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      widget.noPemeriksaan, // 🔥 Tampilkan Kode RSV Disini
+                      style: AppTextStyles.heading.copyWith(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
 
               // ===== DETAIL PENDAFTARAN =====
               Text(
@@ -85,12 +110,13 @@ class _ReservasiPembayaranBankPageState
 
               PersegiPanjang(
                 width: double.infinity,
-                height: 200,
+                height: 205,
                 padding: const EdgeInsets.symmetric(
-                  vertical: 10,
+                  vertical: 12,
                   horizontal: 14,
                 ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     DetailRow(title: "Nama Lengkap", value: widget.namaLengkap),
                     DetailRow(title: "Poli", value: widget.poli),
@@ -118,7 +144,7 @@ class _ReservasiPembayaranBankPageState
 
               PersegiPanjangGaris(
                 width: double.infinity,
-                height: 100,
+                height: 110,
                 showInnerLine: true,
                 leftChild: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +155,7 @@ class _ReservasiPembayaranBankPageState
                         color: AppColors.textLight,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 22),
                     Text(
                       "Total Pembayaran",
                       style: AppTextStyles.input.copyWith(
@@ -147,7 +173,7 @@ class _ReservasiPembayaranBankPageState
                         color: AppColors.textLight,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 22),
                     Text(
                       "Rp${widget.total}",
                       style: AppTextStyles.input.copyWith(
@@ -163,7 +189,7 @@ class _ReservasiPembayaranBankPageState
 
               // ===== METODE PEMBAYARAN =====
               Text(
-                "Metode Pembayaran",
+                "Pilih Metode Pembayaran",
                 style: AppTextStyles.heading.copyWith(
                   color: AppColors.textLight,
                   fontSize: 16,
@@ -204,20 +230,19 @@ class _ReservasiPembayaranBankPageState
                   if (selectedMethod == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Pilih metode pembayaran terlebih dahulu",
-                        ),
+                        content: Text("Pilih metode pembayaran terlebih dahulu"),
                       ),
                     );
                     return;
                   }
 
-                  // ==== PERBAIKAN SESUAI PERMINTAAN ====
                   if (selectedMethod == "bank") {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ReservasiPembayaranBank2Page(
+                        builder: (_) => ReservasiPembayaranBankPage(
+                          // 🔥 TERUSKAN DATA PENTING
+                          noPemeriksaan: widget.noPemeriksaan, 
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -228,11 +253,13 @@ class _ReservasiPembayaranBankPageState
                         ),
                       ),
                     );
-                  } else if (selectedMethod == "qris") {
+                  } else {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ReservasiPembayaranQrisPage(
+                          // 🔥 TERUSKAN DATA PENTING
+                          noPemeriksaan: widget.noPemeriksaan, 
                           namaLengkap: widget.namaLengkap,
                           poli: widget.poli,
                           dokter: widget.dokter,
@@ -255,7 +282,7 @@ class _ReservasiPembayaranBankPageState
     );
   }
 
-  // ==== Builder Option Wrapper ====
+  // ==== Wrapper Payment Option ====
   Widget _buildPaymentOption({
     required bool isSelected,
     required VoidCallback onTap,
@@ -263,11 +290,12 @@ class _ReservasiPembayaranBankPageState
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
           border: Border.all(
             color: isSelected ? AppColors.goldDark : Colors.transparent,
-            width: 2.5,
+            width: 2.2,
           ),
           borderRadius: BorderRadius.circular(14),
         ),
@@ -278,13 +306,12 @@ class _ReservasiPembayaranBankPageState
 }
 
 // ===== DETAIL ROW WIDGET =====
-
 class DetailRow extends StatelessWidget {
   final String title;
   final String value;
 
   const DetailRow({Key? key, required this.title, required this.value})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -312,27 +339,6 @@ class DetailRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ===== PAGE SUKSES (contoh) =====
-class PaymentSuccessPage extends StatelessWidget {
-  const PaymentSuccessPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Text(
-          "Pembayaran berhasil!",
-          style: AppTextStyles.heading.copyWith(
-            color: AppColors.goldDark,
-            fontSize: 20,
-          ),
-        ),
       ),
     );
   }

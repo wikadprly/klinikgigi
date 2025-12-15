@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-// Pastikan path ke AppColors sudah benar
 
 class CustomDateField extends StatelessWidget {
   final String label;
@@ -19,46 +18,54 @@ class CustomDateField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label Field
+        // Label
         Text(
           label,
           style: const TextStyle(
             color: AppColors.textLight,
-            fontWeight: FontWeight.bold,
             fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 8),
 
-        // Input Field (clickable)
+        // Date Field Wrapper
         InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          splashColor: AppColors.gold.withOpacity(0.15),
+          highlightColor: AppColors.gold.withOpacity(0.08),
           child: Container(
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: AppColors.cardDark,
-              borderRadius: BorderRadius.circular(10),
-              // Border emas
-              border: Border.all(color: AppColors.gold, width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: displayedDate != null
+                    ? AppColors.gold
+                    : AppColors.goldDark.withOpacity(0.6),
+                width: 1.2,
+              ),
             ),
-            alignment: Alignment.centerLeft,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Teks Tanggal yang Dipilih
+                // Text
                 Text(
-                  displayedDate ?? 'Pilih tanggal...', // Placeholder
+                  displayedDate ?? "Pilih tanggal...",
                   style: TextStyle(
                     color: displayedDate != null
                         ? AppColors.textLight
                         : AppColors.textMuted,
                     fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                // Icon Calendar
+
+                // Calendar Icon
                 const Icon(
-                  Icons.calendar_today,
+                  Icons.calendar_today_rounded,
                   color: AppColors.gold,
                   size: 20,
                 ),

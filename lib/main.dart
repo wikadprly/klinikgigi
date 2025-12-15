@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
@@ -20,10 +21,9 @@ import 'package:flutter_klinik_gigi/features/auth/screens/otp_screen.dart';
 import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/pembayaran_homecare_screen.dart';
-
-// --- TAMBAHAN IMPORT TIMELINE ---
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/timeline_screen.dart'; 
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/homecare_tracking_screen.dart';
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -65,7 +65,9 @@ void main() async {
         ChangeNotifierProvider<ReservasiProvider>(
           create: (_) => ReservasiProvider(),
         ),
-        ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
+        ChangeNotifierProvider<ProfilProvider>(
+          create: (_) => ProfilProvider(),
+        ),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -77,8 +79,6 @@ class KlinikGigiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Klinik Gigi',
@@ -88,96 +88,57 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
-      // --- UPDATE: Ganti initialRoute ke timeline untuk testing ---
-      // Kembalikan ke kode lama (authProvider...) jika sudah selesai testing
-      initialRoute: '/dentalhome/timeline', 
+
+      // ⬇️ START POINT
+      initialRoute: '/dentalhome/tracking',
+
       routes: {
+        // AUTH
         '/start': (context) => const StartScreen(),
-        '/masuk': (context) => const LoginPage(),
+        '/login': (context) => const LoginPage(),
+        '/daftar': (context) => const DaftarPasienBaruPage(),
+        '/otp': (context) {
+          final email =
+              ModalRoute.of(context)?.settings.arguments as String?;
+          return OtpScreen(email: email);
+        },
 
-        // Home
-        '/main_screen': (context) => const MainScreen(),
+        // MAIN
+        '/main': (context) => const MainScreen(),
 
-        // Dental Home Care Flow
+        // DENTAL HOME CARE
+        '/dentalhome': (context) => const DentalHomeScreen(),
         '/dentalhome/jadwal': (context) => const SchedulePage(),
-        
-        '/dentalhome/input_lokasi': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-          return InputLokasiScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
-          );
-        },
-        
-        '/dentalhome/pembayaran': (context) {
-          final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-          return PembayaranHomeCareScreen(
-            masterJadwalId: arguments?['masterJadwalId'] ?? 0,
-            tanggal: arguments?['tanggal'] ?? '',
-            namaDokter: arguments?['namaDokter'] ?? '',
-            jamPraktek: arguments?['jamPraktek'] ?? '',
-            keluhan: arguments?['keluhan'] ?? '',
-            alamat: arguments?['alamat'] ?? '',
-            latitude: arguments?['latitude'] ?? 0.0,
-            longitude: arguments?['longitude'] ?? 0.0,
-            rincianBiaya: arguments?['rincianBiaya'] ?? {},
-          );
+        '/dentalhome/input_lokasi': (context) =>
+            const InputLokasiScreen(),
+        '/dentalhome/tracking': (context) {
+          final bookingId =
+              ModalRoute.of(context)?.settings.arguments as int? ?? 0;
+          return HomeCareTrackingScreen(bookingId: bookingId);
         },
 
-        // --- INI ROUTE BARU YANG KITA TAMBAHKAN AGAR TIMELINE MUNCUL ---
-        '/dentalhome/timeline': (context) => TimelineScreen(
-          // Tombol Back: Kembali ke Menu Utama (karena flow sudah selesai)
-          onBack: () => Navigator.pushNamedAndRemoveUntil(context, '/main_screen', (route) => false),
-          
-          // Tombol Payment: Nanti arahkan ke detail pembayaran jika ada
-          onPayment: () {
-             // Contoh: Navigator.pushNamed(context, '/riwayat'); 
-             print("Logic Pembayaran Akhir");
-          },
-
-          // Tombol Home: Kembali ke Menu Utama
-          onHome: () => Navigator.pushNamedAndRemoveUntil(context, '/main_screen', (route) => false),
-        ),
-        // -------------------------------------------------------------
-
-        // Reservasi
+        // RESERVASI
         '/reservasi': (context) => const ReservasiScreen(),
 
-        // Riwayat
+        // RIWAYAT
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
-          final data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-          return RiwayatDetailScreen(data: data ?? {});
+          final data =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>? ??
+                  {};
+          return RiwayatDetailScreen(data: data);
         },
 
-        // Reward
-        '/point_reward': (context) => const PointRewardScreen(),
-
-        // Settings
-        '/firstpage': (context) => const ProfileScreen(),
-        '/ubahsandi_one': (context) => const UbahKataSandi1Page(email: "user@example.com"),
-        '/ubahsandi_two': (context) => const UbahKataSandi2Page(resetToken: "sample_token"),
-        '/notifikasi': (context) => const NotificationSettingsPage(),
-        '/panduanpage': (context) => const PanduanPage(),
-        '/panduanlogin': (context) => const PanduanLoginPage(),
-        '/panduanhomedental': (context) => const PanduanHomeDentalCarePage(),
-        '/panduanreservasi': (context) => const PanduanReservasiPage(),
-        '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
-        '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
-
-        //Profile
-        '/profil_screens': (context) {
+        // PROFILE
+        '/profil': (context) {
           return FutureBuilder<String?>(
             future: SharedPrefsHelper.getToken(),
             builder: (context, snapshot) {
-              String token = snapshot.data ?? '';
-              return ProfilePage(token: token);
+              return ProfilePage(token: snapshot.data ?? '');
             },
           );
         },
-        '/two_page': (context) => const EditProfilPage2(),
       },
     );
   }
