@@ -111,11 +111,7 @@ class KlinikGigiApp extends StatelessWidget {
         // Home
         '/main_screen': (context) => const MainScreen(),
 
-<<<<<<< HEAD
-        // Dental Home Screens
-=======
         // Dental Home Care
->>>>>>> 5d9e6184358908f1df04efd517028d9de62f00af
         '/dentalhome/jadwal': (context) => const SchedulePage(),
         '/dentalhome/tracking': (context) {
           final bookingId =
