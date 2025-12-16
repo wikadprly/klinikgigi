@@ -66,40 +66,30 @@ class HomeCareRiwayatCard extends StatelessWidget {
               children: [
                 Icon(Icons.circle, size: 14, color: statusColor()),
                 const SizedBox(width: 8),
-                Text(
-                  'No. Pemeriksaan :',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.gold,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                const Text('No.Pemeriksaan :'),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     noPemeriksaan,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.heading.copyWith(fontSize: 16),
                     textAlign: TextAlign.right,
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.gold,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                 ),
               ],
             ),
 
             const SizedBox(height: 8),
-            Container(height: 1.5, color: AppColors.gold),
+            Container(
+              height: 1.5,
+              width: double.infinity,
+              color: AppColors.gold,
+            ),
             const SizedBox(height: 8),
 
             // ================= CONTENT =================
             _infoRow('Dokter', dokter),
             _infoRow('Waktu', '$jamMulai - $jamSelesai'),
             _metodeRow('Metode Pembayaran', metodePembayaran),
-            const SizedBox(height: 4),
             _totalRow('Total Pembayaran', 'Rp.$pembayaranTotal'),
           ],
         ),
@@ -110,7 +100,7 @@ class HomeCareRiwayatCard extends StatelessWidget {
   // ================= ROW BIASA =================
   Widget _infoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
@@ -131,37 +121,33 @@ class HomeCareRiwayatCard extends StatelessWidget {
 
   // ================= METODE PEMBAYARAN =================
   Widget _metodeRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: _labelWidth, // SAMA DENGAN ROW LAIN
-          child: Text(
-            '$label :',
-            style: AppTextStyles.label,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: _labelWidth, // SAMA DENGAN ROW LAIN
+            child: Text('$label :', style: AppTextStyles.label),
           ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.right,
-            style: AppTextStyles.label.copyWith(
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.label.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
+
   // ================= TOTAL PEMBAYARAN =================
   Widget _totalRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
