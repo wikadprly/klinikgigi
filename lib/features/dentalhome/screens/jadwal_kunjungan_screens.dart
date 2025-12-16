@@ -4,9 +4,10 @@ import '../widgets/calendar_widget.dart';
 import '../widgets/doctor_card.dart';
 import '../widgets/bottom_schedule_card.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
+
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart'; // Import Helper
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key? key}) : super(key: key);
@@ -23,6 +24,19 @@ class _SchedulePageState extends State<SchedulePage> {
   List<dynamic> _availableDoctors = [];
   bool _isLoading = false;
   int _selectedIndex = -1; // -1 artinya belum ada yang dipilih
+
+  // State Keluhan
+  String? _selectedComplaint;
+  final TextEditingController _otherComplaintController =
+      TextEditingController();
+  final List<String> _complaintTypes = [
+    'Sakit Gigi',
+    'Pencabutan Gigi',
+    'Scaling / Pembersihan',
+    'Tambal Gigi',
+    'Konsultasi',
+    'Lainnya',
+  ];
 
   final HomeCareService _homeCareService = HomeCareService();
 
@@ -41,12 +55,17 @@ class _SchedulePageState extends State<SchedulePage> {
     });
 
     try {
-      // TODO: Ambil token asli dari SharedPreferences/Storage aplikasi Anda
-      String token = "TOKEN_SEMENTARA_ATAU_AMBIL_DARI_STORAGE";
+      final token = await SharedPrefsHelper.getToken();
+      if (token == null) {
+        throw Exception("Token tidak ditemukan. Silakan login ulang.");
+      }
 
       // Format tanggal ke YYYY-MM-DD untuk API Laravel
       String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
+      // Pastikan service menggunakan token yang benar (biasanya service ambil sendiri,
+      // tapi jika method minta token, pass it here.
+      // Asumsi: Service handle token via SharedPrefs internally or header is managed)
       final data = await _homeCareService.getJadwalDokter(formattedDate);
 
       if (mounted) {
@@ -65,6 +84,36 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
+  // State Filter
+  String _selectedFilter = 'Semua';
+
+  List<dynamic> get _filteredDoctors {
+    if (_selectedFilter == 'Semua') {
+      return _availableDoctors;
+    }
+    return _availableDoctors.where((item) {
+      final dokter = item['master_jadwal']?['dokter'];
+      final String spesialis =
+          dokter?['spesialis']?['nama_spesialis'] ??
+          dokter?['spesialisasi'] ??
+          '-';
+      return spesialis == _selectedFilter;
+    }).toList();
+  }
+
+  List<String> get _filterCategories {
+    final Set<String> categories = {'Semua'};
+    for (var item in _availableDoctors) {
+      final dokter = item['master_jadwal']?['dokter'];
+      final String spesialis =
+          dokter?['spesialis']?['nama_spesialis'] ??
+          dokter?['spesialisasi'] ??
+          '-';
+      categories.add(spesialis);
+    }
+    return categories.toList();
+  }
+
   // Handle konfirmasi tombol bawah
   void _onConfirmBooking() {
     if (_selectedIndex == -1) {
@@ -74,8 +123,23 @@ class _SchedulePageState extends State<SchedulePage> {
       return;
     }
 
-    // Ambil data dengan aman (Null Safety)
-    final selectedDoc = _availableDoctors[_selectedIndex];
+    if (_selectedComplaint == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Silakan pilih jenis keluhan")),
+      );
+      return;
+    }
+
+    if (_selectedComplaint == 'Lainnya' &&
+        _otherComplaintController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Silakan isi detail keluhan lainnya")),
+      );
+      return;
+    }
+
+    // Ambil data dari FILTERED LIST
+    final selectedDoc = _filteredDoctors[_selectedIndex]; // CHANGED THIS
     final masterJadwal = selectedDoc['master_jadwal'];
     final dokter = masterJadwal['dokter'];
 
@@ -105,106 +169,277 @@ class _SchedulePageState extends State<SchedulePage> {
         'namaDokter': namaDokter,
         'jamPraktek': jam,
         'spesialis': spesialis,
+
+        'jenisKeluhan': _selectedComplaint,
+        'jenisKeluhanLainnya': _selectedComplaint == 'Lainnya'
+            ? _otherComplaintController.text.trim()
+            : null,
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Use filtered list for display
+    final displayedDoctors = _filteredDoctors;
+
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.gold),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: const Text(
+          "Pilih Jadwal Kunjungan",
+          style: AppTextStyles.heading,
+        ),
+      ),
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 12),
+                // ==== 2. CALENDAR WIDGET ====
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: CalendarWidget(
+                    selectedDay: _selectedDate.day,
+                    // Asumsi widget Anda menerima callback (day, month, year)
+                    onDaySelected: (day, month, year) {
+                      setState(() {
+                        _selectedDate = DateTime(year, month, day);
+                        _selectedFilter = 'Semua'; // Reset filter
+                      });
+                      // Panggil API ulang setiap ganti tanggal
+                      _fetchDoctors();
+                    },
+                  ),
+                ),
 
-                // ==== 1. HEADER ====
+                const SizedBox(height: 20),
+
+                // ==== 2.5 PILIH JENIS KELUHAN ====
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    height: 48,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: BackButtonWidget(
-                            onPressed: () => Navigator.of(context).pop(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Jenis Keluhan",
+                        style: TextStyle(
+                          color: AppColors.textLight,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardDark,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.inputBorder,
+                            width: 1,
                           ),
                         ),
-                        const Center(
-                          child: Text(
-                            "Pilih Jadwal Kunjungan",
-                            style: AppTextStyles.heading,
-                            textAlign: TextAlign.center,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedComplaint,
+                            hint: Text(
+                              "Pilih Keluhan",
+                              style: AppTextStyles.input.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            isExpanded: true,
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: AppColors.gold,
+                              size: 28,
+                            ),
+                            dropdownColor: AppColors.cardWarmDark,
+                            style: AppTextStyles.input,
+                            items: _complaintTypes.map((String type) {
+                              return DropdownMenuItem<String>(
+                                value: type,
+                                child: Text(type),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedComplaint = newValue;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      if (_selectedComplaint == 'Lainnya') ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.cardDark,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.inputBorder),
+                          ),
+                          child: TextField(
+                            controller: _otherComplaintController,
+                            style: AppTextStyles.input,
+                            decoration: const InputDecoration(
+                              hintText: "Tuliskan keluhan Anda...",
+                              hintStyle: TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                // ==== 2. CALENDAR WIDGET ====
-                CalendarWidget(
-                  selectedDay: _selectedDate.day,
-                  // Asumsi widget Anda menerima callback (day, month, year)
-                  onDaySelected: (day, month, year) {
-                    setState(() {
-                      _selectedDate = DateTime(year, month, day);
-                    });
-                    // Panggil API ulang setiap ganti tanggal
-                    _fetchDoctors();
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Dokter Tersedia",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(
+                            Icons.medical_services,
+                            color: AppColors.gold,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "Dokter Tersedia",
+                            style: TextStyle(
+                              color: AppColors.textLight,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Optional: Add Item Count
+                      Text(
+                        "${displayedDoctors.length} Dokter",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 12),
+
+                // ==== FILTER CHIPS (NEW) ====
+                if (_availableDoctors.isNotEmpty)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      children: _filterCategories.map((category) {
+                        final isSelected = _selectedFilter == category;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(category),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _selectedFilter = category;
+                                  _selectedIndex =
+                                      -1; // Reset selection on filter change
+                                });
+                              }
+                            },
+                            backgroundColor: AppColors.cardDark,
+                            selectedColor: AppColors.gold,
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.black : Colors.white,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              // Modern shape
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppColors.gold
+                                    : Colors.white24,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                if (_availableDoctors.isNotEmpty) const SizedBox(height: 12),
 
                 // ==== 3. LIST DOKTER DINAMIS ====
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _availableDoctors.isEmpty
                       ? const Center(
-                          child: Text(
-                            "Tidak ada dokter tersedia\npada tanggal ini.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
+                          child: CircularProgressIndicator(
+                            color: AppColors.gold,
+                          ),
+                        )
+                      : displayedDoctors.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.event_busy,
+                                color: Colors.grey,
+                                size: 50,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                _availableDoctors.isEmpty
+                                    ? "Tidak ada dokter tersedia\npada tanggal ini."
+                                    : "Tidak ada dokter untuk spesialis ini.",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
                           ),
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.only(bottom: 150),
-                          itemCount: _availableDoctors.length,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 150),
+                          itemCount: displayedDoctors.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 12),
                           itemBuilder: (context, i) {
-                            // 1. AMBIL DATA DARI LIST
-                            final item = _availableDoctors[i];
+                            // 1. AMBIL DATA DARI FILTERED LIST
+                            final item = displayedDoctors[i];
                             final jadwal = item['master_jadwal'];
                             final dokter =
                                 jadwal?['dokter']; // Pakai ? jaga-jaga kalau jadwal null
 
-                            // 2. DEFINISIKAN KUOTA (PENTING: Ini yang bikin error sebelumnya hilang)
-                            // Mengambil angka kuota dari JSON backend
+                            // 2. DEFINISIKAN KUOTA
                             final int kuotaSisa = item['kuota_sisa'] ?? 0;
                             final int kuotaMaster = item['kuota_master'] ?? 0;
 
-                            // 3. MAPPING DATA (NULL SAFETY)
-                            // Menggunakan '??' untuk memberi nilai default strip '-' jika data null
+                            // 3. MAPPING DATA
                             final String namaDokter =
                                 dokter?['nama'] ?? 'Dokter Tanpa Nama';
                             final String spesialis =
@@ -218,8 +453,7 @@ class _SchedulePageState extends State<SchedulePage> {
                             final Map<String, String> doctorDataMap = {
                               'name': namaDokter,
                               'time': jamPraktek,
-                              'quota':
-                                  "$kuotaSisa/$kuotaMaster", // Menampilkan sisa/total
+                              'quota': "$kuotaSisa/$kuotaMaster",
                               'spesialis': spesialis,
                             };
 
@@ -228,7 +462,6 @@ class _SchedulePageState extends State<SchedulePage> {
                               doctor: doctorDataMap,
                               selected: i == _selectedIndex,
                               onSelect: () {
-                                // LOGIKA PENGECEKAN KUOTA
                                 if (kuotaSisa > 0) {
                                   setState(() => _selectedIndex = i);
                                 } else {
@@ -259,7 +492,7 @@ class _SchedulePageState extends State<SchedulePage> {
               bottom: 0,
               child: BottomScheduleCard(
                 doctorName:
-                    _availableDoctors[_selectedIndex]['master_jadwal']['dokter']['nama'],
+                    displayedDoctors[_selectedIndex]['master_jadwal']['dokter']['nama'], // Use filtered list
                 onConfirm: _onConfirmBooking,
               ),
             ),

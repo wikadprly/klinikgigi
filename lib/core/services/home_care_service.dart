@@ -73,11 +73,15 @@ class HomeCareService {
     required int rekamMedisId,
     required int masterJadwalId,
     required String tanggal,
+
     required String keluhan,
+    String? jenisKeluhan,
+    String? jenisKeluhanLainnya,
     required double lat,
     required double lng,
     required String alamat,
     required String metodePembayaran,
+    int? promoId,
   }) async {
     if (keluhan.trim().isEmpty) throw Exception('Keluhan tidak boleh kosong');
     if (alamat.trim().isEmpty) throw Exception('Alamat tidak boleh kosong');
@@ -97,11 +101,15 @@ class HomeCareService {
       'rekam_medis_id': rekamMedisId,
       'master_jadwal_id': masterJadwalId,
       'tanggal': tanggal,
+
       'keluhan': keluhan.trim(),
+      'jenis_keluhan': jenisKeluhan,
+      'jenis_keluhan_lainnya': jenisKeluhanLainnya,
       'latitude_pasien': lat,
       'longitude_pasien': lng,
       'alamat_lengkap': alamat.trim(),
       'metode_pembayaran': metodePembayaran,
+      'promo_id': promoId,
     });
 
     final response = await client.post(
@@ -200,6 +208,89 @@ class HomeCareService {
     }
 
     throw Exception('Gagal mendapatkan tracking history');
+  }
+
+  // 7. GET USER POINTS
+  Future<int> getUserPoints(String userId) async {
+    final token = await _getToken();
+    final url = Uri.parse('${ApiEndpoint.homeCareUserPoints}?user_id=$userId');
+
+    final headers = {'Content-Type': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final response = await client.get(url, headers: headers);
+    _checkHtmlError(response.body);
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse['poin'] ?? 0;
+    }
+    return 0; // Return 0 if failed or no points
+  }
+
+  // 8. GET PROMOS
+  Future<List<Map<String, dynamic>>> getPromos({
+    String type = 'booking',
+  }) async {
+    final token = await _getToken();
+    final url = Uri.parse('${ApiEndpoint.homeCarePromos}?type=$type');
+
+    final headers = {'Content-Type': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final response = await client.get(url, headers: headers);
+    _checkHtmlError(response.body);
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      final data = jsonResponse['data'];
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(
+          data.map((e) => Map<String, dynamic>.from(e)),
+        );
+      }
+    }
+    return [];
+  }
+
+  // 9. CREATE SETTLEMENT (PELUNASAN)
+  Future<Map<String, dynamic>> createSettlement(
+    int bookingId, {
+    int? promoId,
+  }) async {
+    final token = await _getToken();
+    final url = Uri.parse(ApiEndpoint.homeCareSettlement);
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final requestBody = jsonEncode({'id': bookingId, 'promo_id': promoId});
+
+    final response = await client.post(
+      url,
+      headers: headers,
+      body: requestBody,
+    );
+
+    _checkHtmlError(response.body);
+    _handleAuthError(response);
+    _handleValidationError(response); // Handle logic errors like "Already Paid"
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse['data'] ?? {}; // Contains snap_token, etc.
+    }
+
+    throw Exception('Gagal membuat link pelunasan: ${response.body}');
   }
 
   // ===========================================================================

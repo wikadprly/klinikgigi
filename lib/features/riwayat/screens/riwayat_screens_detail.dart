@@ -10,27 +10,60 @@ class RiwayatDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String safe(dynamic v) => v == null ? '' : v.toString();
+    String _clean(dynamic v) {
+      if (v == null) return '';
+      final s = v.toString().trim();
+      if (s.isEmpty) return '';
+      if (s == '-' || s.toLowerCase() == 'null') return '';
+      return s;
+    }
 
-    final nama = safe(data['nama'] ?? data['pasien']?['nama']);
-    final rekamMedis = safe(data['rekam_medis']);
-    final noPemeriksaan = safe(data['no_pemeriksaan']);
-    final jam = "${safe(data['jam_mulai'])} - ${safe(data['jam_selesai'])}";
-    final tanggal = safe(data['tanggal']);
-    final dokter = safe(data['dokter']);
-    final poli = safe(data['poli']);
-    final keluhan = safe(data['keluhan'] ?? "Tidak ada keluhan");
+    String _pickFirst(List<dynamic> candidates) {
+      for (final c in candidates) {
+        final s = _clean(c);
+        if (s.isNotEmpty) return s;
+      }
+      return '';
+    }
+
+    final nama = _pickFirst([
+      data['nama'],
+      data['user']?['nama'],
+      data['users']?['nama'],
+      data['pasien']?['nama'],
+      data['full_reservasi']?['user']?['nama'],
+      data['full_reservasi']?['users']?['nama'],
+    ]);
+
+    final rekamMedis = _pickFirst([
+      data['rekam_medis'],
+      data['no_rekam_medis'],
+      data['no_rm'],
+      data['no_rm_pasien'],
+      data['pasien']?['rekam_medis'],
+      data['pasien']?['no_rekam_medis'],
+      data['user']?['rekam_medis'],
+      data['user']?['no_rekam_medis'],
+    ]);
+    final displayNama = nama.isEmpty ? '-' : nama;
+    final displayRekamMedis = rekamMedis.isEmpty ? '-' : rekamMedis;
+    final noPemeriksaan = _clean(data['no_pemeriksaan']);
+    final jam = "${_clean(data['jam_mulai'])} - ${_clean(data['jam_selesai'])}";
+    final tanggal = _clean(data['tanggal']);
+    final dokter = _clean(data['dokter']);
+    final poli = _clean(data['poli']);
+    final keluhan = _clean(data['keluhan'] ?? "Tidak ada keluhan");
     // Normalisasi nama field: support both "status_reservasi" and "statusreservasi"
-    final statusReservasi = safe(
+    final statusReservasi = _clean(
       data['status_reservasi'] ??
           data['statusreservasi'] ??
           data['status'] ??
           '',
     );
-    final statusPembayaran = safe(
+    final statusPembayaran = _clean(
       data['status_pembayaran'] ?? data['status'] ?? '',
     );
-    final biaya = safe(data['biaya'] ?? "0");
+    final biaya = _clean(data['biaya'] ?? "0");
 
     Color statusColor1() {
       final s = statusReservasi.toLowerCase().trim();
@@ -131,11 +164,14 @@ class RiwayatDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Nama : $nama",
+                      "Nama : $displayNama",
                       style: AppTextStyles.heading.copyWith(fontSize: 16),
                     ),
                     const SizedBox(height: 4),
-                    Text("NO.RM : $rekamMedis", style: AppTextStyles.label),
+                    Text(
+                      "NO.RM : $displayRekamMedis",
+                      style: AppTextStyles.label,
+                    ),
                   ],
                 ),
               ],
@@ -168,9 +204,10 @@ class RiwayatDetailScreen extends StatelessWidget {
                           noPemeriksaan,
                           style: AppTextStyles.heading.copyWith(
                             color: AppColors.gold,
-                            fontSize: 18,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.right,
                         ),
                       ],
                     ),
@@ -191,42 +228,107 @@ class RiwayatDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _item("Waktu Layanan", jam),
-                        _item("Hari/Tanggal", tanggal),
-                        _item("Dokter", dokter),
-                        _item("Poli", poli),
-                        _item("Keluhan", displaykeluhan()),
-                        _item(
-                          "Status Reservasi",
-                          statusReservasi,
-                          valueColor: statusColor1(),
-                        ),
-                        _item(
-                          "Status Pembayaran",
-                          statusPembayaran,
-                          valueColor: statusColor2(),
-                        ),
+                        // Show different layout for homecare
+                        if ((data['jenis_layanan'] ?? '')
+                                .toString()
+                                .toLowerCase() ==
+                            'homecare') ...[
+                          _item("Hari/Tanggal", tanggal),
+                          _item("Waktu Layanan", jam),
+                          _item("Dokter", dokter),
+                          _item("Poli", poli),
+                          _item("Keluhan", displaykeluhan()),
+                          _item(
+                            "Status Reservasi",
+                            statusReservasi,
+                            valueColor: statusColor1(),
+                          ),
+                          _item(
+                            "Status Booking",
+                            data['status_booking'] ?? '-',
+                            valueColor: statusColor1(),
+                          ),
+                          _item(
+                            "Status Pembayaran",
+                            data['status'] ?? '-',
+                            valueColor: statusColor2(),
+                          ),
 
-                        const SizedBox(height: 15),
-
-                        // ===== TOTAL BIAYA =====
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Total Biaya :",
-                              style: AppTextStyles.label,
-                            ),
-                            Text(
-                              "Rp.$biaya",
-                              style: AppTextStyles.heading.copyWith(
-                                color: AppColors.gold,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                          const SizedBox(height: 15),
+                          // ===== DETAIL BIAYA =====
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Biaya',
+                                style: AppTextStyles.label,
                               ),
-                            ),
-                          ],
-                        ),
+                              Text(
+                                "Rp.${data['pembayaran_total'] ?? data['biaya'] ?? '0'}",
+                                style: AppTextStyles.heading.copyWith(
+                                  color: AppColors.gold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Biaya Tindakan',
+                                style: AppTextStyles.label,
+                              ),
+                              Text(
+                                "Rp.${data['total_biaya_tindakan'] ?? '0'}",
+                                style: AppTextStyles.heading.copyWith(
+                                  color: AppColors.gold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          _item("Waktu Layanan", jam),
+                          _item("Hari/Tanggal", tanggal),
+                          _item("Dokter", dokter),
+                          _item("Poli", poli),
+                          _item("Keluhan", displaykeluhan()),
+                          _item(
+                            "Status Reservasi",
+                            statusReservasi,
+                            valueColor: statusColor1(),
+                          ),
+                          _item(
+                            "Status Pembayaran",
+                            statusPembayaran,
+                            valueColor: statusColor2(),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // ===== TOTAL BIAYA =====
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Total Biaya :",
+                                style: AppTextStyles.label,
+                              ),
+                              Text(
+                                "Rp.$biaya",
+                                style: AppTextStyles.heading.copyWith(
+                                  color: AppColors.gold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
 
                         const SizedBox(height: 15),
                       ],
