@@ -88,8 +88,7 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
 
-      initialRoute: authProvider.isLoggedIn ? '/main' : '/start',
-
+      initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
         // AUTH
         '/start': (context) => const StartScreen(),
@@ -103,7 +102,7 @@ class KlinikGigiApp extends StatelessWidget {
         },
 
         // MAIN
-        '/main': (context) => const MainScreen(),
+        '/main_screen': (context) => const MainScreen(),
 
         // DENTAL HOME CARE
         '/dentalhome': (context) => const DentalHomeScreen(),
