@@ -262,6 +262,9 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               else
                 Expanded(
                   child: ListView.builder(
+                    // give extra bottom padding so the last card isn't hidden
+                    // by the app's bottom navigation overlay
+                    padding: const EdgeInsets.only(bottom: 110),
                     itemCount: riwayatData.length,
                     itemBuilder: (context, index) {
                       final data = riwayatData[index];

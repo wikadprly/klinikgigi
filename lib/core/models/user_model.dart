@@ -1,6 +1,6 @@
 // lib/core/models/user_model.dart
 class UserModel {
-  final int userId;
+  final String userId;
   final String namaPengguna;
   final String nik;
   final int? rekamMedisId;
@@ -30,9 +30,7 @@ class UserModel {
   // Parsing dari JSON (data API Laravel)
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      userId: json['user_id'] is String
-          ? int.tryParse(json['user_id']) ?? 0
-          : json['user_id'] ?? 0,
+      userId: json['user_id']?.toString() ?? '',
       namaPengguna: json['nama_pengguna'] ?? '',
       nik: json['nik'] ?? '',
       rekamMedisId: json['rekam_medis_id'] == null
