@@ -5,9 +5,12 @@ class MasterJadwalModel {
   final String hari;
   final String jamMulai;
   final String jamSelesai;
-  final String keterangan; // Bisa null
-  final int quota;        // Ini Kuota Total
-  final int kuotaTerpakai; // Tambahan: untuk data yang sudah booking
+  final String keterangan;
+  final int quota;        // Kuota Total (Master)
+  final int kuotaTerpakai; 
+  final int sisaKuota; 
+  final String statusJadwal; // 'Tersedia', 'Penuh', 'Libur'
+  final String? tanggalPilih; // Untuk validasi tanggal yang dipilih user
 
   MasterJadwalModel({
     required this.id,
@@ -18,7 +21,12 @@ class MasterJadwalModel {
     required this.jamSelesai,
     required this.keterangan,
     required this.quota,
-    this.kuotaTerpakai = 0, // Default 0
+    this.kuotaTerpakai = 0,
+    
+    // Default values agar tidak error jika null
+    this.sisaKuota = 0,
+    this.statusJadwal = 'Tersedia',
+    this.tanggalPilih,
   });
 
   factory MasterJadwalModel.fromJson(Map<String, dynamic> json) {
@@ -32,26 +40,18 @@ class MasterJadwalModel {
       jamMulai: json['jam_mulai']?.toString() ?? '',
       jamSelesai: json['jam_selesai']?.toString() ?? '',
       keterangan: json['keterangan']?.toString() ?? '-',
-      quota: json['kuota_total'] != null
-          ? (json['kuota_total'] is String ? int.parse(json['kuota_total']) : json['kuota_total'])
-          : (json['quota'] is String ? int.tryParse(json['quota']) ?? 0 : json['quota'] ?? 0),
-      kuotaTerpakai: json['kuota_terpakai'] != null
-          ? (json['kuota_terpakai'] is String ? int.parse(json['kuota_terpakai']) : json['kuota_terpakai'])
-          : 0,
+      
+      // Parsing Angka yang Aman
+      quota: int.tryParse(json['kuota_total']?.toString() ?? json['quota']?.toString() ?? '0') ?? 0,
+      kuotaTerpakai: int.tryParse(json['kuota_terpakai']?.toString() ?? '0') ?? 0,
+      
+      // 🔥 MENGAMBIL DATA SISA & STATUS
+      sisaKuota: int.tryParse(json['sisa_kuota']?.toString() ?? '0') ?? 0,
+      statusJadwal: json['status_jadwal']?.toString() ?? 'Tersedia',
+      tanggalPilih: json['tanggal_pilih']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'kode_dokter': kodeDokter,
-      'kode_poli': kodePoli,
-      'hari': hari,
-      'jam_mulai': jamMulai,
-      'jam_selesai': jamSelesai,
-      'keterangan': keterangan,
-      'quota': quota,
-      'kuota_terpakai': kuotaTerpakai,
-    };
-  }
+  // Helper untuk cek apakah bisa dibooking
+  bool get isAvailable => statusJadwal == 'Tersedia' && sisaKuota > 0;
 }

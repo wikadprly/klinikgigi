@@ -5,6 +5,7 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/riwayat_card.dart';
+import '../widgets/homecare_riwayat_card.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class RiwayatScreen extends StatefulWidget {
@@ -18,6 +19,56 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   List<Map<String, dynamic>> riwayatData = [];
   bool isLoading = true;
   String? errorMessage;
+  String selectedCare = 'poliklinik';
+
+  Widget careToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.gold),
+      ),
+      child: Row(
+        children: [
+          _toggleItem(title: 'Poliklinik Care', value: 'poliklinik'),
+          _toggleItem(title: 'Home Care', value: 'homecare'),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleItem({required String title, required String value}) {
+    final isActive = selectedCare == value;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedCare = value;
+            isLoading = true;
+            errorMessage = null;
+          });
+          fetchRiwayat();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.goldDark : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: isActive ? Colors.black : AppColors.gold,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -27,6 +78,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
   // 🟦 Fungsi ambil data dari Laravel API dengan filter user yang login
   Future<void> fetchRiwayat() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
     try {
       // Ambil user (opsional) dan token dari SharedPreferences
       final user = await SharedPrefsHelper.getUser();
@@ -55,8 +110,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       }
 
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
+      // Append filter for jenis layanan (poliklinik/homecare)
+      final uri = Uri.parse(
+        'http://127.0.0.1:8000/api/riwayat',
+      ).replace(queryParameters: {'jenis': selectedCare});
+
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/riwayat'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -88,6 +148,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             // kalau tidak fallback ke field top-level
             final reservasi = item["reservasi"] ?? {};
             return {
+              // Basic
+              "jenis_layanan":
+                  item["jenis_layanan"] ?? item["jenis"] ?? "poliklinik",
+
               // Informasi reservasi
               "no_pemeriksaan": item["no_pemeriksaan"] ?? "-",
               "dokter": item["dokter"] ?? "-",
@@ -97,7 +161,23 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               "jam_mulai": item["jam_mulai"] ?? reservasi["jam_mulai"] ?? "-",
               "jam_selesai":
                   item["jam_selesai"] ?? reservasi["jam_selesai"] ?? "-",
-              "biaya": item["biaya"] ?? reservasi["biaya"] ?? "0",
+
+              // Biaya (support homecare fields)
+              "biaya":
+                  item["biaya"] ??
+                  reservasi["biaya"] ??
+                  item["pembayaran_total"] ??
+                  "0",
+              "biaya_reservasi": item["biaya_reservasi"] ?? "0",
+              "biaya_transport": item["biaya_transport"] ?? "0",
+              "pembayaran_total":
+                  item["pembayaran_total"] ??
+                  item["pembayaran_total"] ??
+                  item["biaya"] ??
+                  "0",
+
+              // Payment
+              "metode_pembayaran": item["metode_pembayaran"] ?? "-",
 
               // Informasi pasien
               "nama": item["nama"] ?? "-",
@@ -106,8 +186,12 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               "no_rekam_medis":
                   item["no_rekam_medis"] ?? item["rekam_medis"] ?? "-",
               "foto": item["foto"] ?? "",
-              "status": item["status_pembayaran"] ?? "-",
+
+              // status pembayaran & booking
+              "status": item["status_pembayaran"] ?? item["status"] ?? "-",
               "statusreservasi": item["status_reservasi"] ?? "-",
+              "status_booking": item["status_booking"] ?? "-",
+
               "no_antrian": item["no_antrian"] ?? "-",
               "keluhan": item["keluhan"] ?? "-",
             };
@@ -148,11 +232,12 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Riwayat",
-                style: AppTextStyles.heading,
-              ),
+              const Text("Riwayat", style: AppTextStyles.heading),
               const SizedBox(height: 12),
+
+              careToggle(),
+
+              const SizedBox(height: 16),
 
               // 🟡 Loading atau Error Handler
               if (isLoading)
@@ -180,6 +265,35 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     itemCount: riwayatData.length,
                     itemBuilder: (context, index) {
                       final data = riwayatData[index];
+
+                      final jenis = (data["jenis_layanan"] ?? "poliklinik")
+                          .toString()
+                          .toLowerCase();
+                      if (jenis == 'homecare' || jenis == 'home') {
+                        return HomeCareRiwayatCard(
+                          noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
+                              .toString(),
+                          dokter: (data["dokter"] ?? "-").toString(),
+                          jamMulai: (data["jam_mulai"] ?? "-").toString(),
+                          jamSelesai: (data["jam_selesai"] ?? "-").toString(),
+                          pembayaranTotal:
+                              (data["pembayaran_total"] ?? data["biaya"] ?? "0")
+                                  .toString(),
+                          metodePembayaran: (data["metode_pembayaran"] ?? "-")
+                              .toString(),
+                          statusReservasi: (data["status_reservasi"] ?? "-")
+                              .toString(),
+                          data: data,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/riwayat_detail',
+                              arguments: data,
+                            );
+                          },
+                        );
+                      }
+
                       return RiwayatCard(
                         noPemeriksaan: (data["no_pemeriksaan"] ?? "-")
                             .toString(),

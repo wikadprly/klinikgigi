@@ -7,7 +7,6 @@ class ApiEndpoint {
   static const logout = "$baseUrl/logout";
   static const check = "$baseUrl/check";
 
-  // INI DIGABUNG (Diambil dari 'main')
   // HOME CARE
   static const String homeCareJadwalMaster = "$baseUrl/homecare/jadwal-master";
   static const homeCareCalculate = "$baseUrl/homecare/calculate";
