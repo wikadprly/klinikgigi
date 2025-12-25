@@ -16,6 +16,8 @@ class MasterDokterModel {
   final String dokterSipBerlaku;
   final String dokterSipExpired;
   final String inisial;
+  final String? foto;
+  final String? poliNama; // Added field
 
   MasterDokterModel({
     required this.kodeDokter,
@@ -33,15 +35,29 @@ class MasterDokterModel {
     required this.dokterSipBerlaku,
     required this.dokterSipExpired,
     required this.inisial,
+    this.foto,
+    this.poliNama,
   });
 
- String get namaLengkap => gelar.isNotEmpty ? '$nama, $gelar' : nama;
+  String get namaLengkap => gelar.isNotEmpty ? '$nama, $gelar' : nama;
 
   factory MasterDokterModel.fromJson(Map<String, dynamic> json) {
+    // Logic untuk inisial jika backend tidak mengirim property 'inisial'
+    String namaRaw = json['nama'] ?? json['nama_dokter'] ?? '';
+    String inisialCalc = json['inisial'] ?? '';
+    if (inisialCalc.isEmpty && namaRaw.isNotEmpty) {
+      var parts = namaRaw.trim().split(' ');
+      if (parts.length >= 2) {
+        inisialCalc = '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      } else if (parts.isNotEmpty) {
+        inisialCalc = parts[0][0].toUpperCase();
+      }
+    }
+
     return MasterDokterModel(
-      kodeDokter: json['kode_dokter'] ?? '',
+      kodeDokter: json['kode_dokter'] ?? json['dokter_id']?.toString() ?? '',
       kodePoli: json['kode_poli'] ?? '',
-      nama: json['nama'] ?? '',
+      nama: namaRaw,
       gelar: json['gelar'] ?? '',
       spesialisasi: json['spesialisasi'] ?? '',
       alamat: json['alamat'] ?? '',
@@ -53,7 +69,9 @@ class MasterDokterModel {
       dokterSip: json['dokter_sip'] ?? '',
       dokterSipBerlaku: json['dokter_sip_berlaku'] ?? '',
       dokterSipExpired: json['dokter_sip_expired'] ?? '',
-      inisial: json['inisial'] ?? '',
+      inisial: inisialCalc,
+      foto: json['foto_profil'],
+      poliNama: json['poli_nama'] ?? '',
     );
   }
 
@@ -74,8 +92,10 @@ class MasterDokterModel {
       'dokter_sip_berlaku': dokterSipBerlaku,
       'dokter_sip_expired': dokterSipExpired,
       'inisial': inisial,
+      'poli_nama': poliNama,
     };
   }
-   @override
+
+  @override
   String toString() => namaLengkap;
 }

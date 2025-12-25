@@ -31,13 +31,17 @@ class DokterDetailModel {
       foto: json['foto']?.toString(),
       spesialisasi: json['spesialisasi']?.toString(),
 
-      masterPoli: json['masterPoli'] != null
-          ? MasterPoliModel.fromJson(json['masterPoli'])
+      masterPoli: (json['masterPoli'] is Map)
+          ? MasterPoliModel.fromJson(
+              Map<String, dynamic>.from(json['masterPoli']),
+            )
           : null,
 
-      masterJadwal: json['masterJadwal'] != null
+      masterJadwal: (json['masterJadwal'] is List)
           ? List<MasterJadwalModel>.from(
-              json['masterJadwal'].map((x) => MasterJadwalModel.fromJson(x)),
+              (json['masterJadwal'] as List).map(
+                (x) => MasterJadwalModel.fromJson(Map<String, dynamic>.from(x)),
+              ),
             )
           : [],
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/models/pasien_model.dart';
 import 'package:flutter_klinik_gigi/core/services/pasien_service.dart';
-import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart';
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
 import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
@@ -91,40 +90,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCustomAppBar(BuildContext context) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
-      const Text('Home', style: AppTextStyles.heading),
-      Row(
-        children: [
-          // ===============================================
-          // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
-          // ===============================================
-          GestureDetector(
-            onTap: () {
-              // Navigasi ke halaman PointRewardScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PointRewardScreen(),
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/point.svg', // Ikon Poin
-              width: 35.0,
-              height: 35.0,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Image.asset('assets/images/logo_klinik_kecil.png', height: 35),
+        const Text('Home', style: AppTextStyles.heading),
+        Row(
+          children: [
+            // ===============================================
+            // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
+            // ===============================================
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman PointRewardScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PointRewardScreen(),
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/point.svg', // Ikon Poin
+                width: 35.0,
+                height: 35.0,
+              ),
             ),
-          ),
-          
-          // SizedBox (spasi) dan IconButton (mail) dihapus
-          
-        ],
-      ),
-    ],
-  );
-}
+
+            // SizedBox (spasi) dan IconButton (mail) dihapus
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildUserInfo(BuildContext context) {
     return FutureBuilder<Pasien>(
@@ -306,12 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'assets/icons/dokter.svg',
                         'Dokter',
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DokterScreens(),
-                            ),
-                          );
+                          Navigator.pushNamed(context, '/dokter');
                         },
                       ),
                     ),
