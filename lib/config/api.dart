@@ -34,6 +34,9 @@ class ApiEndpoint {
   static String updatePembayaran(String noPemeriksaan) =>
       "$baseUrl/reservasi/pembayaran/$noPemeriksaan";
 
+  static String cekStatusPembayaran(String id) =>
+      "$baseUrl/reservasi/cek-status/$id";
+
   // 🔹 NOTA PELUNASAN
   static String notaDetail(String noPemeriksaan) =>
       "$baseUrl/nota/detail/$noPemeriksaan";

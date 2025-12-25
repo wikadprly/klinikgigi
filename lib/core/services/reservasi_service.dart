@@ -1,32 +1,30 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ WAJIB: Untuk ambil token
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_klinik_gigi/core/models/master_poli_model.dart';
 import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart';
 import 'package:flutter_klinik_gigi/core/models/master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/models/reservasi_model.dart';
+import 'package:flutter_klinik_gigi/config/api.dart';
 
 class ReservasiService {
-  // Ganti IP sesuai network kamu (10.0.2.2 untuk emulator Android bawaan)
   static const String baseUrl = 'http://127.0.0.1:8000/api'; 
 
-  // 🔥 HELPER: Ambil Token & Buat Header
-  // Karena route di api.php pakai auth:sanctum, kita wajib kirim token
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? ''; // Pastikan key-nya sesuai saat login
+    final token = prefs.getString('auth_token') ?? '';
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': 'Bearer $token', // 🔑 Kunci Masuk
+      'Authorization': 'Bearer $token',
     };
   }
 
   // 1. Ambil Daftar Poli
   Future<List<MasterPoliModel>> getDaftarPoli() async {
-    final url = Uri.parse('$baseUrl/reservasi/poli');
+    final url = Uri.parse(ApiEndpoint.reservasiGetPoli);
     try {
-      final headers = await _getHeaders(); // Ambil header + token
+      final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
       
       if (response.statusCode == 200) {
@@ -44,7 +42,7 @@ class ReservasiService {
 
   // 2. Ambil Dokter by Poli
   Future<List<MasterDokterModel>> getDokterByPoli(String kodePoli) async {
-    final url = Uri.parse('$baseUrl/reservasi/dokter');
+    final url = Uri.parse(ApiEndpoint.reservasiGetDokter);
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -64,15 +62,13 @@ class ReservasiService {
     return [];
   }
 
-  // 3. Ambil Jadwal Sekaligus Kuota (Sesuai Controller Baru)
+  // 3. Ambil Jadwal Sekaligus Kuota
   Future<List<MasterJadwalModel>> getJadwal({
-    required String kodePoli,        
-    String? kodeDokter,             
-    String? tanggalReservasi,       
+    required String kodePoli,
+    String? kodeDokter,
+    String? tanggalReservasi,
   }) async {
-    final url = Uri.parse('$baseUrl/reservasi/jadwal');
-    
-    // Body harus persis dengan validasi di Controller Laravel
+    final url = Uri.parse(ApiEndpoint.reservasiGetJadwal);
     Map<String, dynamic> bodyRequest = {
       'kode_poli': kodePoli, 
     };
@@ -80,7 +76,6 @@ class ReservasiService {
     if (kodeDokter != null && kodeDokter != 'semua') {
       bodyRequest['kode_dokter'] = kodeDokter;
     }
-    // Controller mengharapkan format Y-m-d, pastikan dari UI sudah benar
     if (tanggalReservasi != null) {
       bodyRequest['tanggal_reservasi'] = tanggalReservasi;
     }
@@ -108,10 +103,9 @@ class ReservasiService {
 
   // 4. Create Reservasi
   Future<Map<String, dynamic>?> createReservasi(Map<String, dynamic> reservasiData) async {
-    final url = Uri.parse('$baseUrl/reservasi/create');
+    final url = Uri.parse(ApiEndpoint.reservasiCreate);
     try {
       final headers = await _getHeaders();
-      // ⚠️ Pastikan reservasiData berisi 'rekam_medis_id' (Integer), bukan String
       final response = await http.post(
         url,
         headers: headers,
@@ -133,7 +127,7 @@ class ReservasiService {
 
   // 5. Riwayat Reservasi
   Future<List<ReservasiModel>> getRiwayatReservasi(String rekamMedisId) async {
-    final url = Uri.parse('$baseUrl/reservasi/riwayat/$rekamMedisId');
+    final url = Uri.parse(ApiEndpoint.riwayat(rekamMedisId));
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
@@ -151,7 +145,7 @@ class ReservasiService {
 
   // 6. Update Pembayaran
   Future<bool> updatePembayaran(String noPemeriksaan, Map<String, dynamic> data) async {
-    final url = Uri.parse('$baseUrl/reservasi/pembayaran/$noPemeriksaan');
+    final url = Uri.parse(ApiEndpoint.updatePembayaran(noPemeriksaan));
     try {
       final headers = await _getHeaders();
       final response = await http.put(
@@ -163,6 +157,50 @@ class ReservasiService {
     } catch (e) {
       print("Error updatePembayaran: $e");
       return false;
+    }
+  }
+
+  // 7. Create Reservasi with Payment (Midtrans)
+  Future<Map<String, dynamic>?> createReservasiWithPayment(Map<String, dynamic> reservasiData) async {
+    final url = Uri.parse(ApiEndpoint.reservasiCreate);
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(reservasiData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      } else {
+        print("Gagal create reservasi with payment: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Error createReservasiWithPayment: $e");
+      return null;
+    }
+  }
+
+  // 8. Check Payment Status (for polling)
+  Future<Map<String, dynamic>?> checkPaymentStatus(String noPemeriksaan) async {
+    final url = Uri.parse(ApiEndpoint.cekStatusPembayaran(noPemeriksaan)); // Updated to match Laravel route (param: {id})
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      } else {
+        print("Gagal check payment status: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Error checkPaymentStatus: $e");
+      return null;
     }
   }
 }
