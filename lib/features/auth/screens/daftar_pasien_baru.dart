@@ -67,7 +67,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
 
                 // 🔹 Dropdown tipe pasien
                 DropdownButtonFormField<String>(
-                  value: tipePasien,
+                  initialValue: tipePasien,
                   dropdownColor: AppColors.background,
                   decoration: InputDecoration(
                     labelText: "Tipe Pasien",
@@ -147,7 +147,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
 
                 // 🔹 Dropdown Jenis Kelamin
                 DropdownButtonFormField<String>(
-                  value: jenisKelamin,
+                  initialValue: jenisKelamin,
                   hint: const Text("Jenis Kelamin"),
                   dropdownColor: AppColors.background,
                   decoration: InputDecoration(

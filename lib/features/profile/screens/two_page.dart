@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:provider/provider.dart';
-import '/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 
 class EditProfilPage2 extends StatefulWidget {
@@ -15,49 +16,125 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
   final TextEditingController genderController = TextEditingController();
   final TextEditingController birthController = TextEditingController();
   final TextEditingController alamatController = TextEditingController();
+  final TextEditingController namaController = TextEditingController();
+  final TextEditingController noHpController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   bool isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    final profil = Provider.of<ProfileProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profil = Provider.of<ProfilProvider>(context, listen: false);
 
-    genderController.text = profil.user?["jenis_kelamin"] ?? "";
-    birthController.text = profil.user?["tanggal_lahir"] ?? "";
-    alamatController.text = profil.user?["alamat"] ?? "";
+      namaController.text = profil.user?['nama_pengguna'] ?? '';
+      noHpController.text = profil.user?['no_hp'] ?? '';
+      emailController.text = profil.user?['email'] ?? '';
+      genderController.text = profil.user?['jenis_kelamin'] ?? '';
+      birthController.text =
+          profil.user?['tanggal_lahir']?.toString().substring(0, 10) ?? '';
+      alamatController.text = profil.user?['alamat'] ?? '';
+    });
   }
 
   Future<void> saveData() async {
-    final profil = Provider.of<ProfileProvider>(context, listen: false);
+    if (!_validateForm()) return;
 
-    setState(() => isSaving = true);
+    final profil = Provider.of<ProfilProvider>(context, listen: false);
+    final token = await SharedPrefsHelper.getToken();
 
-    final token = profil.user?["token"] ?? "";
+    if (token == null) {
+      _showError("Token tidak ditemukan, silakan login ulang");
+      return;
+    }
 
-    final data = {
-      "jenis_kelamin": genderController.text,
-      "tanggal_lahir": birthController.text,
-      "alamat": alamatController.text,
-    };
+    try {
+      setState(() => isSaving = true);
 
-    final success = await profil.updateProfil(token, data);
+      final data = {
+        'nama_pengguna': namaController.text.trim(),
+        'no_hp': noHpController.text.trim(),
+        'email': emailController.text.trim(),
+        'jenis_kelamin': genderController.text.trim(),
+        'tanggal_lahir': birthController.text.trim(),
+        'alamat': alamatController.text.trim(),
+      };
 
-    setState(() => isSaving = false);
+      final success = await profil.updateProfil(token, data);
 
-    if (success) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Informasi tambahan berhasil diperbarui")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal menyimpan data")),
-      );
+      if (success && mounted) {
+        _showSuccess('Informasi profil berhasil diperbarui');
+        Navigator.pop(context);
+      } else {
+        _showError('Gagal menyimpan data');
+      }
+    } catch (e) {
+      _showError('Terjadi error: $e');
+    } finally {
+      if (mounted) setState(() => isSaving = false);
     }
   }
 
-  Widget inputField(IconData icon, TextEditingController controller, String hint) {
+  bool _validateForm() {
+    if (namaController.text.trim().isEmpty) {
+      _showError("Nama lengkap tidak boleh kosong");
+      return false;
+    }
+
+    if (noHpController.text.trim().isEmpty) {
+      _showError("Nomor telepon tidak boleh kosong");
+      return false;
+    }
+
+    if (emailController.text.trim().isEmpty) {
+      _showError("Email tidak boleh kosong");
+      return false;
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(emailController.text.trim())) {
+      _showError("Format email tidak valid");
+      return false;
+    }
+
+    if (noHpController.text.trim().length < 10) {
+      _showError("Nomor telepon harus minimal 10 digit");
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget inputField(
+    IconData icon,
+    TextEditingController controller,
+    String hint, {
+    bool isDateField = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Container(
       height: 46,
       decoration: BoxDecoration(
@@ -67,10 +144,10 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.goldDark, size: 20),
+          Icon(icon, color: AppColors.gold, size: 20),
           const SizedBox(width: 12),
           Expanded(
-            child: TextField(
+            child: TextFormField(
               controller: controller,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
@@ -78,6 +155,9 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                 hintText: hint,
                 hintStyle: const TextStyle(color: Colors.white54),
               ),
+              keyboardType: keyboardType,
+              readOnly: isDateField,
+              onTap: isDateField ? () => _selectDate(controller) : null,
             ),
           ),
         ],
@@ -85,20 +165,43 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     );
   }
 
+  Future<void> _selectDate(TextEditingController controller) async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.tryParse(controller.text) ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.gold,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+          ),
+          child: child ?? const SizedBox(),
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      controller.text =
+          "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // HEADER — TIDAK DIPINDAH
               Row(
                 children: [
                   BackButtonWidget(onPressed: () => Navigator.pop(context)),
@@ -106,7 +209,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                   const Text(
                     "Edit Profil",
                     style: TextStyle(
-                      color: AppColors.goldDark,
+                      color: AppColors.gold,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -116,65 +219,95 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                 ],
               ),
 
-              // FORM DIGESER KE BAWAH DIKIT
               const SizedBox(height: 40),
 
-              // LABEL
               const Text(
                 "Informasi Dasar",
                 style: TextStyle(
-                  color: AppColors.goldDark,
+                  color: AppColors.gold,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
 
-              // INPUT FIELDS
-              inputField(Icons.person, genderController, "Nama Lengkap"),
-              const SizedBox(height: 12),
+              Column(
+                children: [
+                  inputField(Icons.person, namaController, "Nama Lengkap"),
+                  const SizedBox(height: 16),
+                  inputField(
+                    Icons.phone,
+                    noHpController,
+                    "Nomor Telepon",
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  inputField(
+                    Icons.email,
+                    emailController,
+                    "Email",
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+                  inputField(
+                    Icons.calendar_today,
+                    birthController,
+                    "Tanggal Lahir",
+                    isDateField: true,
+                  ),
+                  const SizedBox(height: 16),
+                  inputField(Icons.home, alamatController, "Alamat"),
+                ],
+              ),
 
-              inputField(Icons.phone, birthController, "Nomor Telepon"),
-              const SizedBox(height: 12),
+              const SizedBox(height: 40),
 
-              inputField(Icons.email, birthController, "Email"),
-              const SizedBox(height: 12),
-
-              inputField(Icons.calendar_today, birthController, "Tanggal Lahir"),
-              const SizedBox(height: 12),
-
-              inputField(Icons.home, alamatController, "Alamat"),
-
-              // BIAR FORM TIDAK MELEKAT KE TOMBOL
-              const SizedBox(height: 60),
-
-              // TOMBOL SIMPAN 
               Padding(
                 padding: const EdgeInsets.only(bottom: 40),
-                child: Center(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.goldDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      onPressed: isSaving ? null : saveData,
-                      child: isSaving
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text(
-                              "Simpan",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      elevation: 2,
                     ),
+                    onPressed: isSaving ? null : saveData,
+                    child: isSaving
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                "Menyimpan...",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const Text(
+                            "Simpan Perubahan",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -183,5 +316,15 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    namaController.dispose();
+    noHpController.dispose();
+    emailController.dispose();
+    birthController.dispose();
+    alamatController.dispose();
+    super.dispose();
   }
 }

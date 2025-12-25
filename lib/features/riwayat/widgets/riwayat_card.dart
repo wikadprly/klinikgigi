@@ -8,6 +8,7 @@ class RiwayatCard extends StatelessWidget {
   final String tanggal;
   final String poli;
   final String statusReservasi;
+  final String noAntrian;
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
 
@@ -18,13 +19,37 @@ class RiwayatCard extends StatelessWidget {
     required this.tanggal,
     required this.poli,
     required this.statusReservasi,
+    required this.noAntrian,
     required this.data,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool isSelesai = statusReservasi.toLowerCase() == "selesai";
+    Color statusColor() {
+      final s = statusReservasi.toLowerCase().trim();
+      switch (s) {
+        case 'menunggu':
+          return Colors.orange;
+        case 'dalam_proses':
+        case 'dalam proses':
+          return Colors.blue;
+        case 'selesai':
+          return Colors.green;
+        case 'batal':
+          return Colors.red;
+        default:
+          return AppColors.goldDark;
+      }
+    }
+
+    String displayNoAntrian() {
+      final v = noAntrian.trim();
+      if (v.isEmpty || v == '-' || v.toLowerCase() == 'null') {
+        return 'Menunggu Pembayaran';
+      }
+      return v;
+    }
 
     return GestureDetector(
       onTap: onTap,
@@ -42,13 +67,9 @@ class RiwayatCard extends StatelessWidget {
             // Baris pertama: status + nomor pemeriksaan
             Row(
               children: [
-                Icon(
-                  Icons.circle,
-                  size: 14,
-                  color: isSelesai ? AppColors.gold : AppColors.goldDark,
-                ),
+                Icon(Icons.circle, size: 14, color: statusColor()),
                 const SizedBox(width: 6),
-                const Text("No. Pemeriksaan : ", style: AppTextStyles.heading),
+                const Text("No. Pemeriksaan : "),
                 Expanded(
                   child: Text(
                     noPemeriksaan,
@@ -59,8 +80,14 @@ class RiwayatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-
+            Container(
+              height: 1.5,
+              width: double.infinity,
+              color: AppColors.gold,
+            ),
+            const SizedBox(height: 8),
             // Dokter
+            _infoRow("No. Antrian :", displayNoAntrian()),
             _infoRow("Dokter :", dokter),
             _infoRow("Tanggal :", tanggal),
             _infoRow("Poli :", poli),

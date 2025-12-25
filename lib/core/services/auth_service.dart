@@ -30,8 +30,9 @@ class AuthService {
           } else if (data['data'] != null && data['data'] is Map) {
             final d = data['data'];
             if (d['token'] != null && d['token'] is String) token = d['token'];
-            if (d['access_token'] != null && d['access_token'] is String)
+            if (d['access_token'] != null && d['access_token'] is String) {
               token = d['access_token'];
+            }
           }
 
           if (token != null && token.isNotEmpty) {

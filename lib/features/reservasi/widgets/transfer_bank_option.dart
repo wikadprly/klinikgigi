@@ -7,10 +7,10 @@ class TransferBankOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const TransferBankOption({
-    Key? key,
+    super.key,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

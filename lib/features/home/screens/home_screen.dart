@@ -7,6 +7,8 @@ import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
+import 'package:flutter_klinik_gigi/features/home/screens/promo_detail_screen.dart';
 
 class GradientMask extends StatelessWidget {
   const GradientMask({
@@ -44,12 +46,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Pasien> _pasien;
+  late Future<List<Map<String, dynamic>>> _promosFuture;
   final PasienService _pasienService = PasienService();
+  final HomeCareService _homeCareService = HomeCareService();
 
   @override
   void initState() {
     super.initState();
     _pasien = _pasienService.getPasienByUserId(widget.userId);
+    _promosFuture = _homeCareService.getPromos(type: 'all');
   }
 
   @override
@@ -102,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PointRewardScreen(),
+                  builder: (context) => const PointRewardScreen(),
                 ),
               );
             },
@@ -193,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildInfoColumn('Umur', pasien.umur.toString()),
+            _buildInfoColumn('Umur', "${pasien.umur} Thn"),
             _buildInfoColumn('Jenis Kelamin', pasien.jenisKelamin),
             _buildInfoColumn('Nomor Rekam Medis', pasien.rekamMedis),
           ],
@@ -352,46 +357,81 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoSection(BuildContext context) {
-    final List<Map<String, String>> promos = [
-      {
-        "image": "assets/images/poster2.png",
-        "title": "Promo Bleaching",
-        "subtitle": "Diskon 50% untuk perawatan bleaching",
-      },
-      {
-        "image": "assets/images/poster.png",
-        "title": "Scaling Hemat",
-        "subtitle": "Pembersihan karang gigi mulai 150rb",
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GradientMask(
           gradient: AppColors.goldGradient,
           child: Text(
-            'Promo Menarik',
+            'Promo Terbaru',
             style: AppTextStyles.heading.copyWith(fontSize: 18),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           height: 220,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: promos.length,
-            itemBuilder: (context, index) {
-              final promo = promos[index];
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index == promos.length - 1 ? 0 : 16,
-                ),
-                child: _buildPromoCard(
-                  imagePath: promo['image']!,
-                  title: promo['title']!,
-                  subtitle: promo['subtitle']!,
-                ),
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: _promosFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.gold),
+                );
+              }
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    "Gagal memuat promo",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                );
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "Tidak ada promo saat ini",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+
+              // AMBIL 5 TERBARU
+              final promos = snapshot.data!.take(5).toList();
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: promos.length,
+                itemBuilder: (context, index) {
+                  final promo = promos[index];
+                  // Pastikan URL gambar valid
+                  final String imagePath =
+                      promo['gambar_banner_url'] ??
+                      promo['gambar_banner'] ??
+                      '';
+
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index == promos.length - 1 ? 0 : 16,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                PromoDetailScreen(promo: promo),
+                          ),
+                        );
+                      },
+                      child: _buildPromoCard(
+                        imagePath: imagePath,
+                        title: promo['judul_promo'] ?? 'Promo',
+                        subtitle: promo['deskripsi'] ?? '',
+                        target: promo['target_transaksi'] ?? 'semua',
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -404,6 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String imagePath,
     required String title,
     required String subtitle,
+    required String target,
   }) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.75,
@@ -414,11 +455,66 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              imagePath,
-              height: 130,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            Expanded(
+              child: Stack(
+                children: [
+                  imagePath.isNotEmpty
+                      ? Image.network(
+                          imagePath,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, __) => Container(
+                            color: Colors.white10,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.white24,
+                              size: 40,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.white10,
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.image,
+                            color: Colors.white24,
+                            size: 40,
+                          ),
+                        ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: target == 'booking'
+                            ? Colors.blueAccent.withOpacity(0.9)
+                            : target == 'pelunasan'
+                            ? Colors.orangeAccent.withOpacity(0.9)
+                            : Colors.grey.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        target == 'booking'
+                            ? "Booking"
+                            : target == 'pelunasan'
+                            ? "Pelunasan"
+                            : "Semua",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),

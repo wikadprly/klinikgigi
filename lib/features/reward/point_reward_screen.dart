@@ -154,8 +154,8 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
                   child: SvgPicture.asset(
                     'assets/icons/point.svg',
                     colorFilter: const ColorFilter.mode(AppColors.gold, BlendMode.srcIn),
-                    width: 90, 
-                    height: 90, 
+                    width: 60, 
+                    height: 60, 
                   ),
                 ),
                 const SizedBox(width: 15.0),
