@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/models/reward_model.dart'; 
 import 'package:flutter_klinik_gigi/core/services/reward_repository.dart'; 
 import 'package:flutter_klinik_gigi/theme/colors.dart'; 
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:flutter_klinik_gigi/theme/text_styles.dart'; 
+import 'package:flutter_svg/flutter_svg.dart';
 
 class PointRewardScreen extends StatefulWidget {
   const PointRewardScreen({super.key});
+
   @override
   State<PointRewardScreen> createState() => _PointRewardScreenState();
 }
 
 class _PointRewardScreenState extends State<PointRewardScreen> {
-  // Pastikan Anda telah memperbaiki path import di reward_repository.dart
   final RewardRepository _repository = RewardRepository();
   List<RewardModel> _rewards = [];
   int _userPoints = 0;
@@ -23,22 +24,66 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
     _fetchData();
   }
 
+  // --- Fungsi untuk Mengambil Data Dinamis dari Laravel ---
   Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
     try {
-      final fetchedRewards = await _repository.fetchAllRewards();
-      final fetchedPoints = await _repository.fetchUserPoints();
+      // Mengambil poin dan daftar reward secara paralel
+      final results = await Future.wait([
+        _repository.fetchUserPoints(),
+        _repository.fetchAllRewards(),
+      ]);
       
       setState(() {
-        _rewards = fetchedRewards;
-        _userPoints = fetchedPoints;
+        _userPoints = results[0] as int;
+        _rewards = results[1] as List<RewardModel>;
         _isLoading = false;
       });
     } catch (e) {
-      // Peringatan 'avoid_print' bisa diabaikan untuk development
-      print('Error fetching reward data: $e'); 
-      setState(() {
-        _isLoading = false;
-      });
+      debugPrint('Error fetching data: $e');
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal memuat data dari server')),
+        );
+      }
+    }
+  }
+
+  // --- Fungsi untuk Menangani Penukaran Poin ---
+  Future<void> _handleRedeem(RewardModel reward) async {
+    // Tampilkan konfirmasi dahulu
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardDark,
+        title: Text('Konfirmasi', style: AppTextStyles.heading.copyWith(color: AppColors.gold)),
+        content: Text('Tukarkan ${reward.requiredPoints} poin untuk ${reward.title}?', style: TextStyle(color: AppColors.white)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Tukar', style: TextStyle(color: AppColors.gold))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      // Tampilkan Loading
+      showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.gold)));
+      
+      try {
+        bool success = await _repository.redeemReward(reward.id as int);
+        Navigator.pop(context); // Tutup Loading
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Berhasil menukarkan ${reward.title}!')));
+          _fetchData(); // Refresh data agar poin berkurang otomatis
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Proses gagal. Silakan coba lagi.')));
+        }
+      } catch (e) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Terjadi kesalahan koneksi.')));
+      }
     }
   }
 
@@ -49,41 +94,44 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
       appBar: AppBar(
         elevation: 0, 
         backgroundColor: AppColors.background,
+        centerTitle: true,
         title: Text(
           '3K Rewards', 
-          // Menggunakan AppTextStyles.heading
-          style: AppTextStyles.heading.copyWith(color: AppColors.white),
+          style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColors.white), 
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.gold))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _buildTotalPointCard(_userPoints),
-                  const SizedBox(height: 24.0),
-                  Text(
-                    'Tukarkan Poin', 
-                    // Menggunakan AppTextStyles.heading
-                    style: AppTextStyles.heading.copyWith(color: AppColors.white),
-                  ),
-                  const SizedBox(height: 12.0),
-                  _buildRewardList(_rewards, _userPoints), 
-                  const SizedBox(height: 30.0),
-                  _buildHistoryCard(),
-                ],
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+        color: AppColors.gold,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+            : SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTotalPointCard(_userPoints),
+                    const SizedBox(height: 24.0),
+                    Text(
+                      'Tukarkan Poin', 
+                      style: AppTextStyles.input.copyWith(color: AppColors.gold),
+                    ),
+                    const SizedBox(height: 12.0),
+                    _buildRewardList(_rewards, _userPoints), 
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 100),
+                  ],
+                ),
               ),
-            ),
+      ),
+      bottomNavigationBar: _buildHistoryButton(context),
     );
   }
 
-  // --- Widget 1: Total Poin Anda ---
   Widget _buildTotalPointCard(int points) {
     return Card(
       color: AppColors.cardDark,
@@ -96,16 +144,19 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
           children: [
             Text(
               'Total Poin Anda', 
-              // Menggunakan AppTextStyles.label
               style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
             ),
             const SizedBox(height: 8.0),
             Row(
               children: [
-                // Perbaikan withOpacity menjadi withAlpha
                 CircleAvatar(
-                  backgroundColor: AppColors.gold.withAlpha((255 * 0.1).round()), 
-                  child: Icon(Icons.monetization_on_outlined, color: AppColors.gold, size: 36),
+                  backgroundColor: AppColors.gold.withOpacity(0.1), 
+                  child: SvgPicture.asset(
+                    'assets/icons/point.svg',
+                    colorFilter: const ColorFilter.mode(AppColors.gold, BlendMode.srcIn),
+                    width: 90, 
+                    height: 90, 
+                  ),
                 ),
                 const SizedBox(width: 15.0),
                 Column(
@@ -113,12 +164,10 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
                   children: [
                     Text(
                       points.toString(), 
-                      // Menggunakan TextStyle eksplisit karena displayBold tidak ada
                       style: const TextStyle(color: AppColors.white, fontSize: 34, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Poin', 
-                      // Menggunakan AppTextStyles.label
                       style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
                     ),
                   ],
@@ -131,8 +180,11 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
     );
   }
 
-  // --- Widget 2: Daftar Rewards ---
   Widget _buildRewardList(List<RewardModel> rewards, int userPoints) {
+    if (rewards.isEmpty) {
+      return Center(child: Text("Tidak ada promo tersedia", style: TextStyle(color: AppColors.textMuted)));
+    }
+    
     return Card(
       color: AppColors.cardDark,
       elevation: 0,
@@ -153,65 +205,66 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
             leading: Icon(reward.icon, color: iconColor, size: 28),
             title: Text(
               reward.title, 
-              // Menggunakan AppTextStyles.input (paling mendekati body/normal text)
               style: AppTextStyles.input.copyWith(color: AppColors.white, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
               'Butuh ${reward.requiredPoints} Poin', 
-              // Menggunakan AppTextStyles.label
               style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
             ),
-            // ===============================================
-            // PERBAIKAN SINTAKSIS ELEVATEDBUTTON
-            // ===============================================
             trailing: ElevatedButton(
-              onPressed: isEnabled ? () {
-                // TODO: Tambahkan logika penukaran poin (misalnya memanggil _repository.redeemReward)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Menukarkan ${reward.title} dengan ${reward.requiredPoints} Poin')),
-                );
-                // Setelah penukaran, panggil _fetchData() untuk refresh poin
-                // _fetchData(); 
-              } : null, // Tombol disable jika isEnabled false
-              
-              child: Text(
-                'Tukar',
-                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-              ),
+              onPressed: isEnabled ? () => _handleRedeem(reward) : null, 
               style: ElevatedButton.styleFrom(
                 backgroundColor: buttonColor,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                 minimumSize: const Size(80, 30),
               ),
-            ), // <<< PENUTUP ElevatedButton
-          ); // <<< PENUTUP ListTile
+              child: Text(
+                'Tukar',
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              ),
+            ), 
+          ); 
         },
-      ), // <<< PENUTUP ListView.builder
-    ); // <<< PENUTUP Card
-  } // <<< PENUTUP _buildRewardList
+      ), 
+    ); 
+  } 
 
-  // --- Widget 3: Riwayat Penukaran (Wajib ditambahkan) ---
-  Widget _buildHistoryCard() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Riwayat Penukaran', 
-          style: AppTextStyles.heading.copyWith(color: AppColors.white)
-        ),
-        const SizedBox(height: 12.0),
-        // Implementasi sederhana
-        Container(
-          height: 100,
-          decoration: BoxDecoration(
-            color: AppColors.cardDark,
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildHistoryButton(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, MediaQuery.of(context).padding.bottom + 16.0),
+      decoration: BoxDecoration(
+        color: AppColors.background, 
+        border: Border(top: BorderSide(color: AppColors.cardDark, width: 1)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, 
+        children: [
+          Text('Lihat dari mana poin anda berasal', style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
+          Text('dalam Riwayat', style: AppTextStyles.label.copyWith(color: AppColors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12.0),
+          GestureDetector(
+            onTap: () {
+               // Navigasi ke History Screen di sini
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                gradient: LinearGradient(
+                  colors: [AppColors.gold, AppColors.gold.withOpacity(0.8)], 
+                ),
+              ),
+              child: Text(
+                'Lihat Riwayat',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.button.copyWith(color: AppColors.background, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
-          alignment: Alignment.center,
-          child: Text('Riwayat Anda muncul di sini', style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
-        ),
-      ],
+        ],
+      ),
     );
-  } // <<< PENUTUP _buildHistoryCard
-} // <<< PENUTUP _PointRewardScreenStateS
+  }
+}
