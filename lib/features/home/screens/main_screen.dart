@@ -54,14 +54,11 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      HomeScreen(
-        userId: '2',
-        onNavigate: _onItemTapped,
-      ),
+      HomeScreen(userId: '2', onNavigate: _onItemTapped),
       ReservasiScreen(),
-      DentalHomeScreen(), 
-      RiwayatScreen(), 
-      ProfileScreen(), 
+      DentalHomeScreen(),
+      RiwayatScreen(),
+      ProfileScreen(),
     ];
   }
 
@@ -70,7 +67,9 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          _pages[_selectedIndex],
+          // FIX 1: Gunakan IndexedStack agar halaman tidak di-reset (State Preservation)
+          IndexedStack(index: _selectedIndex, children: _pages),
+
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -93,126 +92,17 @@ class _MainScreenState extends State<MainScreen> {
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: BottomNavigationBar(
                   items: <BottomNavigationBarItem>[
-                    BottomNavigationBarItem(
-                      icon: SvgPicture.asset(
-                        'assets/icons/home.svg',
-                        height: 24,
-                        width: 24,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textMuted,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      activeIcon: GradientMask(
-                        gradient: AppColors.goldGradient,
-                        child: SvgPicture.asset(
-                          'assets/icons/home.svg',
-                          height: 24,
-                          width: 24,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                      label: 'Beranda',
+                    _buildNavItem('assets/icons/home.svg', 'Beranda'),
+                    _buildNavItem(
+                      'assets/icons/reservasi_navbar.svg',
+                      'Pendaftaran',
                     ),
-                    BottomNavigationBarItem(
-                      icon: SvgPicture.asset(
-                        'assets/icons/reservasi_navbar.svg',
-                        height: 24,
-                        width: 24,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textMuted,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      activeIcon: GradientMask(
-                        gradient: AppColors.goldGradient,
-                        child: SvgPicture.asset(
-                          'assets/icons/reservasi_navbar.svg',
-                          height: 24,
-                          width: 24,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                      label: 'Pendaftaran',
+                    _buildNavItem(
+                      'assets/icons/dentalhome_navbar.svg',
+                      'Dental Home',
                     ),
-                    BottomNavigationBarItem(
-                      icon: SvgPicture.asset(
-                        'assets/icons/dentalhome_navbar.svg',
-                        height: 24,
-                        width: 24,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textMuted,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      activeIcon: GradientMask(
-                        gradient: AppColors.goldGradient,
-                        child: SvgPicture.asset(
-                          'assets/icons/dentalhome_navbar.svg',
-                          height: 24,
-                          width: 24,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                      label: 'Dental Home',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: SvgPicture.asset(
-                        'assets/icons/riwayat_navbar.svg',
-                        height: 24,
-                        width: 24,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textMuted,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      activeIcon: GradientMask(
-                        gradient: AppColors.goldGradient,
-                        child: SvgPicture.asset(
-                          'assets/icons/riwayat_navbar.svg',
-                          height: 24,
-                          width: 24,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                      label: 'Riwayat',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: SvgPicture.asset(
-                        'assets/icons/profil.svg',
-                        height: 24,
-                        width: 24,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textMuted,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      activeIcon: GradientMask(
-                        gradient: AppColors.goldGradient,
-                        child: SvgPicture.asset(
-                          'assets/icons/profil.svg',
-                          height: 24,
-                          width: 24,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                      label: 'Profil',
-                    ),
+                    _buildNavItem('assets/icons/riwayat_navbar.svg', 'Riwayat'),
+                    _buildNavItem('assets/icons/profil.svg', 'Profil'),
                   ],
                   currentIndex: _selectedIndex,
                   selectedItemColor: AppColors.gold,
@@ -234,6 +124,30 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // FIX 2: Helper Method untuk mengurangi Redundant Code
+  BottomNavigationBarItem _buildNavItem(String assetPath, String label) {
+    return BottomNavigationBarItem(
+      icon: SvgPicture.asset(
+        assetPath,
+        height: 24,
+        width: 24,
+        // ignore: deprecated_member_use
+        colorFilter: ColorFilter.mode(AppColors.textMuted, BlendMode.srcIn),
+      ),
+      activeIcon: GradientMask(
+        gradient: AppColors.goldGradient,
+        child: SvgPicture.asset(
+          assetPath,
+          height: 24,
+          width: 24,
+          // ignore: deprecated_member_use
+          colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        ),
+      ),
+      label: label,
     );
   }
 }

@@ -7,9 +7,9 @@ class ScheduleCardWidget extends StatelessWidget {
   final String namaDokter;
   final String hari;
   final String jam;
-  
+
   // 🔥 TAMBAHAN UI SAJA: Tanggal (Opsional)
-  final String? tanggal; 
+  final String? tanggal;
 
   final int quota;
   final int kuotaTerpakai;
@@ -45,7 +45,7 @@ class ScheduleCardWidget extends StatelessWidget {
             color: Colors.black.withOpacity(0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -83,7 +83,7 @@ class ScheduleCardWidget extends StatelessWidget {
                 child: Text(
                   // 🔥 TAMPILKAN TANGGAL DISINI
                   // Format: "Senin, 2025-12-05 | 08:00 - 12:00"
-                  "${hari}${tanggal != null ? ', $tanggal' : ''} | $jam",
+                  "$hari${tanggal != null ? ', $tanggal' : ''} | $jam",
                   style: AppTextStyles.label.copyWith(
                     color: AppColors.textLight,
                     fontSize: 14,
@@ -102,7 +102,7 @@ class ScheduleCardWidget extends StatelessWidget {
               const Icon(Icons.group, color: AppColors.gold, size: 18),
               const SizedBox(width: 6),
               Text(
-                "Kuota : $kuotaTerpakai/$quota", 
+                "Kuota : $kuotaTerpakai/$quota",
                 style: AppTextStyles.label.copyWith(
                   color: isFull ? Colors.red : AppColors.textLight,
                   fontSize: 14,
@@ -118,7 +118,7 @@ class ScheduleCardWidget extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              onTap: isFull ? null : onTap, 
+              onTap: isFull ? null : onTap,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,

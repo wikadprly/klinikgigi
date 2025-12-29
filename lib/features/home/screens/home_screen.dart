@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/models/pasien_model.dart';
 import 'package:flutter_klinik_gigi/core/services/pasien_service.dart';
-import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart';
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
+import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pasien = _pasienService.getPasienByUserId(widget.userId);
-    _promosFuture = _homeCareService.getPromos(type: 'booking');
+    _promosFuture = _homeCareService.getPromos(type: 'all');
   }
 
   @override
@@ -97,17 +97,27 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text('Home', style: AppTextStyles.heading),
         Row(
           children: [
-            IconButton(
-              icon: GradientMask(
-                gradient: AppColors.goldGradient,
-                child: const Icon(
-                  Icons.mail_outline,
-                  color: Colors.white,
-                  size: 28,
-                ),
+            // ===============================================
+            // HANYA TERSISA IKON POIN YANG DAPAT DIKLIK
+            // ===============================================
+            GestureDetector(
+              onTap: () {
+                // Navigasi ke halaman PointRewardScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PointRewardScreen(),
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/point.svg', // Ikon Poin
+                width: 35.0,
+                height: 35.0,
               ),
-              onPressed: () {},
             ),
+
+            // SizedBox (spasi) dan IconButton (mail) dihapus
           ],
         ),
       ],
@@ -294,12 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'assets/icons/dokter.svg',
                         'Dokter',
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DokterScreens(),
-                            ),
-                          );
+                          Navigator.pushNamed(context, '/dokter');
                         },
                       ),
                     ),
@@ -392,7 +397,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   final promo = promos[index];
                   // Pastikan URL gambar valid
-                  final String imagePath = promo['gambar_banner'] ?? '';
+                  final String imagePath =
+                      promo['gambar_banner_url'] ??
+                      promo['gambar_banner'] ??
+                      '';
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -412,6 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         imagePath: imagePath,
                         title: promo['judul_promo'] ?? 'Promo',
                         subtitle: promo['deskripsi'] ?? '',
+                        target: promo['target_transaksi'] ?? 'semua',
                       ),
                     ),
                   );
@@ -428,6 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String imagePath,
     required String title,
     required String subtitle,
+    required String target,
   }) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.75,
@@ -439,27 +449,65 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: imagePath.isNotEmpty
-                  ? Image.network(
-                      imagePath,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, _, __) => Container(
-                        color: Colors.grey[800],
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
+              child: Stack(
+                children: [
+                  imagePath.isNotEmpty
+                      ? Image.network(
+                          imagePath,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, __) => Container(
+                            color: Colors.white10,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.white24,
+                              size: 40,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.white10,
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.image,
+                            color: Colors.white24,
+                            size: 40,
                           ),
                         ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                    )
-                  : Container(
-                      color: Colors.grey[800],
-                      child: const Center(
-                        child: Icon(Icons.image, color: Colors.white54),
+                      decoration: BoxDecoration(
+                        color: target == 'booking'
+                            ? Colors.blueAccent.withOpacity(0.9)
+                            : target == 'pelunasan'
+                            ? Colors.orangeAccent.withOpacity(0.9)
+                            : Colors.grey.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        target == 'booking'
+                            ? "Booking"
+                            : target == 'pelunasan'
+                            ? "Pelunasan"
+                            : "Semua",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),

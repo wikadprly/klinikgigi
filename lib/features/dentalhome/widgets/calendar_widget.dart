@@ -7,10 +7,10 @@ class CalendarWidget extends StatefulWidget {
   final Function(int day, int month, int year) onDaySelected;
 
   const CalendarWidget({
-    Key? key,
+    super.key,
     required this.selectedDay,
     required this.onDaySelected,
-  }) : super(key: key);
+  });
 
   @override
   State<CalendarWidget> createState() => _CalendarWidgetState();

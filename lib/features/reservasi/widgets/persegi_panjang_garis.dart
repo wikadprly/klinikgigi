@@ -16,7 +16,7 @@ class PersegiPanjangGaris extends StatelessWidget {
   final Widget? centerChild; // ketika ingin konten di tengah
 
   const PersegiPanjangGaris({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     this.showInnerLine = true,
@@ -29,7 +29,7 @@ class PersegiPanjangGaris extends StatelessWidget {
     this.leftChild,
     this.rightChild,
     this.centerChild,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

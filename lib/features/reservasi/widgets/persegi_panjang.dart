@@ -10,14 +10,14 @@ class PersegiPanjang extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const PersegiPanjang({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     this.child,
     this.backgroundColor,
     this.borderRadius = 18,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

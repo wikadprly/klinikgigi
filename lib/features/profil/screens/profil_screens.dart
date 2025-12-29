@@ -5,7 +5,6 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -96,17 +95,40 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
           child: Column(
             children: [
-              Row(children: const [Icon(Icons.close, color: AppColors.gold, size: 26)]),
+              Row(
+                children: const [
+                  Icon(Icons.close, color: AppColors.gold, size: 26),
+                ],
+              ),
               const SizedBox(height: 12),
-              const CircleAvatar(radius: 40, backgroundImage: AssetImage("assets/profile.jpg")),
+              const CircleAvatar(
+                radius: 40,
+                backgroundImage: AssetImage("assets/profile.jpg"),
+              ),
               const SizedBox(height: 16),
-              Container(height: 1, width: double.infinity, color: AppColors.gold),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: AppColors.gold,
+              ),
               const SizedBox(height: 18),
-              _menuItem(icon: Icons.photo, text: "Pilih dari galeri", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.photo,
+                text: "Pilih dari galeri",
+                onTap: () => Navigator.pop(context),
+              ),
               const SizedBox(height: 14),
-              _menuItem(icon: Icons.camera_alt, text: "Ambil foto", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.camera_alt,
+                text: "Ambil foto",
+                onTap: () => Navigator.pop(context),
+              ),
               const SizedBox(height: 14),
-              _menuItem(icon: Icons.delete, text: "Hapus", onTap: () => Navigator.pop(context)),
+              _menuItem(
+                icon: Icons.delete,
+                text: "Hapus",
+                onTap: () => Navigator.pop(context),
+              ),
             ],
           ),
         );
@@ -114,14 +136,25 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  Widget _menuItem({required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _menuItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Row(
         children: [
           Icon(icon, color: AppColors.gold, size: 45),
           const SizedBox(width: 30),
-          Text(text, style: const TextStyle(color: AppColors.gold, fontSize: 25, fontWeight: FontWeight.w500)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.gold,
+              fontSize: 25,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -147,10 +180,14 @@ class _ProfilScreenState extends State<ProfilScreen> {
       body: SafeArea(
         child: Consumer<ProfilProvider>(
           builder: (context, provider, child) {
-            print("ProfilScreen: Consumer rebuilding - isLoading: ${provider.isLoading}, userData: ${provider.userData}");
+            print(
+              "ProfilScreen: Consumer rebuilding - isLoading: ${provider.isLoading}, userData: ${provider.userData}",
+            );
 
             if (provider.isLoading && provider.userData == null) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.gold),
+              );
             }
 
             final user = provider.userData; // Get user data from the provider
@@ -166,10 +203,17 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: BackButtonWidget(onPressed: () => Navigator.pop(context)),
+                        child: BackButtonWidget(
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ),
                       Center(
-                        child: Text('Profil Saya', style: AppTextStyles.heading.copyWith(color: AppColors.gold)),
+                        child: Text(
+                          'Profil Saya',
+                          style: AppTextStyles.heading.copyWith(
+                            color: AppColors.gold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -181,20 +225,30 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: user?["file_foto"] != null && user?["file_foto"].isNotEmpty
+                        backgroundImage:
+                            user?["file_foto"] != null &&
+                                user?["file_foto"].isNotEmpty
                             ? NetworkImage(user?["file_foto"]) as ImageProvider
                             : const AssetImage('assets/profile.jpg'),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         user?["nama_pengguna"] ?? "-",
-                        style: AppTextStyles.heading.copyWith(color: AppColors.gold),
+                        style: AppTextStyles.heading.copyWith(
+                          color: AppColors.gold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
                         onTap: () => showEditPhotoModal(context),
-                        child: Text("Edit foto", style: AppTextStyles.input.copyWith(color: AppColors.gold, fontSize: 14)),
-                      )
+                        child: Text(
+                          "Edit foto",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
 
@@ -211,32 +265,64 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Informasi Dasar", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
+                        Text(
+                          "Informasi Dasar",
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 18,
+                          ),
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.person, user?["nama_pengguna"] ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.person,
+                          user?["nama_pengguna"] ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.phone, user?["no_hp"] ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.phone,
+                          user?["no_hp"] ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.email, user?["email"] ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.email,
+                          user?["email"] ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.calendar_today, user?["tanggal_lahir"]?.toString() ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.calendar_today,
+                          user?["tanggal_lahir"]?.toString() ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.location_on, provider.rekamMedisData?["alamat"] ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.location_on,
+                          provider.rekamMedisData?["alamat"] ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 14),
 
-                        infoRow(Icons.man, user?["jenis_kelamin"] ?? "-", textColor: AppColors.gold),
+                        infoRow(
+                          Icons.man,
+                          user?["jenis_kelamin"] ?? "-",
+                          textColor: AppColors.gold,
+                        ),
                         const SizedBox(height: 16),
 
                         Align(
                           alignment: Alignment.center,
-                          child: editProfilButton(onTap: () {
-                            // Navigate to edit profile page
-                          }),
+                          child: editProfilButton(
+                            onTap: () {
+                              // Navigate to edit profile page
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -255,12 +341,33 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Asuransi Saya", style: AppTextStyles.label.copyWith(color: AppColors.gold, fontSize: 18)),
+                        Text(
+                          "Asuransi Saya",
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.gold,
+                            fontSize: 18,
+                          ),
+                        ),
                         const SizedBox(height: 12),
 
-                        Text("Nama Asuransi : ${provider.namaAsuransi ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
-                        Text("Nomor Peserta : ${provider.noPeserta ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
-                        Text("Status : ${provider.statusAktif ?? "-"}", style: AppTextStyles.input.copyWith(color: AppColors.gold)),
+                        Text(
+                          "Nama Asuransi : ${provider.namaAsuransi ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        Text(
+                          "Nomor Peserta : ${provider.noPeserta ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        Text(
+                          "Status : ${provider.statusAktif ?? "-"}",
+                          style: AppTextStyles.input.copyWith(
+                            color: AppColors.gold,
+                          ),
+                        ),
                       ],
                     ),
                   ),

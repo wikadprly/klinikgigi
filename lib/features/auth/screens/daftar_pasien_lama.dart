@@ -63,7 +63,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
 
                 // 🔹 Dropdown tipe pasien
                 DropdownButtonFormField<String>(
-                  value: tipePasien,
+                  initialValue: tipePasien,
                   dropdownColor: AppColors.background,
                   decoration: InputDecoration(
                     labelText: "Tipe Pasien",

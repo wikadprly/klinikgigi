@@ -15,12 +15,18 @@ class HomeCareService {
     : client = client ?? http.Client();
 
   // 1. GET JADWAL DOKTER
-  Future<List<dynamic>> getJadwalDokter(String tanggal) async {
+  Future<List<dynamic>> getJadwalDokter(
+    String tanggal, {
+    String? kodePoli,
+  }) async {
     final token = await _getToken();
 
-    final url = Uri.parse(
-      '${ApiEndpoint.homeCareJadwalMaster}?tanggal=$tanggal',
-    );
+    String urlString = '${ApiEndpoint.homeCareJadwalMaster}?tanggal=$tanggal';
+    if (kodePoli != null && kodePoli.isNotEmpty && kodePoli != 'Semua') {
+      urlString += '&kode_poli=$kodePoli';
+    }
+
+    final url = Uri.parse(urlString);
 
     final headers = {'Content-Type': 'application/json'};
     if (token != null && token.isNotEmpty) {
@@ -159,7 +165,7 @@ class HomeCareService {
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
-      return jsonResponse['data']; // Berisi status_pembayaran & status_reservasi
+      return Map<String, dynamic>.from(jsonResponse['data'] ?? {});
     }
 
     throw Exception('Gagal cek status pembayaran');
@@ -322,7 +328,7 @@ class HomeCareService {
       try {
         final parsed = jsonDecode(response.body);
         final Map errorBody = parsed is Map ? parsed : {};
-        final errorObj = errorBody['error'] ?? errorBody['errors'] ?? null;
+        final errorObj = errorBody['error'] ?? errorBody['errors'];
 
         if (errorObj is Map) {
           final Map<String, List<String>> errors = {};

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
@@ -7,7 +8,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'package:flutter_klinik_gigi/providers/nota_provider.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/providers/home_care_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -21,8 +22,9 @@ import 'package:flutter_klinik_gigi/features/home/screens/main_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/input_lokasi_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan_screens.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
-import 'package:flutter_klinik_gigi/features/dentalhome/screens/nota_pelunasan.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_pelunasan_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/homecare_tracking_screen.dart';
+import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart'; // Import DokterScreens
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -46,7 +48,7 @@ import 'package:flutter_klinik_gigi/features/settings/screens/panduanreservasi.d
 import 'package:flutter_klinik_gigi/features/settings/screens/panduaneditprofil.dart';
 import 'package:flutter_klinik_gigi/features/settings/screens/panduanubahsandi.dart';
 
-//Profile
+// Profile
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
 
@@ -65,6 +67,9 @@ void main() async {
           create: (_) => ReservasiProvider(),
         ),
         ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
+        ChangeNotifierProvider<HomeCareProvider>(
+          create: (_) => HomeCareProvider(),
+        ),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -87,8 +92,10 @@ class KlinikGigiApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0E0E10),
         fontFamily: 'Poppins',
       ),
+
       initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
+        // AUTH
         '/start': (context) => const StartScreen(),
         '/masuk': (context) => const LoginPage(),
         '/daftar_pasien_lama': (context) => const DaftarPasienLamaPage(),
@@ -99,10 +106,11 @@ class KlinikGigiApp extends StatelessWidget {
           return OtpScreen(email: arguments);
         },
 
-        // Home
+        // MAIN
         '/main_screen': (context) => const MainScreen(),
-
-        // Dental Home Care
+        '/dokter': (context) => const DokterScreens(), // Named Route for URL
+        // DENTAL HOME CARE
+        '/dentalhome': (context) => const DentalHomeScreen(),
         '/dentalhome/jadwal': (context) => const SchedulePage(),
         '/dentalhome/tracking': (context) {
           final bookingId =
@@ -113,7 +121,7 @@ class KlinikGigiApp extends StatelessWidget {
           final args =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>;
-          return NotaPelunasanScreen(
+          return MidtransPelunasanScreen(
             bookingId: args['bookingId'] ?? 0,
             totalTagihan: args['totalTagihan'] ?? 0,
           );
@@ -141,7 +149,7 @@ class KlinikGigiApp extends StatelessWidget {
         // Reservasi
         '/reservasi': (context) => const ReservasiScreen(),
 
-        // Riwayat
+        // RIWAYAT
         '/riwayat': (context) => const RiwayatScreen(),
         '/riwayat_detail': (context) {
           final data =
@@ -170,17 +178,15 @@ class KlinikGigiApp extends StatelessWidget {
         '/panduaneditprofil': (context) => const PanduanEditProfilScreen(),
         '/panduanubahsandi': (context) => const PanduanUbahSandiScreen(),
 
-        //Profile
+        // Profile
         '/profil_screens': (context) {
           return FutureBuilder<String?>(
             future: SharedPrefsHelper.getToken(),
             builder: (context, snapshot) {
-              String token = snapshot.data ?? '';
-              return ProfilePage(token: token);
+              return ProfilePage(token: snapshot.data ?? '');
             },
           );
         },
-        '/two_page': (context) => const EditProfilPage2(),
       },
     );
   }

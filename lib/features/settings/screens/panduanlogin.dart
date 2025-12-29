@@ -18,9 +18,7 @@ class PanduanLoginPage extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  BackButtonWidget(
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const SizedBox(width: 16),
                   Text(
                     "Panduan Aplikasi",
@@ -77,7 +75,7 @@ class PanduanLoginPage extends StatelessWidget {
                             "Akun ditemukan → lanjut ke pengecekan kata sandi.",
                             "Kata sandi benar → kamu langsung masuk ke aplikasi.",
                             "Kata sandi salah → muncul pesan 'Kata sandi tidak sesuai'.",
-                          ]
+                          ],
                         ],
                       ),
 
@@ -104,7 +102,7 @@ class PanduanLoginPage extends StatelessWidget {
                             "NIK, email, atau nomor HP sudah digunakan.",
                             "Format email tidak valid.",
                             "Kata sandi kurang dari 8 karakter.",
-                          ]
+                          ],
                         ],
                       ),
 
@@ -125,7 +123,7 @@ class PanduanLoginPage extends StatelessWidget {
                         ],
                         bulletDetail: const [
                           [
-                            "Nama, NIK, tanggal lahir, jenis kelamin, nomor HP."
+                            "Nama, NIK, tanggal lahir, jenis kelamin, nomor HP.",
                           ],
                           [
                             "Email (opsional)",
@@ -134,8 +132,8 @@ class PanduanLoginPage extends StatelessWidget {
                           ],
                           [
                             "RM tidak ditemukan → muncul pesan kesalahan.",
-                            "RM sudah pernah dibuatkan akun → kamu diminta langsung login."
-                          ]
+                            "RM sudah pernah dibuatkan akun → kamu diminta langsung login.",
+                          ],
                         ],
                       ),
 
@@ -167,7 +165,7 @@ class PanduanLoginPage extends StatelessWidget {
                             "Terlalu banyak permintaan (maks 3 per jam) → coba lagi nanti.",
                             "Minta ulang terlalu cepat → tunggu 1 menit.",
                             "Format email salah → periksa kembali email kamu.",
-                          ]
+                          ],
                         ],
                       ),
 
@@ -185,8 +183,8 @@ class PanduanLoginPage extends StatelessWidget {
                         bulletDetail: const [
                           [
                             "OTP sudah kadaluarsa (lebih dari 5 menit).",
-                            "Kode salah atau terlalu banyak salah (maks 5) → email diblokir sementara 15 menit."
-                          ]
+                            "Kode salah atau terlalu banyak salah (maks 5) → email diblokir sementara 15 menit.",
+                          ],
                         ],
                       ),
 
@@ -194,7 +192,7 @@ class PanduanLoginPage extends StatelessWidget {
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -267,7 +265,7 @@ class _GuideBox extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 18, top: 4),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: bullets!
+                          children: bullets
                               .map(
                                 (b) => Padding(
                                   padding: const EdgeInsets.only(bottom: 4),
@@ -291,7 +289,7 @@ class _GuideBox extends StatelessWidget {
                                             height: 1.4,
                                           ),
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
