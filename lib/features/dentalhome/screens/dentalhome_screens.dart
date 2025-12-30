@@ -12,7 +12,6 @@ class DentalHomeScreen extends StatefulWidget {
 
 class _DentalHomeScreenState extends State<DentalHomeScreen> {
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,

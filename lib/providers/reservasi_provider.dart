@@ -178,6 +178,34 @@ class ReservasiProvider extends ChangeNotifier {
     }
   }
 
+  // 7. Create Reservasi with Payment (Midtrans)
+  Future<Map<String, dynamic>?> createReservasiWithPayment(Map<String, dynamic> data) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final result = await _reservasiService.createReservasiWithPayment(data);
+      _errorMessage = null;
+      return result;
+    } catch (e) {
+      _errorMessage = 'Gagal membuat reservasi dengan pembayaran';
+      if (kDebugMode) print('createReservasiWithPayment Error: $e');
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 8. Check Payment Status
+  Future<Map<String, dynamic>?> checkPaymentStatus(String noPemeriksaan) async {
+    try {
+      return await _reservasiService.checkPaymentStatus(noPemeriksaan);
+    } catch (e) {
+      if (kDebugMode) print('checkPaymentStatus Error: $e');
+      return null;
+    }
+  }
+
   void clearData() {
     _poliList = [];
     _dokterList = [];

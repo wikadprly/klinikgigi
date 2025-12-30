@@ -6,24 +6,27 @@ import 'package:flutter/material.dart';
 class RewardModel {
   final String id;
   final String title;
-  final String description; 
+  final String description;
   final int requiredPoints;
-  final IconData icon; 
+  final String? imageUrl;
+  final IconData icon;
 
   RewardModel({
     required this.id,
     required this.title,
     required this.description,
     required this.requiredPoints,
+    this.imageUrl,
     required this.icon,
   });
 
   /// Factory constructor untuk membuat instance RewardModel dari data JSON (Map)
   factory RewardModel.fromJson(Map<String, dynamic> json) {
-    
     // --- Logika Mapping Icon ---
     // Mengkonversi string nama icon dari backend menjadi IconData Flutter
-    IconData mapIcon(String iconName) {
+    // Backend tidak mengirim 'icon_name', jadi kita mapping manual atau default
+    IconData mapIcon(String? iconName) {
+      if (iconName == null) return Icons.local_offer; // Default icon
       switch (iconName.toLowerCase()) {
         case 'add_circle':
           return Icons.add_circle_outline;
@@ -38,11 +41,12 @@ class RewardModel {
     // ---------------------------
 
     return RewardModel(
-      id: json['id'].toString(), // Pastikan ID selalu string
-      title: json['title'] as String,
-      description: json['description'] as String,
-      requiredPoints: json['required_points'] as int,
-      icon: mapIcon(json['icon_name'] as String), // Menggunakan fungsi mapping
+      id: json['id'].toString(),
+      title: json['judul_promo'] as String, // Mapping dari 'judul_promo'
+      description: json['deskripsi'] as String,
+      requiredPoints: json['harga_poin'] as int, // Mapping dari 'harga_poin'
+      imageUrl: json['gambar_banner'] as String?, // Mapping gambar_banner
+      icon: mapIcon(null), // Backend belum kirim icon, pakai default
     );
   }
 }

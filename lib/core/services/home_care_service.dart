@@ -165,7 +165,7 @@ class HomeCareService {
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
-      return jsonResponse['data']; // Berisi status_pembayaran & status_reservasi
+      return Map<String, dynamic>.from(jsonResponse['data'] ?? {});
     }
 
     throw Exception('Gagal cek status pembayaran');

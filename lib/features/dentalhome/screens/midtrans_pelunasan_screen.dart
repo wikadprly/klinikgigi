@@ -136,9 +136,14 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
 
   Future<void> _checkPaymentStatus() async {
     try {
+      debugPrint(
+        "MidtransPelunasan: Checking payment status for Booking ${widget.bookingId}",
+      );
       final statusData = await _homeCareService.checkPaymentStatus(
         widget.bookingId,
       );
+      debugPrint("MidtransPelunasan: Status Data Received: $statusData");
+
       // PENTING: Cek status_pelunasan
       final statusPelunasan = statusData['status_pelunasan'];
 

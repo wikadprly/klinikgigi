@@ -8,6 +8,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/providers/home_care_provider.dart';
 
 // Auth Screens
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
@@ -23,6 +24,7 @@ import 'package:flutter_klinik_gigi/features/dentalhome/screens/jadwal_kunjungan
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_booking_homecare_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/midtrans_pelunasan_screen.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/homecare_tracking_screen.dart';
+import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_screens.dart'; // Import DokterScreens
 
 // Reservasi
 import 'package:flutter_klinik_gigi/features/reservasi/screens/reservasi_screens.dart';
@@ -65,6 +67,9 @@ void main() async {
           create: (_) => ReservasiProvider(),
         ),
         ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
+        ChangeNotifierProvider<HomeCareProvider>(
+          create: (_) => HomeCareProvider(),
+        ),
       ],
       child: const KlinikGigiApp(),
     ),
@@ -103,7 +108,7 @@ class KlinikGigiApp extends StatelessWidget {
 
         // MAIN
         '/main_screen': (context) => const MainScreen(),
-
+        '/dokter': (context) => const DokterScreens(), // Named Route for URL
         // DENTAL HOME CARE
         '/dentalhome': (context) => const DentalHomeScreen(),
         '/dentalhome/jadwal': (context) => const SchedulePage(),

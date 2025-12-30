@@ -3,52 +3,16 @@ import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/services/dokter_service.dart';
 import '../../../core/models/master_dokter_model.dart';
-import 'package:flutter_klinik_gigi/features/dokter/screens/dokter_detail_screens.dart';
+import 'package:flutter_klinik_gigi/features/dokter/widgets/dokter_list_card.dart';
 import 'dart:async';
 
 // ------------------------------------
 // 1. WIDGET KARTU DOKTER BARU (SESUAI DESAIN 1.png)
 // ------------------------------------
-class _DokterListCard extends StatelessWidget {
-  final MasterDokterModel dokter;
-
-  const _DokterListCard({required this.dokter});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget imageWidget;
-    // Selalu tampilkan placeholder karena MasterDokterModel tidak memiliki data foto.
-    imageWidget = CircleAvatar(
-      radius: 30,
-      backgroundColor: AppColors.gold.withOpacity(0.2),
-      child: const Icon(Icons.person, color: AppColors.gold, size: 30),
-    );
-
-    return Card(
-      color: AppColors.cardDark,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: imageWidget,
-        title: Text(
-          dokter.nama,
-          style: AppTextStyles.heading.copyWith(
-            fontSize: 16,
-            color: AppColors.gold,
-          ),
-        ),
-        subtitle: Text(
-          "Spesialis: ${dokter.spesialisasi}",
-          style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
-        ),
-      ),
-    );
-  }
-}
+// _DokterListCard widget moved to widgets/dokter_list_card.dart
 
 // ------------------------------------
-// 2. MAIN SCREEN DOKTER (DIUBAH MENJADI STATEFUL)
+// 2. MAIN SCREEN DOKTER
 // ------------------------------------
 class DokterScreens extends StatefulWidget {
   const DokterScreens({super.key});
@@ -58,21 +22,18 @@ class DokterScreens extends StatefulWidget {
 }
 
 class _DokterScreensState extends State<DokterScreens> {
-  // State untuk mengelola daftar dokter
   late Future<List<MasterDokterModel>> _futureDokter;
   final DokterService _dokterService = DokterService();
-
-  // Controller untuk search bar
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+
+  // State for filter
+  String _selectedCategory = 'Semua';
 
   @override
   void initState() {
     super.initState();
-    // Ambil semua dokter saat pertama kali load
     _futureDokter = _dokterService.fetchDokter();
-
-    // Tambahkan listener untuk live search dengan debounce
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -84,10 +45,13 @@ class _DokterScreensState extends State<DokterScreens> {
     super.dispose();
   }
 
-  // Fungsi untuk fetch data (bisa dipanggil ulang)
   void _fetchData(String? query) {
     setState(() {
       _futureDokter = _dokterService.fetchDokter(query);
+      // Reset filter when searching, optional but usually good UX
+      if (query != null && query.isNotEmpty) {
+        _selectedCategory = 'Semua';
+      }
     });
   }
 
@@ -98,9 +62,11 @@ class _DokterScreensState extends State<DokterScreens> {
     });
   }
 
-  // Fungsi refresh manual (tarik ke bawah)
   Future<void> _refreshDokterList() async {
     _searchController.clear();
+    setState(() {
+      _selectedCategory = 'Semua';
+    });
     _fetchData(null);
   }
 
@@ -110,9 +76,10 @@ class _DokterScreensState extends State<DokterScreens> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'Dokter',
+          'Daftar Dokter',
           style: AppTextStyles.heading.copyWith(color: AppColors.gold),
         ),
+        centerTitle: true,
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
@@ -121,23 +88,33 @@ class _DokterScreensState extends State<DokterScreens> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           children: [
-            // --- Search Bar ---
-            TextField(
-              controller: _searchController,
-              style: AppTextStyles.input,
-              decoration: InputDecoration(
-                hintText: 'Cari dokter...',
-                hintStyle: AppTextStyles.label,
-                prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
-                filled: true,
-                fillColor: AppColors.cardDark,
-                contentPadding: EdgeInsets.zero,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+            // --- Modern Search Bar ---
+            const SizedBox(height: 10),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.textMuted.withOpacity(0.2)),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: AppTextStyles.input,
+                decoration: InputDecoration(
+                  hintText: 'Cari dokter spesialis...',
+                  hintStyle: AppTextStyles.label.copyWith(
+                    color: AppColors.textMuted.withOpacity(0.5),
+                  ),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.gold),
+                  filled: true,
+                  fillColor: Colors
+                      .transparent, // Transparan karena container sudah berwarna
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
             ),
@@ -156,72 +133,160 @@ class _DokterScreensState extends State<DokterScreens> {
                       );
                     } else if (snapshot.hasError) {
                       return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Colors.redAccent,
-                                size: 40,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.redAccent,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Terjadi Kesalahan',
+                              style: AppTextStyles.heading.copyWith(
+                                fontSize: 18,
                               ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Gagal memuat data: ${snapshot.error}',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.label.copyWith(
-                                  color: Colors.redAccent,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${snapshot.error}'.substring(0, 50) +
+                                  "...", // Truncate error
+                              style: AppTextStyles.label.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _refreshDokterList,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.gold,
+                                shape: const StadiumBorder(),
+                              ),
+                              child: Text(
+                                'Coba Lagi',
+                                style: AppTextStyles.button.copyWith(
+                                  color: AppColors.background,
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: _refreshDokterList,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.gold,
-                                ),
-                                child: Text(
-                                  'Coba Lagi',
-                                  style: AppTextStyles.button.copyWith(
-                                    color: AppColors.background,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       );
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(
-                        child: Text(
-                          _searchController.text.isEmpty
-                              ? 'Tidak ada data dokter saat ini.'
-                              : 'Dokter tidak ditemukan.',
-                          style: AppTextStyles.label.copyWith(
-                            color: AppColors.textMuted,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              color: AppColors.textMuted.withOpacity(0.5),
+                              size: 60,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Dokter tidak ditemukan',
+                              style: AppTextStyles.label.copyWith(fontSize: 16),
+                            ),
+                          ],
                         ),
                       );
                     } else {
-                      final dokterList = snapshot.data!;
-                      return ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        itemCount: dokterList.length,
-                        itemBuilder: (context, index) {
-                          final dokter = dokterList[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      DokterDetailScreen(dokter: dokter),
-                                ),
-                              );
-                            },
-                            child: _DokterListCard(dokter: dokter),
-                          );
-                        },
+                      final allDokters = snapshot.data!;
+
+                      // 1. Extract Unique Categories (Spesialisasi)
+                      // Filter out empty strings if any, or map them to 'Umum'
+                      final Set<String> categoriesSet = {};
+                      for (var d in allDokters) {
+                        if (d.spesialisasi.isNotEmpty) {
+                          categoriesSet.add(d.spesialisasi);
+                        }
+                      }
+                      final categories = [
+                        'Semua',
+                        ...categoriesSet.toList()..sort(),
+                      ];
+
+                      // 2. Filter List
+                      final filteredDokters = _selectedCategory == 'Semua'
+                          ? allDokters
+                          : allDokters
+                                .where(
+                                  (d) => d.spesialisasi == _selectedCategory,
+                                )
+                                .toList();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // --- Filter Chips ---
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              children: categories.map((category) {
+                                final isSelected =
+                                    _selectedCategory == category;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: FilterChip(
+                                    label: Text(category),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        _selectedCategory = category;
+                                      });
+                                    },
+                                    backgroundColor: AppColors.cardDark,
+                                    selectedColor: AppColors.gold,
+                                    checkmarkColor: AppColors.background,
+                                    labelStyle: TextStyle(
+                                      color: isSelected
+                                          ? AppColors.background
+                                          : AppColors.textMuted,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? Colors.transparent
+                                            : AppColors.textMuted.withOpacity(
+                                                0.2,
+                                              ),
+                                      ),
+                                    ),
+                                    showCheckmark: false,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+
+                          // --- Doctor List ---
+                          Expanded(
+                            child: filteredDokters.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'Tidak ada dokter di kategori ini',
+                                      style: AppTextStyles.label.copyWith(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    padding: const EdgeInsets.only(bottom: 24),
+                                    itemCount: filteredDokters.length,
+                                    itemBuilder: (context, index) {
+                                      final dokter = filteredDokters[index];
+                                      return DokterListCard(dokter: dokter);
+                                    },
+                                  ),
+                          ),
+                        ],
                       );
                     }
                   },

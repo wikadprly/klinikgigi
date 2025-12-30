@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart'; // PERUBAHAN: Menggunakan MasterDokterModel
-import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart'; // PERUBAHAN
+import 'package:flutter/foundation.dart';
+import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart';
+import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart';
 import 'package:flutter_klinik_gigi/config/api.dart';
-import 'package:flutter_klinik_gigi/core/models/master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/services/dokter_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
+// Import Widgets
+import '../widgets/dokter_tentang_tab.dart';
+import '../widgets/dokter_layanan_tab.dart';
+import '../widgets/dokter_jadwal_tab.dart';
+import '../widgets/dokter_sliver_app_bar_delegate.dart';
+
 class DokterDetailScreen extends StatefulWidget {
-  final MasterDokterModel dokter; // PERUBAHAN: Menggunakan MasterDokterModel
-  const DokterDetailScreen({super.key, required this.dokter}); // PERUBAHAN
+  final MasterDokterModel dokter;
+  const DokterDetailScreen({super.key, required this.dokter});
 
   @override
   State<DokterDetailScreen> createState() => _DokterDetailScreenState();
@@ -19,16 +25,12 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final DokterService _dokterService = DokterService();
-  // PERBAIKAN: Menggunakan id dari widget.dokter untuk fetch data
-  late Future<DokterDetailModel> _futureDetailDokter; // PERUBAHAN
+  late Future<DokterDetailModel> _futureDetailDokter;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 3,
-      vsync: this,
-    ); // 3 tabs: Tentang, Layanan, Jadwal
+    _tabController = TabController(length: 3, vsync: this);
     _futureDetailDokter = _dokterService.fetchDokterDetail(
       widget.dokter.kodeDokter,
     );
@@ -44,21 +46,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          widget.dokter.nama,
-          style: AppTextStyles.heading.copyWith(color: AppColors.gold),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.gold,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
       body: FutureBuilder<DokterDetailModel>(
-        // PERUBAHAN
         future: _futureDetailDokter,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -67,231 +55,193 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
             );
           }
           if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Gagal memuat detail: ${snapshot.error}',
-                style: AppTextStyles.label.copyWith(color: Colors.redAccent),
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: AppColors.background,
+                leading: BackButton(color: AppColors.white),
+              ),
+              backgroundColor: AppColors.background,
+              body: Center(
+                child: Text(
+                  'Gagal memuat detail: ${snapshot.error}',
+                  style: AppTextStyles.label.copyWith(color: Colors.redAccent),
+                  textAlign: TextAlign.center,
+                ),
               ),
             );
           }
           if (!snapshot.hasData) {
-            return Center(
-              child: Text(
-                'Data dokter tidak ditemukan.',
-                style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
-              ),
-            );
+            return const Center(child: Text("Data tidak ditemukan"));
           }
 
           final masterDokter = snapshot.data!;
-
           final poli = masterDokter.masterPoli?.namaPoli ?? 'N/A';
-          final spesialis = masterDokter.spesialisasi ?? 'Dokter';
-          final String fotoUrl = "$baseUrl/storage/${masterDokter.foto ?? ''}";
+          final spesialis = masterDokter.spesialisasi ?? 'Dokter Spesialis';
 
-          return Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                color: AppColors.background,
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: NetworkImage(fotoUrl),
-                      onBackgroundImageError: (exception, stackTrace) {
-                        debugPrint('Gagal memuat gambar: $fotoUrl');
-                      },
-                      backgroundColor: AppColors.cardDark,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      masterDokter.nama ?? 'Nama Dokter',
-                      style: AppTextStyles.heading.copyWith(
-                        fontSize: 22,
-                        color: AppColors.gold,
-                      ),
-                    ),
-                    Text(
-                      spesialis,
-                      style: AppTextStyles.label.copyWith(
-                        fontSize: 16,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Fitur "Book Now" belum diimplementasikan.',
-                            ),
+          String fotoUrl = "";
+          if (masterDokter.foto != null && masterDokter.foto!.isNotEmpty) {
+            // PROXY ROUTE: Use /api/dokter-image/{filename} to fix CORS on Web
+            // Data: "uploads/dokter/filename.jpg" -> "filename.jpg"
+            String filename = masterDokter.foto!.split('/').last;
+            fotoUrl = "$baseUrl/dokter-image/$filename";
+
+            // Fix for Android Emulator (10.0.2.2) vs Web (localhost)
+            if (!kIsWeb) {
+              if (fotoUrl.contains('localhost')) {
+                fotoUrl = fotoUrl.replaceAll('localhost', '10.0.2.2');
+              } else if (fotoUrl.contains('127.0.0.1')) {
+                fotoUrl = fotoUrl.replaceAll('127.0.0.1', '10.0.2.2');
+              }
+            }
+          }
+
+          return NestedScrollView(
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+                  return <Widget>[
+                    SliverAppBar(
+                      expandedHeight: 300.0,
+                      floating: false,
+                      pinned: true,
+                      backgroundColor: AppColors.background,
+                      leading: Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: AppColors.gold,
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 50,
-                          vertical: 12,
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
                       ),
-                      child: Text(
-                        'Book Now',
-                        style: AppTextStyles.button.copyWith(fontSize: 16),
+                      flexibleSpace: FlexibleSpaceBar(
+                        centerTitle: true,
+                        title: innerBoxIsScrolled
+                            ? Text(
+                                masterDokter.nama ?? '',
+                                style: AppTextStyles.heading.copyWith(
+                                  fontSize: 18,
+                                  color: AppColors.gold,
+                                ),
+                              )
+                            : null,
+                        background: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (fotoUrl.isNotEmpty)
+                              Image.network(
+                                fotoUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(color: AppColors.cardDark),
+                              )
+                            else
+                              Container(
+                                color: AppColors.cardDark,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 100,
+                                  color: AppColors.gold.withOpacity(0.5),
+                                ),
+                              ),
+
+                            // Gradient Overlay for text readability
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Colors.transparent, Colors.black87],
+                                  stops: [0.6, 1.0],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Divider(height: 1, color: AppColors.cardDark),
-              Container(
-                color: AppColors.background,
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: AppColors.gold,
-                  unselectedLabelColor: AppColors.textMuted,
-                  indicatorColor: AppColors.gold,
-                  tabs: [
-                    Tab(text: 'Tentang'),
-                    Tab(text: 'Layanan'),
-                    Tab(text: 'Jadwal'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  color: AppColors.cardDark.withAlpha(128),
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildTentangTab(masterDokter),
-                      _buildLayananTab(poli),
-                      _buildJadwalTab(
-                        masterDokter.masterJadwal,
-                      ), // PERBAIKAN: Memastikan data jadwal diteruskan
-                    ],
-                  ),
-                ),
-              ),
-            ],
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              masterDokter.nama ?? 'Nama Dokter',
+                              style: AppTextStyles.heading.copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.gold.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Text(
+                                spesialis,
+                                style: AppTextStyles.label.copyWith(
+                                  color: AppColors.gold,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPersistentHeader(
+                      delegate: DokterSliverAppBarDelegate(
+                        TabBar(
+                          controller: _tabController,
+                          labelColor: AppColors.background,
+                          unselectedLabelColor: AppColors.textMuted,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: AppColors.gold,
+                          ),
+                          dividerColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          tabs: const [
+                            Tab(text: 'Tentang'),
+                            Tab(text: 'Layanan'),
+                            Tab(text: 'Jadwal'),
+                          ],
+                        ),
+                      ),
+                      pinned: true,
+                    ),
+                  ];
+                },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                DokterTentangTab(dokter: masterDokter),
+                DokterLayananTab(poli: poli),
+                DokterJadwalTab(jadwalList: masterDokter.masterJadwal),
+              ],
+            ),
           );
         },
       ),
+
+      // bottomNavigationBar removed
     );
   }
 
-  // --- WIDGET UNTUK TAB ---
-
-  Widget _buildTentangTab(DokterDetailModel dokter) {
-    // PERUBAHAN
-    String biografi =
-        "Informasi tentang dokter ini belum tersedia. Dokter ${dokter.nama} adalah seorang profesional di bidang ${dokter.spesialisasi ?? 'kesehatan gigi'} dengan pengalaman di ${dokter.masterPoli?.namaPoli ?? 'poli'}.";
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Text(
-        biografi,
-        style: AppTextStyles.label.copyWith(
-          fontSize: 15,
-          height: 1.5,
-          color: AppColors.textLight,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLayananTab(String poli) {
-    String layanan =
-        "Layanan utama yang ditangani oleh dokter ini adalah di $poli.";
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Text(
-        layanan,
-        style: AppTextStyles.label.copyWith(
-          fontSize: 15,
-          height: 1.5,
-          color: AppColors.textLight,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildJadwalTab(List<MasterJadwalModel>? jadwalList) {
-    if (jadwalList == null || jadwalList.isEmpty) {
-      return Center(
-        child: Text(
-          'Jadwal tidak tersedia.',
-          style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
-        ),
-      );
-    }
-
-    // Mengelompokkan jadwal berdasarkan hari
-    Map<String, List<MasterJadwalModel>> jadwalByHari = {};
-    for (var jadwal in jadwalList) {
-      String hari = jadwal.hari;
-      if (jadwalByHari.containsKey(hari)) {
-        jadwalByHari[hari]!.add(jadwal);
-      } else {
-        jadwalByHari[hari] = [jadwal];
-      }
-    }
-
-    // Mengurutkan hari dari Senin sampai Minggu
-    List<String> hariOrder = [
-      'Senin',
-      'Selasa',
-      'Rabu',
-      'Kamis',
-      'Jumat',
-      'Sabtu',
-      'Minggu',
-    ];
-    List<String> sortedHari = jadwalByHari.keys.toList()
-      ..sort((a, b) => hariOrder.indexOf(a).compareTo(hariOrder.indexOf(b)));
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: sortedHari.map((hari) {
-        return Card(
-          color: AppColors.cardDark,
-          margin: EdgeInsets.only(bottom: 12),
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hari,
-                  style: AppTextStyles.heading.copyWith(
-                    fontSize: 18,
-                    color: AppColors.gold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                ...jadwalByHari[hari]!.map((jadwal) {
-                  return Text(
-                    '${jadwal.jamMulai.substring(0, 5)} - ${jadwal.jamSelesai.substring(0, 5)}',
-                    style: AppTextStyles.label.copyWith(
-                      fontSize: 16,
-                      color: AppColors.textLight,
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  // Legacy methods removed
 }

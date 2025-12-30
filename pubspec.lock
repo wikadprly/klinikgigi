@@ -815,6 +815,8 @@ packages:
 
     version: "0.7.7"
 =======
+=======
+441c9c551a41cc569c120da5b79ff1ddedfece4b
     version: "0.7.6"
   timeline_tile:
     dependency: "direct main"
@@ -825,6 +827,8 @@ packages:
     source: hosted
     version: "2.0.0"
     f18e92b33ea595f06443a697dee5f211a7f50d51
+=======
+441c9c551a41cc569c120da5b79ff1ddedfece4b
   typed_data:
     dependency: transitive
     description:
