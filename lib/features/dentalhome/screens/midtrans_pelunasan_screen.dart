@@ -13,21 +13,22 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'midtrans_webview_screen.dart';
 import 'pembayaran_berhasil_pelunasan.dart';
 
-class NotaPelunasanScreen extends StatefulWidget {
+class MidtransPelunasanScreen extends StatefulWidget {
   final int bookingId;
   final int totalTagihan;
 
-  const NotaPelunasanScreen({
+  const MidtransPelunasanScreen({
     super.key,
     required this.bookingId,
     required this.totalTagihan,
   });
 
   @override
-  State<NotaPelunasanScreen> createState() => _NotaPelunasanScreenState();
+  State<MidtransPelunasanScreen> createState() =>
+      _MidtransPelunasanScreenState();
 }
 
-class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
+class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -293,7 +294,7 @@ class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
                       style: const TextStyle(color: Colors.white),
                     ),
                     subtitle: Text(
-                      "${promo['deskripsi']}\n-${hargaPoin} Poin",
+                      "${promo['deskripsi']}\n-$hargaPoin Poin",
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                     trailing: ElevatedButton(
@@ -315,7 +316,7 @@ class _NotaPelunasanScreenState extends State<NotaPelunasanScreen> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         );

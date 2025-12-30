@@ -10,7 +10,7 @@ import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart'; // Import Helper
 
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({Key? key}) : super(key: key);
+  const SchedulePage({super.key});
 
   @override
   State<SchedulePage> createState() => _SchedulePageState();
@@ -46,12 +46,20 @@ class _SchedulePageState extends State<SchedulePage> {
     _fetchDoctors(); // Ambil data saat halaman pertama dibuka
   }
 
+  // State Filter
+  String _selectedFilter = 'Semua';
+  // [NEW] Simpan pemetaan Nama Poli -> Kode Poli
+  final Map<String, String> _categoryToKodePoli = {'Semua': 'Semua'};
+  // [NEW] Simpan list kategori agar tidak hilang saat filter aktif
+  List<String> _knownCategories = ['Semua'];
+
   // Fungsi ambil data ke Laravel
   Future<void> _fetchDoctors() async {
     setState(() {
       _isLoading = true;
-      _availableDoctors = [];
-      _selectedIndex = -1; // Reset pilihan saat ganti tanggal
+      // Jangan reset _availableDoctors kosong jika hanya ganti filter,
+      // tapi UI butuh loading indicator.
+      _selectedIndex = -1;
     });
 
     try {
@@ -60,18 +68,61 @@ class _SchedulePageState extends State<SchedulePage> {
         throw Exception("Token tidak ditemukan. Silakan login ulang.");
       }
 
-      // Format tanggal ke YYYY-MM-DD untuk API Laravel
       String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
-      // Pastikan service menggunakan token yang benar (biasanya service ambil sendiri,
-      // tapi jika method minta token, pass it here.
-      // Asumsi: Service handle token via SharedPrefs internally or header is managed)
-      final data = await _homeCareService.getJadwalDokter(formattedDate);
+      // [NEW] Tentukan Kode Poli yang akan dikirim
+      String? kodePoliToSend;
+      if (_selectedFilter != 'Semua') {
+        kodePoliToSend = _categoryToKodePoli[_selectedFilter];
+      }
+
+      // Panggil Service dengan parameter kodePoli
+      final data = await _homeCareService.getJadwalDokter(
+        formattedDate,
+        kodePoli: kodePoliToSend,
+      );
 
       if (mounted) {
         setState(() {
           _availableDoctors = data;
           _isLoading = false;
+
+          // [NEW] Jika sedang mode 'Semua', kita update daftar kategori
+          // agar sesuai dengan ketersediaan hari itu.
+          if (_selectedFilter == 'Semua') {
+            _categoryToKodePoli.clear();
+            _categoryToKodePoli['Semua'] = 'Semua';
+
+            final Set<String> categories = {'Semua'};
+
+            for (var item in data) {
+              final jadwal = item['master_jadwal'];
+              final dokter = jadwal?['dokter'];
+              final poli = jadwal?['poli']; // Ambil relasi Poli
+
+              // Nama untuk CHIP (UI)
+              // Prioritas: Nama Spesialis Dokter -> Nama Poli -> Spesialisasi String
+              String labelUI = '-';
+              if (dokter != null && dokter['spesialis'] != null) {
+                labelUI = dokter['spesialis']['nama_spesialis'];
+              } else if (poli != null) {
+                labelUI = poli['nama_poli'];
+              } else {
+                labelUI = dokter?['spesialisasi'] ?? '-';
+              }
+
+              // Kode untuk API
+              // Ambil dari master_jadwal.kode_poli
+              final String kodePoli = jadwal?['kode_poli'] ?? '';
+
+              if (labelUI != '-' && kodePoli.isNotEmpty) {
+                categories.add(labelUI);
+                _categoryToKodePoli[labelUI] = kodePoli;
+              }
+            }
+            // Update List Kategori untuk Chips
+            _knownCategories = categories.toList();
+          }
         });
       }
     } catch (e) {
@@ -84,34 +135,15 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  // State Filter
-  String _selectedFilter = 'Semua';
-
+  // Helper untuk List Dokter yang ditampilkan
+  // Karena filtering sudah di Server, kita return raw _availableDoctors
   List<dynamic> get _filteredDoctors {
-    if (_selectedFilter == 'Semua') {
-      return _availableDoctors;
-    }
-    return _availableDoctors.where((item) {
-      final dokter = item['master_jadwal']?['dokter'];
-      final String spesialis =
-          dokter?['spesialis']?['nama_spesialis'] ??
-          dokter?['spesialisasi'] ??
-          '-';
-      return spesialis == _selectedFilter;
-    }).toList();
+    return _availableDoctors;
   }
 
+  // Helper untuk Chips (Gunakan _knownCategories yang sudah dipopulate saat 'Semua')
   List<String> get _filterCategories {
-    final Set<String> categories = {'Semua'};
-    for (var item in _availableDoctors) {
-      final dokter = item['master_jadwal']?['dokter'];
-      final String spesialis =
-          dokter?['spesialis']?['nama_spesialis'] ??
-          dokter?['spesialisasi'] ??
-          '-';
-      categories.add(spesialis);
-    }
-    return categories.toList();
+    return _knownCategories;
   }
 
   // Handle konfirmasi tombol bawah
@@ -364,9 +396,10 @@ class _SchedulePageState extends State<SchedulePage> {
                               if (selected) {
                                 setState(() {
                                   _selectedFilter = category;
-                                  _selectedIndex =
-                                      -1; // Reset selection on filter change
+                                  _selectedIndex = -1;
                                 });
+                                // [NEW] Panggil API ulang dengan filter baru
+                                _fetchDoctors();
                               }
                             },
                             backgroundColor: AppColors.cardDark,
@@ -424,7 +457,7 @@ class _SchedulePageState extends State<SchedulePage> {
                           ),
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 150),
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 220),
                           itemCount: displayedDoctors.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 12),

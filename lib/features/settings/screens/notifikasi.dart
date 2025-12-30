@@ -7,7 +7,8 @@ class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
   @override
-  State<NotificationSettingsPage> createState() => _NotificationSettingsPageState();
+  State<NotificationSettingsPage> createState() =>
+      _NotificationSettingsPageState();
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
@@ -28,9 +29,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               // 🔙 Tombol kembali + Judul
               Row(
                 children: [
-                  BackButtonWidget(
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  BackButtonWidget(onPressed: () => Navigator.pop(context)),
                   const SizedBox(width: 12),
                   Text(
                     'Notifikasi',
@@ -57,10 +56,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 title: 'Notifikasi Rekam Medis',
                 isActive: rekamMedis,
                 onChanged: (value) => setState(() => rekamMedis = value),
-                items: const [
-                  'Hasil pemeriksaan',
-                  'Catatan dokter',
-                ],
+                items: const ['Hasil pemeriksaan', 'Catatan dokter'],
               ),
 
               // 📢 Kategori Umum
@@ -68,10 +64,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 title: 'Notifikasi Umum',
                 isActive: umum,
                 onChanged: (value) => setState(() => umum = value),
-                items: const [
-                  'Promo & diskon',
-                  'Informasi klinik',
-                ],
+                items: const ['Promo & diskon', 'Informasi klinik'],
               ),
             ],
           ),
@@ -111,7 +104,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ),
               Switch(
                 value: isActive,
-                activeColor: AppColors.background,
+                activeThumbColor: AppColors.background,
                 activeTrackColor: AppColors.gold,
                 inactiveThumbColor: AppColors.goldDark.withOpacity(0.6),
                 inactiveTrackColor: AppColors.gold.withOpacity(0.3),
@@ -119,11 +112,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ),
             ],
           ),
-          const Divider(
-            color: AppColors.gold,
-            thickness: 0.5,
-            height: 12,
-          ),
+          const Divider(color: AppColors.gold, thickness: 0.5, height: 12),
           // Isi notifikasi
           ...items.map(
             (item) => Padding(

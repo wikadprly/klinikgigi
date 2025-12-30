@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_bantuan.dart';
-import 'package:flutter_klinik_gigi/features/auth/screens/masuk.dart';
-import 'package:flutter_klinik_gigi/features/auth/screens/daftar_pasien_baru.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -15,7 +13,6 @@ class StartScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // 🔹 Background hiasan melengkung (seperti gambar)
             Positioned(
               bottom: -160,
               right: -180,
@@ -41,13 +38,11 @@ class StartScreen extends StatelessWidget {
               ),
             ),
 
-            // 🔹 Konten utama
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tombol bantuan (ikon headset kanan atas)
                   Align(
                     alignment: Alignment.topRight,
                     child: AuthBantuan(
@@ -59,7 +54,6 @@ class StartScreen extends StatelessWidget {
 
                   const SizedBox(height: 60),
 
-                  // Logo di tengah
                   Center(
                     child: Column(
                       children: [
@@ -84,7 +78,6 @@ class StartScreen extends StatelessWidget {
 
                   const SizedBox(height: 110),
 
-                  // Teks judul “Mulai”
                   const Text(
                     "Mulai",
                     style: TextStyle(
@@ -96,36 +89,32 @@ class StartScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     "Mulai dengan Daftar atau Masuk",
-                    style: TextStyle(color: AppColors.goldDark, fontSize: 16),
+                    style: TextStyle(
+                      color: AppColors.goldDark,
+                      fontSize: 16,
+                    ),
                   ),
 
                   const Spacer(),
 
-                  // Tombol Masuk
-                  AuthButton(
-                    text: "Masuk",
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
-                      );
-                    },
-                  ),
+                  // ✅ FINAL: pakai pushNamed
+AuthButton(
+  text: "Masuk",
+  onPressed: () {
+    Navigator.pushNamed(context, '/masuk');
+    return Future.value();
+  },
+),
 
-                  // Tombol Daftar
-                  AuthButton(
-                    text: "Daftar",
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DaftarPasienBaruPage(),
-                        ),
-                      );
-                    },
-                  ),
+AuthButton(
+  text: "Daftar",
+  onPressed: () {
+    Navigator.pushNamed(context, '/daftar_pasien_baru');
+    return Future.value();
+  },
+),
+
+
 
                   const SizedBox(height: 60),
                 ],

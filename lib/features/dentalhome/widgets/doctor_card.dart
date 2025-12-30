@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class DoctorCard extends StatelessWidget {
   final Map<String, String> doctor;
@@ -8,11 +7,11 @@ class DoctorCard extends StatelessWidget {
   final VoidCallback onSelect;
 
   const DoctorCard({
-    Key? key,
+    super.key,
     required this.doctor,
     required this.selected,
     required this.onSelect,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +31,6 @@ class DoctorCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Spesialis (Primary)
-                Text(
-                  doctor['spesialis'] ?? 'Dokter Gigi',
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 // Nama Dokter
                 Text(
                   doctor['name']!,
@@ -49,6 +38,16 @@ class DoctorCard extends StatelessWidget {
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Spesialis (Secondary now, but colorful)
+                Text(
+                  doctor['spesialis'] ?? 'Dokter Gigi',
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -101,7 +100,7 @@ class DoctorCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            "Sisa: ${doctor['quota']}",
+                            "Kuota: ${doctor['quota']}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,

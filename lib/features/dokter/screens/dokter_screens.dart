@@ -51,7 +51,7 @@ class _DokterListCard extends StatelessWidget {
 // 2. MAIN SCREEN DOKTER (DIUBAH MENJADI STATEFUL)
 // ------------------------------------
 class DokterScreens extends StatefulWidget {
-  const DokterScreens({Key? key}) : super(key: key);
+  const DokterScreens({super.key});
 
   @override
   State<DokterScreens> createState() => _DokterScreensState();

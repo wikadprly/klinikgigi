@@ -1,136 +1,228 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
-import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class PromoDetailScreen extends StatelessWidget {
   final Map<String, dynamic> promo;
 
-  const PromoDetailScreen({Key? key, required this.promo}) : super(key: key);
+  const PromoDetailScreen({super.key, required this.promo});
 
   @override
   Widget build(BuildContext context) {
     final String title = promo['judul_promo'] ?? 'Detail Promo';
     final String description = promo['deskripsi'] ?? 'Tidak ada deskripsi';
-    final String? imageUrl = promo['gambar_banner'];
+    final String? imageUrl =
+        promo['gambar_banner_url'] ?? promo['gambar_banner'];
     final String periode =
         "${promo['tanggal_mulai'] ?? '-'} s/d ${promo['tanggal_selesai'] ?? '-'}";
     final int hargaPoin = promo['harga_poin'] ?? 0;
+    // Format numeric point
+    final pointString = hargaPoin > 0 ? "$hargaPoin Poin" : "Gratis / 0 Poin";
+
+    // Format nilai potongan if needed, but description might cover it.
+    // If we want to show amount:
+    // final int nilaiPotongan = int.tryParse(promo['nilai_potongan'].toString()) ?? 0;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF121212), // Dark background for the app
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.gold),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text("Detail Promo", style: AppTextStyles.heading),
+        title: const Text(
+          "Detail Promo",
+          style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Banner Image
-            if (imageUrl != null && imageUrl.isNotEmpty)
-              Container(
-                width: double.infinity,
-                height: 250,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrl),
+      body: Stack(
+        children: [
+          // 1. Background Image (Top)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 300, // Fixed height for image area
+            child: imageUrl != null && imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
                     fit: BoxFit.cover,
+                    errorBuilder: (ctx, _, __) => Container(
+                      color: Colors.grey[900],
+                      child: const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: Colors.white24,
+                          size: 50,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    color: Colors.grey[900],
+                    child: const Center(
+                      child: Icon(Icons.image, color: Colors.white24, size: 50),
+                    ),
                   ),
-                ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                height: 250,
-                color: Colors.grey[800],
-                child: const Icon(Icons.image, color: Colors.white, size: 80),
-              ),
+          ),
 
-            Container(
-              padding: const EdgeInsets.all(20),
+          // 2. White Card Content (Scrollable)
+          Positioned.fill(
+            top: 250, // Overlap slightly
+            child: Container(
               decoration: const BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.cardDark,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, -5),
+                  ),
+                ],
               ),
-              transform: Matrix4.translationValues(0, -20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Judul
-                  Text(
-                    title,
-                    style: AppTextStyles.heading.copyWith(fontSize: 24),
-                  ),
-                  const SizedBox(height: 12),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  24,
+                  30,
+                  24,
+                  100,
+                ), // Bottom padding for button
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-                  // Info Tambahan (Periode & Poin)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_month,
-                        color: AppColors.textMuted,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        periode,
-                        style: AppTextStyles.label.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (hargaPoin > 0)
+                    // Info Row (Periode)
                     Row(
                       children: [
                         const Icon(
-                          Icons.monetization_on,
-                          color: AppColors.gold,
-                          size: 16,
+                          Icons.calendar_today_outlined,
+                          size: 18,
+                          color: Colors.grey,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          "Perlu $hargaPoin Poin",
-                          style: AppTextStyles.label.copyWith(
+                          periode,
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Info Row (Points)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.monetization_on_outlined,
+                          size: 18,
+                          color: AppColors.gold,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Perlu $pointString",
+                          style: const TextStyle(
                             color: AppColors.gold,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
 
-                  const Divider(color: Colors.white24, height: 32),
-
-                  // Deskripsi
-                  Text(
-                    "Deskripsi",
-                    style: AppTextStyles.heading.copyWith(fontSize: 18),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: AppTextStyles.input.copyWith(
-                      height: 1.6,
-                      color: Colors.white70,
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Divider(color: Colors.white12),
                     ),
-                  ),
-                ],
+
+                    // Description Label
+                    const Text(
+                      "Deskripsi",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Description Body
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontSize: 15,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // 3. Floating Button (Bottom)
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 20,
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Placeholder action
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Ini ke halaman Poin/DentalHome"),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 5,
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Tukarkan Sekarang",
+                      style: TextStyle(
+                        color: Colors.black, // Dark text on Gold button
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, size: 20, color: Colors.black),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      // bottomNavigationBar removed to eliminate redundant back button
     );
   }
 }

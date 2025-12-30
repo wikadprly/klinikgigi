@@ -32,7 +32,8 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
       noHpController.text = profil.user?['no_hp'] ?? '';
       emailController.text = profil.user?['email'] ?? '';
       genderController.text = profil.user?['jenis_kelamin'] ?? '';
-      birthController.text = profil.user?['tanggal_lahir']?.toString().substring(0, 10) ?? '';
+      birthController.text =
+          profil.user?['tanggal_lahir']?.toString().substring(0, 10) ?? '';
       alamatController.text = profil.user?['alamat'] ?? '';
     });
   }
@@ -178,7 +179,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
-            dialogBackgroundColor: Colors.white,
+            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child ?? const SizedBox(),
         );
@@ -235,15 +236,26 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
                 children: [
                   inputField(Icons.person, namaController, "Nama Lengkap"),
                   const SizedBox(height: 16),
-                  inputField(Icons.phone, noHpController, "Nomor Telepon",
-                      keyboardType: TextInputType.phone),
+                  inputField(
+                    Icons.phone,
+                    noHpController,
+                    "Nomor Telepon",
+                    keyboardType: TextInputType.phone,
+                  ),
                   const SizedBox(height: 16),
-                  inputField(Icons.email, emailController, "Email",
-                      keyboardType: TextInputType.emailAddress),
+                  inputField(
+                    Icons.email,
+                    emailController,
+                    "Email",
+                    keyboardType: TextInputType.emailAddress,
+                  ),
                   const SizedBox(height: 16),
-                  inputField(Icons.calendar_today, birthController,
-                      "Tanggal Lahir",
-                      isDateField: true),
+                  inputField(
+                    Icons.calendar_today,
+                    birthController,
+                    "Tanggal Lahir",
+                    isDateField: true,
+                  ),
                   const SizedBox(height: 16),
                   inputField(Icons.home, alamatController, "Alamat"),
                 ],

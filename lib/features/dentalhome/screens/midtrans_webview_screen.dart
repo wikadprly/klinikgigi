@@ -6,7 +6,7 @@ import '../../../theme/colors.dart'; // Sesuaikan path theme Anda
 
 class MidtransWebViewScreen extends StatefulWidget {
   final String url;
-  final String noPemeriksaan; // [BARU] Tambahkan parameter ini
+  final String noPemeriksaan;
 
   const MidtransWebViewScreen({
     super.key,
@@ -27,7 +27,6 @@ class _MidtransWebViewScreenState extends State<MidtransWebViewScreen> {
     super.initState();
 
     // --- 1. INISIALISASI KHUSUS ANDROID (SOLUSI LAYAR MERAH) ---
-    // Kode lama Anda ini sangat bagus, KITA PERTAHANKAN.
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       params = AndroidWebViewControllerCreationParams();

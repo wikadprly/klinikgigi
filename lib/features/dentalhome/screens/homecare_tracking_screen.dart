@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_klinik_gigi/features/dentalhome/screens/timeline_progres.dart';
+
 
 class HomeCareTrackingScreen extends StatefulWidget {
   final int bookingId;
@@ -42,7 +44,8 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
   }
 
   void _startPolling() {
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    // Dipercepat menjadi 3 detik agar responsif saat status diubah Admin
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _fetchData(silent: true);
     });
   }
@@ -114,7 +117,11 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
                   const SizedBox(height: 30),
 
                   // 2. Timeline
-                  _buildFixedTimeline(),
+                  TimelineProgresModule(
+                  currentStatus: _currentStatus,
+                  doctorName: _doctorName,
+),
+
 
                   const SizedBox(height: 40),
 
@@ -396,8 +403,9 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
       'terverifikasi',
       'menunggu_konfirmasi', // Add capitalization variants just in case
       'Menunggu Konfirmasi',
-    ].contains(status))
+    ].contains(status)) {
       return 1;
+    }
     // 2: OTW
     if (['otw_lokasi', 'dokter_menuju_lokasi'].contains(status)) return 2;
     // 3: In Progress
@@ -407,8 +415,9 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
       'selesai_diperiksa',
       'menunggu_pelunasan',
       'menunggu_pembayaran_obat',
-    ].contains(status))
+    ].contains(status)) {
       return 4;
+    }
     // 5: Lunas
     if (['lunas'].contains(status)) return 5;
 

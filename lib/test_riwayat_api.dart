@@ -23,7 +23,7 @@ void main() async {
   // Token disimpan terpisah di SharedPrefs (key: auth_token)
   final tokenFromPrefs = await SharedPrefsHelper.getToken();
   print(
-    '  - Token (stored): ${tokenFromPrefs != null ? tokenFromPrefs.substring(0, 20) + '...' : 'NULL'}',
+    '  - Token (stored): ${tokenFromPrefs != null ? '${tokenFromPrefs.substring(0, 20)}...' : 'NULL'}',
   );
 
   // Test 2: Call API Riwayat
