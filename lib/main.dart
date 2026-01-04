@@ -187,6 +187,7 @@ class KlinikGigiApp extends StatelessWidget {
             },
           );
         },
+        '/two_page': (context) => const EditProfilPage2(),
       },
     );
   }
