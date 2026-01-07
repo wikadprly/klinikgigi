@@ -6,22 +6,22 @@ import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_klinik_gigi/core/utils/file_shim.dart';
+import 'package:flutter_klinik_gigi/core/utils/image_picker_helper.dart';
 
+// =======================================================
+// FORMAT TANGGAL
+// =======================================================
 String _formatTanggalLahir(String? tanggalLahir) {
   if (tanggalLahir == null || tanggalLahir.isEmpty) return "-";
 
   try {
-    // Parse string menjadi DateTime
     DateTime parsedDate = DateTime.parse(tanggalLahir.split('.')[0]);
-
-    // Format menjadi DD-MM-YYYY
     String day = parsedDate.day.toString().padLeft(2, '0');
     String month = parsedDate.month.toString().padLeft(2, '0');
     String year = parsedDate.year.toString();
-
     return '$day-$month-$year';
   } catch (e) {
-    // Jika parsing gagal, kembalikan nilai asli
     return tanggalLahir;
   }
 }
@@ -35,6 +35,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // =======================================================
+  // FIX FOTO (ANTI UNGU + ANTI CACHE)
+  // =======================================================
+  ImageProvider _buildProfileImage(ProfilProvider provider) {
+    final url = provider.photoUrl;
+
+    if (url == null || url.isEmpty) {
+      return const AssetImage('assets/images/profil.jpeg');
+    }
+
+    return NetworkImage("$url?v=${DateTime.now().millisecondsSinceEpoch}");
+  }
+
   String _convertJenisKelamin(String? jenisKelamin) {
     if (jenisKelamin == null || jenisKelamin.isEmpty) return "-";
 
@@ -46,7 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case 'perempuan':
         return 'Perempuan';
       default:
-        return jenisKelamin; // Jika tidak sesuai, kembalikan nilai asli
+        return jenisKelamin;
     }
   }
 
@@ -109,128 +122,51 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // ==========================
-  // IMAGE PICKER METHODS
+  // IMAGE PICKER
   // ==========================
   final ImagePicker _imagePicker = ImagePicker();
 
-  Future<void> _selectFromGallery() async {
+  // =======================================================
+  // PATCH AMAN (ANTI ERROR WEB)
+  // =======================================================
+  Future<void> _pickAndUploadSafe(ImageSource source) async {
     try {
-      print("Starting gallery selection...");
+      final XFile? image = await ImagePickerHelper.pickImage(source);
+      if (image == null) return;
 
-      final XFile? pickedFile = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 70,
-        maxWidth: 800,
-        maxHeight: 800,
-      );
+      try {
+        final file = createFileFromPath(image.path);
+        final provider = Provider.of<ProfilProvider>(context, listen: false);
+        bool success = await provider.updateProfilePicture(file);
 
-      if (pickedFile != null) {
-        print("File selected: ${pickedFile.path}");
-
-        // Normalize the file path to handle platform differences
-        String filePath = pickedFile.path.replaceAll('\\', '/');
-
-        // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(color: AppColors.gold),
-          ),
-        );
-
-        try {
-          final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(File(filePath));
-
-          Navigator.pop(context); // Close loading
-
-          if (success) {
-            _showSuccessMessage("Foto berhasil diunggah dari galeri");
-            // Force UI refresh
-            if (mounted) {
-              setState(() {});
-            }
-          } else {
-            _showErrorMessage(provider.errorMessage ?? "Gagal mengunggah foto");
-          }
-        } catch (e) {
-          Navigator.pop(context);
-          _showErrorMessage("Error saat mengunggah: $e");
-          print("Error uploading image: $e");
+        if (success) {
+          _showSuccessMessage("Foto berhasil diperbarui");
+          if (mounted) setState(() {});
+        } else {
+          _showErrorMessage(provider.errorMessage ?? "Gagal mengunggah foto");
         }
-      } else {
-        print("No file selected");
-      }
-    } catch (e) {
-      _showErrorMessage("Gagal memilih foto dari galeri: $e");
-      print("Error selecting image from gallery: $e");
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    try {
-      print("Starting camera...");
-
-      final XFile? pickedFile = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-        maxWidth: 800,
-        maxHeight: 800,
-      );
-
-      if (pickedFile != null) {
-        print("Photo taken: ${pickedFile.path}");
-
-        // Normalize the file path to handle platform differences
-        String filePath = pickedFile.path.replaceAll('\\', '/');
-
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(color: AppColors.gold),
-          ),
-        );
-
-        try {
-          final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(File(filePath));
-
-          Navigator.pop(context);
-
-          if (success) {
-            _showSuccessMessage("Foto berhasil diambil");
-            if (mounted) {
-              setState(() {});
-            }
-          } else {
-            _showErrorMessage(provider.errorMessage ?? "Gagal mengunggah foto");
-          }
-        } catch (e) {
-          Navigator.pop(context);
-          _showErrorMessage("Error saat mengunggah: $e");
-          print("Error uploading image: $e");
+      } catch (e) {
+        if (e is UnsupportedError && e.message == "File tidak didukung di Web") {
+          _showErrorMessage("Upload foto tidak didukung di Web");
+        } else {
+          _showErrorMessage("Gagal mengunggah foto: ${e.toString()}");
         }
       }
     } catch (e) {
-      _showErrorMessage("Gagal mengambil foto: $e");
-      print("Error taking photo: $e");
+      _showErrorMessage("Gagal memilih foto: ${e.toString()}");
     }
   }
 
   Future<void> _deletePhoto() async {
     try {
-      // Show confirmation dialog
       bool confirm =
           await showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: const Text("Konfirmasi Hapus"),
-                content: const Text(
-                  "Apakah Anda yakin ingin menghapus foto profil?",
-                ),
+                content:
+                    const Text("Apakah Anda yakin ingin menghapus foto profil?"),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -247,20 +183,18 @@ class _ProfilePageState extends State<ProfilePage> {
           false;
 
       if (confirm) {
-        // Update the provider to remove the profile picture
         final provider = Provider.of<ProfilProvider>(context, listen: false);
         bool success = await provider.removeProfilePicture();
 
         if (success) {
-          // Show success message
           _showSuccessMessage("Foto berhasil dihapus");
+          if (mounted) setState(() {});
         } else {
           _showErrorMessage(provider.errorMessage ?? "Gagal menghapus foto");
         }
       }
     } catch (e) {
       _showErrorMessage("Gagal menghapus foto");
-      print("Error deleting photo: $e");
     }
   }
 
@@ -276,9 +210,9 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // =======================================================================
+  // =======================================================
   // POPUP EDIT FOTO
-  // =======================================================================
+  // =======================================================
   void showEditPhotoModal(BuildContext context) {
     final double height = MediaQuery.of(context).size.height * 0.45;
     final provider = Provider.of<ProfilProvider>(context, listen: false);
@@ -291,13 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return Container(
           height: height,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(22),
-              topRight: Radius.circular(22),
-            ),
-          ),
           child: Column(
             children: [
               Row(
@@ -312,11 +239,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColors.goldDark,
-                      size: 26,
-                    ),
+                    icon: const Icon(Icons.close,
+                        color: AppColors.goldDark, size: 26),
                     onPressed: () => Navigator.pop(modalContext),
                   ),
                 ],
@@ -324,27 +248,17 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 12),
               CircleAvatar(
                 radius: 40,
-                backgroundImage:
-                    provider.userData?["file_foto"] != null &&
-                        provider.userData?["file_foto"].isNotEmpty
-                    ? NetworkImage(provider.userData?["file_foto"])
-                    : const AssetImage('assets/images/profile.jpeg'),
+                backgroundImage: _buildProfileImage(provider),
               ),
               const SizedBox(height: 16),
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: AppColors.goldDark,
-              ),
+              Container(height: 1, width: double.infinity, color: AppColors.goldDark),
               const SizedBox(height: 18),
               _menuItem(
                 icon: Icons.photo,
                 text: "Pilih dari galeri",
                 onTap: () {
-                  Navigator.pop(
-                    modalContext,
-                  ); // Close the modal before opening gallery
-                  _selectFromGallery();
+                  Navigator.pop(modalContext);
+                  _pickAndUploadSafe(ImageSource.gallery);
                 },
               ),
               const SizedBox(height: 14),
@@ -352,10 +266,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.camera_alt,
                 text: "Ambil foto",
                 onTap: () {
-                  Navigator.pop(
-                    modalContext,
-                  ); // Close the modal before opening camera
-                  _takePhoto();
+                  Navigator.pop(modalContext);
+                  _pickAndUploadSafe(ImageSource.camera);
                 },
               ),
               const SizedBox(height: 14),
@@ -363,9 +275,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.delete,
                 text: "Hapus",
                 onTap: () {
-                  Navigator.pop(
-                    modalContext,
-                  ); // Close the modal before deleting
+                  Navigator.pop(modalContext);
                   _deletePhoto();
                 },
               ),
@@ -400,19 +310,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // =======================================================================
-  // BUILD UI + API INTEGRATION
-  // =======================================================================
+  // =======================================================
+  // BUILD UI
+  // =======================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: FutureBuilder(
-          future: Provider.of<ProfilProvider>(
-            context,
-            listen: false,
-          ).fetchProfil(widget.token),
+          future: Provider.of<ProfilProvider>(context, listen: false)
+              .fetchProfil(widget.token),
           builder: (context, snapshot) {
             final provider = Provider.of<ProfilProvider>(context);
 
@@ -421,8 +329,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: CircularProgressIndicator(color: AppColors.gold),
               );
             }
-
-            // final user = provider.profilData; // not used
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -448,19 +354,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 25),
 
-                  // FOTO + NAMA API
+                  // FOTO + NAMA
                   Column(
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage:
-                            provider.userData?["file_foto"] != null &&
-                                provider.userData?["file_foto"].isNotEmpty
-                            ? NetworkImage(provider.userData?["file_foto"])
-                            : const AssetImage('assets/images/profile.jpeg'),
+                        backgroundImage: _buildProfileImage(provider),
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -504,46 +405,32 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 14),
-
-                        infoRow(
-                          Icons.phone,
-                          provider.userData?["no_hp"] ?? "-",
-                          textColor: AppColors.goldDark,
-                        ),
+                        infoRow(Icons.phone,
+                            provider.userData?["no_hp"] ?? "-",
+                            textColor: AppColors.goldDark),
                         const SizedBox(height: 14),
-
-                        infoRow(
-                          Icons.email,
-                          provider.userData?["email"] ?? "-",
-                          textColor: AppColors.goldDark,
-                        ),
+                        infoRow(Icons.email,
+                            provider.userData?["email"] ?? "-",
+                            textColor: AppColors.goldDark),
                         const SizedBox(height: 14),
-
                         infoRow(
                           Icons.calendar_today,
                           _formatTanggalLahir(
-                            provider.userData?["tanggal_lahir"],
-                          ),
+                              provider.userData?["tanggal_lahir"]),
                           textColor: AppColors.goldDark,
                         ),
                         const SizedBox(height: 14),
-
-                        infoRow(
-                          Icons.location_on,
-                          provider.rekamMedisData?["alamat"] ?? "-",
-                          textColor: AppColors.goldDark,
-                        ),
+                        infoRow(Icons.location_on,
+                            provider.rekamMedisData?["alamat"] ?? "-",
+                            textColor: AppColors.goldDark),
                         const SizedBox(height: 14),
-
                         infoRow(
                           Icons.man,
                           _convertJenisKelamin(
-                            provider.userData?["jenis_kelamin"],
-                          ),
+                              provider.userData?["jenis_kelamin"]),
                           textColor: AppColors.goldDark,
                         ),
                         const SizedBox(height: 16),
-
                         Align(
                           alignment: Alignment.center,
                           child: editProfileButton(
@@ -557,7 +444,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 22),
 
-                  // CARD ASURANSI API
+                  // CARD ASURANSI
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -576,7 +463,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
                         Text(
                           "Nama Asuransi : ${provider.namaAsuransi ?? "-"}",
                           style: AppTextStyles.input.copyWith(

@@ -11,6 +11,13 @@ class ProfileProvider with ChangeNotifier {
   String? _namaAsuransi;
   String? _noPeserta;
   String? _statusAktif;
+
+  // =====================
+  // FOTO PROFIL (FIXED)
+  // =====================
+  String? _photoUrl;
+  String? get photoUrl => _photoUrl;
+
   bool isLoading = false;
 
   // =====================
@@ -29,7 +36,25 @@ class ProfileProvider with ChangeNotifier {
       _statusAktif = result["data"]["status_aktif"]?.toString();
     }
 
+    // 🔥 AMBIL FOTO DARI ENDPOINT KHUSUS
+    await fetchProfilePhoto(token);
+
     isLoading = false;
+    notifyListeners();
+  }
+
+  // =====================
+  // GET FOTO PROFIL (BARU)
+  // =====================
+  Future<void> fetchProfilePhoto(String token) async {
+    final result = await _profilService.getProfilePhoto(token);
+
+    if (result != null && result["success"] == true) {
+      _photoUrl = result["url"];
+    } else {
+      _photoUrl = null;
+    }
+
     notifyListeners();
   }
 
@@ -53,8 +78,10 @@ class ProfileProvider with ChangeNotifier {
     if (token == null) return false;
 
     final result = await _profilService.updateProfilePicture(token, file);
-    if (result["success"] == true) {
-      await fetchProfile(token);
+
+    // 🔥 setelah upload, refresh FOTO SAJA
+    if (result["success"] == true || result["status"] == "ok") {
+      await fetchProfilePhoto(token);
       return true;
     }
     return false;
@@ -69,7 +96,7 @@ class ProfileProvider with ChangeNotifier {
 
     final result = await _profilService.deleteProfilePicture(token);
     if (result["success"] == true) {
-      await fetchProfile(token);
+      await fetchProfilePhoto(token);
       return true;
     }
     return false;
@@ -77,7 +104,7 @@ class ProfileProvider with ChangeNotifier {
 }
 
 // ============================================================
-// COMPATIBILITY SHIM (biar file2 lama yg pakai nama ProfilProvider tetep jalan)
+// COMPATIBILITY SHIM (TIDAK DIUBAH)
 // ============================================================
 class ProfilProvider extends ProfileProvider {
   Future<void> fetchProfil(String token) => fetchProfile(token);
@@ -92,10 +119,6 @@ class ProfilProvider extends ProfileProvider {
   Map<String, dynamic>? get userData => user;
   Map<String, dynamic>? get profilData => user;
   Map<String, dynamic>? get rekamMedisData => rekamMedis;
-
-  String? get namaAsuransiValue => _namaAsuransi;
-  String? get noPesertaValue => _noPeserta;
-  String? get statusAktifValue => _statusAktif;
 
   String? get namaAsuransi => _namaAsuransi;
   String? get noPeserta => _noPeserta;
