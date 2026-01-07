@@ -50,7 +50,6 @@ import 'package:flutter_klinik_gigi/features/settings/screens/panduanubahsandi.d
 
 // Profile
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
-import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

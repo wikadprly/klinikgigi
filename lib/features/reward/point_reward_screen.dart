@@ -214,11 +214,12 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
                         height: 140,
                         fit: BoxFit.cover,
                         errorBuilder: (ctx, err, stack) => Container(
-                          color: AppColors.background,
+                          color: AppColors.cardDark.withOpacity(0.5),
                           alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: AppColors.textMuted,
+                          child: Icon(
+                            Icons.local_offer,
+                            color: AppColors.textMuted.withOpacity(0.5),
+                            size: 40,
                           ),
                         ),
                       );

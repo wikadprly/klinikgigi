@@ -121,9 +121,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                 .trim();
         // Cleanup comma issues
         fullAddress = fullAddress.replaceAll(RegExp(r'^, |,$'), '').trim();
-        if (fullAddress.isEmpty)
+        if (fullAddress.isEmpty) {
           fullAddress =
               "Lokasi (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})";
+        }
 
         _alamatController.text = fullAddress;
       }

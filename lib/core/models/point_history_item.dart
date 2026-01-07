@@ -1,6 +1,5 @@
-// Model ini digunakan untuk memetakan data JSON (Riwayat Poin) dari API Laravel 
+// Model ini digunakan untuk memetakan data JSON (Riwayat Poin) dari API Laravel
 // yang dikirim dari endpoint `/points/history`
-import 'package:intl/intl.dart';
 
 class PointHistoryItem {
   final int id;
@@ -28,7 +27,7 @@ class PointHistoryItem {
       transactionType: json['transaction_type'] as String,
       description: json['description'] as String,
       // Konversi string tanggal/waktu ISO 8601 ke objek DateTime
-      createdAt: DateTime.parse(json['created_at'] as String), 
+      createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 }

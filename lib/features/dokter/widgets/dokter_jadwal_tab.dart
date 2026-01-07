@@ -129,56 +129,54 @@ class DokterJadwalTab extends StatelessWidget {
                   ],
                 ),
               ),
-              ...jadwals
-                  .map(
-                    (jadwal) => Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ...jadwals.map(
+                (jadwal) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.access_time_filled,
-                                color: AppColors.gold,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '${jadwal.jamMulai.substring(0, 5)} - ${jadwal.jamSelesai.substring(0, 5)}',
-                                style: AppTextStyles.input.copyWith(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                          const Icon(
+                            Icons.access_time_filled,
+                            color: AppColors.gold,
+                            size: 20,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.green.withOpacity(0.5),
-                              ),
-                            ),
-                            child: const Text(
-                              "Tersedia",
-                              style: TextStyle(
-                                color: Colors.greenAccent,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${jadwal.jamMulai.substring(0, 5)} - ${jadwal.jamSelesai.substring(0, 5)}',
+                            style: AppTextStyles.input.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  )
-                  .toList(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.5),
+                          ),
+                        ),
+                        child: const Text(
+                          "Tersedia",
+                          style: TextStyle(
+                            color: Colors.greenAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         );

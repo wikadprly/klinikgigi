@@ -114,8 +114,9 @@ class HomeCareProvider extends ChangeNotifier {
       );
 
       String? kodePoli = _categoryToKodePoli[filterCategory];
-      if (kodePoli == 'Semua')
+      if (kodePoli == 'Semua') {
         kodePoli = null; // Ensure null is passed if 'Semua'
+      }
 
       final data = await _service.getJadwalDokter(
         formattedDate,

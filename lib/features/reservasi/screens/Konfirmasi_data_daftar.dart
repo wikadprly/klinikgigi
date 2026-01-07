@@ -219,8 +219,10 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: AppTextStyles.label.copyWith(color: Colors.white70)),
+          Text(
+            label,
+            style: AppTextStyles.label.copyWith(color: Colors.white70),
+          ),
           const SizedBox(height: 3),
           Text(
             value,
@@ -238,8 +240,10 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Keluhan",
-            style: AppTextStyles.label.copyWith(color: Colors.white70)),
+        Text(
+          "Keluhan",
+          style: AppTextStyles.label.copyWith(color: Colors.white70),
+        ),
         const SizedBox(height: 8),
 
         Container(
@@ -276,11 +280,13 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("Total Pembayaran",
-              style: AppTextStyles.label.copyWith(
-                color: Colors.white70,
-                fontSize: 14,
-              )),
+          Text(
+            "Total Pembayaran",
+            style: AppTextStyles.label.copyWith(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
           Text(
             "Rp ${widget.total}",
             style: AppTextStyles.heading.copyWith(
@@ -302,17 +308,16 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
             height: 48,
             child: ElevatedButton(
               // Disable tombol Batal kalau lagi loading
-              onPressed: provider.isLoading ? null : () => Navigator.pop(context),
+              onPressed: provider.isLoading
+                  ? null
+                  : () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[700],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                "Batal",
-                style: TextStyle(color: Colors.white),
-              ),
+              child: const Text("Batal", style: TextStyle(color: Colors.white)),
             ),
           ),
         ),
@@ -323,184 +328,204 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
             child: ElevatedButton(
               // Logic Tombol Bayar
               onPressed: provider.isLoading || !_isUserDataLoaded
-                ? null
-                : () async {
-                  int? rekamMedisId;
-                  try {
-                    rekamMedisId = int.tryParse(widget.rekamMedis);
-                    if (rekamMedisId == null) {
-                      RegExp regExp = RegExp(r'(\d+)$');
-                      Match? match = regExp.firstMatch(widget.rekamMedis);
-                      if (match != null) {
-                        rekamMedisId = int.tryParse(match.group(1)!) ?? 0;
-                      }
-                    }
-                  } catch (e) {
-                    print("Error parsing rekam_medis_id: $e");
-                  }
-
-                  if (rekamMedisId == null || rekamMedisId == 0) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Data rekam medis tidak valid"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    return;
-                  }
-
-                  // Prepare user data with fallback values
-                  String userName = _currentUser?.namaPengguna?.isNotEmpty == true
-                      ? _currentUser!.namaPengguna
-                      : widget.namaPasien;
-                  String userEmail = _currentUser?.email?.isNotEmpty == true
-                      ? _currentUser!.email
-                      : 'user@example.com';
-                  String userPhone = _currentUser?.noHp?.isNotEmpty == true
-                      ? _currentUser!.noHp
-                      : '081234567890';
-
-                  // Validate required data before sending
-                  if (userName.isEmpty) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Nama pengguna tidak valid"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    return;
-                  }
-
-                  if (userEmail.isEmpty || !userEmail.contains('@')) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Email tidak valid"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    return;
-                  }
-
-                  if (userPhone.isEmpty) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Nomor telepon tidak valid"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    return;
-                  }
-
-                  final requestData = {
-                    'rekam_medis_id': rekamMedisId,
-                    'dokter_id': widget.dokterId,
-                    'jadwal_id': widget.jadwalId,
-                    'tanggal_pesan': widget.tanggal,
-                    'keluhan': keluhanController.text.isNotEmpty ? keluhanController.text : '-', // Ensure keluhan is not empty
-                    'metode_pembayaran': 'Midtrans',
-                    'jenis_pasien': 'Umum',
-                    'user_name': userName,
-                    'user_email': userEmail,
-                    'user_phone': userPhone,
-                  };
-
-                  // Print request data for debugging
-                  print("Sending request data: $requestData");
-
-                  // Show loading dialog
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) =>
-                        const Center(child: CircularProgressIndicator(color: AppColors.gold)),
-                  );
-
-                  try {
-                    // B. Panggil API create with payment
-                    final result = await provider.createReservasiWithPayment(requestData);
-
-                    if (mounted) Navigator.pop(context);
-
-                    print("API Response: $result");
-
-                    // C. Cek Hasil
-                    if (result != null && context.mounted) {
-                      Navigator.pop(context);
-
-                      final redirectUrl = result['redirect_url'];
-                      final noPemeriksaan = result['no_pemeriksaan'];
-
-                      if (redirectUrl != null && noPemeriksaan != null) {
-                        _startPollingStatus(noPemeriksaan);
-                        final paymentResult = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MidtransWebReservasi(
-                              url: redirectUrl,
-                              noPemeriksaan: noPemeriksaan,
-                            ),
-                          ),
-                        );
-                        _stopPolling();
-
-                        if (paymentResult == 'success') {
-                          final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
-                          if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
-                            _navigateToSuccessScreen(noPemeriksaan);
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Pembayaran sedang diproses atau gagal."),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            }
-                          }
-                        } else {
-                          final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
-                          if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
-                            _navigateToSuccessScreen(noPemeriksaan);
+                  ? null
+                  : () async {
+                      int? rekamMedisId;
+                      try {
+                        rekamMedisId = int.tryParse(widget.rekamMedis);
+                        if (rekamMedisId == null) {
+                          RegExp regExp = RegExp(r'(\d+)$');
+                          Match? match = regExp.firstMatch(widget.rekamMedis);
+                          if (match != null) {
+                            rekamMedisId = int.tryParse(match.group(1)!) ?? 0;
                           }
                         }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(result['message'] ?? 'Gagal mendapatkan link pembayaran'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                      } catch (e) {
+                        print("Error parsing rekam_medis_id: $e");
                       }
-                    } else if (context.mounted) {
-                      // E. Error Handling
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(provider.errorMessage ?? "Gagal melakukan booking"),
-                          backgroundColor: Colors.red,
+
+                      if (rekamMedisId == null || rekamMedisId == 0) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Data rekam medis tidak valid"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      // Prepare user data with fallback values
+                      String userName =
+                          _currentUser?.namaPengguna.isNotEmpty == true
+                          ? _currentUser!.namaPengguna
+                          : widget.namaPasien;
+                      String userEmail = _currentUser?.email.isNotEmpty == true
+                          ? _currentUser!.email
+                          : 'user@example.com';
+                      String userPhone = _currentUser?.noHp.isNotEmpty == true
+                          ? _currentUser!.noHp
+                          : '081234567890';
+
+                      // Validate required data before sending
+                      if (userName.isEmpty) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Nama pengguna tidak valid"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      if (userEmail.isEmpty || !userEmail.contains('@')) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Email tidak valid"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      if (userPhone.isEmpty) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Nomor telepon tidak valid"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      final requestData = {
+                        'rekam_medis_id': rekamMedisId,
+                        'dokter_id': widget.dokterId,
+                        'jadwal_id': widget.jadwalId,
+                        'tanggal_pesan': widget.tanggal,
+                        'keluhan': keluhanController.text.isNotEmpty
+                            ? keluhanController.text
+                            : '-', // Ensure keluhan is not empty
+                        'metode_pembayaran': 'Midtrans',
+                        'jenis_pasien': 'Umum',
+                        'user_name': userName,
+                        'user_email': userEmail,
+                        'user_phone': userPhone,
+                      };
+
+                      // Print request data for debugging
+                      print("Sending request data: $requestData");
+
+                      // Show loading dialog
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.gold,
+                          ),
                         ),
                       );
-                    }
-                  } catch (e) {
-                    if (mounted) Navigator.pop(context); // Close loading dialog
-                    print("Error in payment process: $e"); // Debug log
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Error: ${e.toString()}"),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
+
+                      try {
+                        // B. Panggil API create with payment
+                        final result = await provider
+                            .createReservasiWithPayment(requestData);
+
+                        if (mounted) Navigator.pop(context);
+
+                        print("API Response: $result");
+
+                        // C. Cek Hasil
+                        if (result != null && context.mounted) {
+                          Navigator.pop(context);
+
+                          final redirectUrl = result['redirect_url'];
+                          final noPemeriksaan = result['no_pemeriksaan'];
+
+                          if (redirectUrl != null && noPemeriksaan != null) {
+                            _startPollingStatus(noPemeriksaan);
+                            final paymentResult = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MidtransWebReservasi(
+                                  url: redirectUrl,
+                                  noPemeriksaan: noPemeriksaan,
+                                ),
+                              ),
+                            );
+                            _stopPolling();
+
+                            if (paymentResult == 'success') {
+                              final finalStatus = await provider
+                                  .checkPaymentStatus(noPemeriksaan);
+                              if (finalStatus != null &&
+                                  (finalStatus['is_lunas'] ?? false)) {
+                                _navigateToSuccessScreen(noPemeriksaan);
+                              } else {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Pembayaran sedang diproses atau gagal.",
+                                      ),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                }
+                              }
+                            } else {
+                              final finalStatus = await provider
+                                  .checkPaymentStatus(noPemeriksaan);
+                              if (finalStatus != null &&
+                                  (finalStatus['is_lunas'] ?? false)) {
+                                _navigateToSuccessScreen(noPemeriksaan);
+                              }
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  result['message'] ??
+                                      'Gagal mendapatkan link pembayaran',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } else if (context.mounted) {
+                          // E. Error Handling
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                provider.errorMessage ??
+                                    "Gagal melakukan booking",
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted)
+                          Navigator.pop(context); // Close loading dialog
+                        print("Error in payment process: $e"); // Debug log
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Error: ${e.toString()}"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.gold,
                 shape: RoundedRectangleBorder(
@@ -508,22 +533,30 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
                 ),
               ),
               child: provider.isLoading
-                ? const SizedBox(
-                    width: 20, height: 20,
-                    child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                  )
-                : !_isUserDataLoaded
-                    ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                      )
-                    : const Text(
-                        "Bayar dengan Midtrans",
-                        style: TextStyle(color: Colors.black),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2,
                       ),
+                    )
+                  : !_isUserDataLoaded
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "Bayar dengan Midtrans",
+                      style: TextStyle(color: Colors.black),
+                    ),
             ),
           ),
-        )
+        ),
       ],
     );
   }

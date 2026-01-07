@@ -240,17 +240,13 @@ class _MidtransHomeCareBookingScreenState
     return Consumer<HomeCareProvider>(
       builder: (context, provider, child) {
         final biaya = widget.rincianBiaya;
-        final total = (biaya['estimasi_total'] is int)
-            ? biaya['estimasi_total']
-            : (biaya['estimasi_total'] as double).toInt();
+        final total = (biaya['estimasi_total'] as num?)?.toInt() ?? 0;
 
         // Recalculate based on promo
         int discount = 0;
         if (_selectedPromo != null) {
           final transport = biaya['biaya_transport'] ?? 0;
-          final int transportVal = (transport is int)
-              ? transport
-              : (transport as double).toInt();
+          final int transportVal = (transport as num?)?.toInt() ?? 0;
 
           if (_selectedPromo!['tipe'] == 'potongan_total') {
             discount =

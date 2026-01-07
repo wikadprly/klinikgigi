@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 
 class PromoDetailScreen extends StatelessWidget {
@@ -10,8 +11,17 @@ class PromoDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final String title = promo['judul_promo'] ?? 'Detail Promo';
     final String description = promo['deskripsi'] ?? 'Tidak ada deskripsi';
-    final String? imageUrl =
-        promo['gambar_banner_url'] ?? promo['gambar_banner'];
+
+    String? rawImageUrl = promo['gambar_banner_url'] ?? promo['gambar_banner'];
+    if (rawImageUrl != null && !kIsWeb) {
+      if (rawImageUrl.contains('localhost')) {
+        rawImageUrl = rawImageUrl.replaceAll('localhost', '10.0.2.2');
+      } else if (rawImageUrl.contains('127.0.0.1')) {
+        rawImageUrl = rawImageUrl.replaceAll('127.0.0.1', '10.0.2.2');
+      }
+    }
+    final String? imageUrl = rawImageUrl;
+
     final String periode =
         "${promo['tanggal_mulai'] ?? '-'} s/d ${promo['tanggal_selesai'] ?? '-'}";
     final int hargaPoin = promo['harga_poin'] ?? 0;
@@ -91,8 +101,8 @@ class PromoDetailScreen extends StatelessWidget {
                   24,
                   30,
                   24,
-                  100,
-                ), // Bottom padding for button
+                  30,
+                ), // Bottom padding adjusted
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -173,49 +183,6 @@ class PromoDetailScreen extends StatelessWidget {
                         height: 1.6,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Floating Button (Bottom)
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: 20,
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Placeholder action
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Ini ke halaman Poin/DentalHome"),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 5,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Tukarkan Sekarang",
-                      style: TextStyle(
-                        color: Colors.black, // Dark text on Gold button
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward, size: 20, color: Colors.black),
                   ],
                 ),
               ),

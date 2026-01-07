@@ -150,8 +150,7 @@ class _DokterScreensState extends State<DokterScreens> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '${snapshot.error}'.substring(0, 50) +
-                                  "...", // Truncate error
+                              "${'${snapshot.error}'.substring(0, 50)}...", // Truncate error
                               style: AppTextStyles.label.copyWith(
                                 color: AppColors.textMuted,
                               ),

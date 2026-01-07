@@ -10,7 +10,7 @@ class RiwayatDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _clean(dynamic v) {
+    String clean(dynamic v) {
       if (v == null) return '';
       final s = v.toString().trim();
       if (s.isEmpty) return '';
@@ -18,15 +18,15 @@ class RiwayatDetailScreen extends StatelessWidget {
       return s;
     }
 
-    String _pickFirst(List<dynamic> candidates) {
+    String pickFirst(List<dynamic> candidates) {
       for (final c in candidates) {
-        final s = _clean(c);
+        final s = clean(c);
         if (s.isNotEmpty) return s;
       }
       return '';
     }
 
-    final nama = _pickFirst([
+    final nama = pickFirst([
       data['nama'],
       data['user']?['nama'],
       data['users']?['nama'],
@@ -35,7 +35,7 @@ class RiwayatDetailScreen extends StatelessWidget {
       data['full_reservasi']?['users']?['nama'],
     ]);
 
-    final rekamMedis = _pickFirst([
+    final rekamMedis = pickFirst([
       data['rekam_medis'],
       data['no_rekam_medis'],
       data['no_rm'],
@@ -47,23 +47,23 @@ class RiwayatDetailScreen extends StatelessWidget {
     ]);
     final displayNama = nama.isEmpty ? '-' : nama;
     final displayRekamMedis = rekamMedis.isEmpty ? '-' : rekamMedis;
-    final noPemeriksaan = _clean(data['no_pemeriksaan']);
-    final jam = "${_clean(data['jam_mulai'])} - ${_clean(data['jam_selesai'])}";
-    final tanggal = _clean(data['tanggal']);
-    final dokter = _clean(data['dokter']);
-    final poli = _clean(data['poli']);
-    final keluhan = _clean(data['keluhan'] ?? "Tidak ada keluhan");
+    final noPemeriksaan = clean(data['no_pemeriksaan']);
+    final jam = "${clean(data['jam_mulai'])} - ${clean(data['jam_selesai'])}";
+    final tanggal = clean(data['tanggal']);
+    final dokter = clean(data['dokter']);
+    final poli = clean(data['poli']);
+    final keluhan = clean(data['keluhan'] ?? "Tidak ada keluhan");
     // Normalisasi nama field: support both "status_reservasi" and "statusreservasi"
-    final statusReservasi = _clean(
+    final statusReservasi = clean(
       data['status_reservasi'] ??
           data['statusreservasi'] ??
           data['status'] ??
           '',
     );
-    final statusPembayaran = _clean(
+    final statusPembayaran = clean(
       data['status_pembayaran'] ?? data['status'] ?? '',
     );
-    final biaya = _clean(data['biaya'] ?? "0");
+    final biaya = clean(data['biaya'] ?? "0");
 
     Color statusColor1() {
       final s = statusReservasi.toLowerCase().trim();

@@ -50,8 +50,8 @@ class ReservasiModel {
     return ReservasiModel(
       noPemeriksaan: json['no_pemeriksaan'] ?? '',
       // 🔥 Tangkap data dari Backend disini
-      noAntrian: json['no_antrian']?.toString() ?? '-', 
-      
+      noAntrian: json['no_antrian']?.toString() ?? '-',
+
       pasienId: json['pasien_id'] ?? '',
       dokterId: json['dokter_id'] ?? '',
       jadwalId: json['jadwal_id'] ?? 0,
@@ -61,7 +61,7 @@ class ReservasiModel {
       jamSelesai: json['jam_selesai'] ?? '',
       keluhan: json['keluhan'] ?? '',
       biayaReservasi: json['biaya_reservasi'] != null
-          ? int.tryParse(json['biaya_reservasi'].toString()) ?? 0
+          ? (double.tryParse(json['biaya_reservasi'].toString()) ?? 0).toInt()
           : 0,
       status: json['status'] ?? '',
       statusReservasi: json['status_reservasi'] ?? '',
@@ -69,7 +69,7 @@ class ReservasiModel {
       statusPembayaran: json['status_pembayaran'] ?? '',
       bankTransaksiId: json['bank_transaksi_id'],
       pembayaranTotal: json['pembayaran_total'] != null
-          ? int.tryParse(json['pembayaran_total'].toString()) ?? 0
+          ? (double.tryParse(json['pembayaran_total'].toString()) ?? 0).toInt()
           : 0,
       jenisPasien: json['jenis_pasien'] ?? '',
       pasien: json['pasien'],
