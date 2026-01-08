@@ -194,13 +194,16 @@ class _DokterScreensState extends State<DokterScreens> {
                     } else {
                       final allDokters = snapshot.data!;
 
-                      // 1. Extract Unique Categories (Spesialisasi)
-                      // Filter out empty strings if any, or map them to 'Umum'
+                      // 1. Extract Unique Categories (Spesialisasi / Poli)
                       final Set<String> categoriesSet = {};
                       for (var d in allDokters) {
-                        if (d.spesialisasi.isNotEmpty) {
-                          categoriesSet.add(d.spesialisasi);
-                        }
+                        // User requested "Poli Gigi Umum" style filter, which corresponds to poliNama
+                        final category =
+                            (d.poliNama != null && d.poliNama!.isNotEmpty)
+                            ? d.poliNama!
+                            : 'Dokter Umum';
+
+                        categoriesSet.add(category);
                       }
                       final categories = [
                         'Semua',
@@ -210,11 +213,13 @@ class _DokterScreensState extends State<DokterScreens> {
                       // 2. Filter List
                       final filteredDokters = _selectedCategory == 'Semua'
                           ? allDokters
-                          : allDokters
-                                .where(
-                                  (d) => d.spesialisasi == _selectedCategory,
-                                )
-                                .toList();
+                          : allDokters.where((d) {
+                              final category =
+                                  (d.poliNama != null && d.poliNama!.isNotEmpty)
+                                  ? d.poliNama!
+                                  : 'Dokter Umum';
+                              return category == _selectedCategory;
+                            }).toList();
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

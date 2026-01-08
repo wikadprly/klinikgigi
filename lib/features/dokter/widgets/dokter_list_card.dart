@@ -114,8 +114,8 @@ class DokterListCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          dokter.spesialisasi.isNotEmpty
-                              ? dokter.spesialisasi
+                          dokter.poliNama != null && dokter.poliNama!.isNotEmpty
+                              ? dokter.poliNama!
                               : "Dokter Umum",
                           style: AppTextStyles.label.copyWith(
                             color: AppColors.gold,
