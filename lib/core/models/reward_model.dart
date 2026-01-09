@@ -42,10 +42,10 @@ class RewardModel {
 
     return RewardModel(
       id: json['id'].toString(),
-      title: json['judul_promo'] as String, // Mapping dari 'judul_promo'
-      description: json['deskripsi'] as String,
-      requiredPoints: json['harga_poin'] as int, // Mapping dari 'harga_poin'
-      imageUrl: json['gambar_banner'] as String?, // Mapping gambar_banner
+      title: (json['judul_promo'] ?? 'Promo Tanpa Judul').toString(),
+      description: (json['deskripsi'] ?? '').toString(),
+      requiredPoints: int.tryParse(json['harga_poin'].toString()) ?? 0,
+      imageUrl: json['gambar_banner'] as String?,
       icon: mapIcon(null), // Backend belum kirim icon, pakai default
     );
   }

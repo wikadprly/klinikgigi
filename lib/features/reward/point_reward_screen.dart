@@ -45,7 +45,7 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memuat data dari server')),
+          SnackBar(content: Text('Gagal memuat data: ${e.toString()}')),
         );
       }
     }

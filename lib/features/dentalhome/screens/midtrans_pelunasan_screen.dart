@@ -32,7 +32,7 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
-    decimalDigits: 0,
+    decimalDigits: 2,
   );
 
   late final HomeCareService _homeCareService;

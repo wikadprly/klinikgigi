@@ -48,7 +48,7 @@ class _MidtransHomeCareBookingScreenState
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
-    decimalDigits: 0,
+    decimalDigits: 2,
   );
 
   Map<String, dynamic>? _selectedPromo;

@@ -513,8 +513,9 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
                           );
                         }
                       } catch (e) {
-                        if (mounted)
+                        if (mounted) {
                           Navigator.pop(context); // Close loading dialog
+                        }
                         print("Error in payment process: $e"); // Debug log
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
