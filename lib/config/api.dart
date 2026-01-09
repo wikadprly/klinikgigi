@@ -1,4 +1,4 @@
-const String baseUrl = "http://klinik_gigi.test/api"; // Laragon Virtual Host
+const String baseUrl = "http://127.0.0.1:8000/api"; // Laragon Virtual Host
 
 class ApiEndpoint {
   // AUTH

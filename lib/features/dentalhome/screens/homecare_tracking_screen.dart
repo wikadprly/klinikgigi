@@ -65,7 +65,11 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/main_screen',
+            (route) => false,
+          ),
         ),
       ),
       body: Consumer<HomeCareProvider>(
@@ -167,7 +171,11 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/main_screen',
+                      (route) => false,
+                    ),
                     child: const Text(
                       "Kembali ke Beranda",
                       style: TextStyle(

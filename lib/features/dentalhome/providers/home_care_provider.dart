@@ -241,7 +241,7 @@ class HomeCareProvider extends ChangeNotifier {
     _timerPolling = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
         final statusData = await _service.checkPaymentStatus(bookingId);
-        final statusPembayaran = statusData['status_booking'];
+        final statusPembayaran = statusData['status_pembayaran'];
 
         // Update local state if needed, but for booking polling mainly we check for succeess
         if (statusPembayaran == 'lunas' ||
@@ -282,7 +282,7 @@ class HomeCareProvider extends ChangeNotifier {
       final statusData = await _service.checkPaymentStatus(bookingId);
 
       _currentStatus = statusData['status_reservasi'] ?? _currentStatus;
-      _paymentStatus = statusData['status_booking'];
+      _paymentStatus = statusData['status_pembayaran'];
       _settlementStatus = statusData['status_pelunasan'] ?? 'belum_lunas';
       _totalTagihan =
           int.tryParse(statusData['total_biaya_tindakan'].toString()) ?? 0;
