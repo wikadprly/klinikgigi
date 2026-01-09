@@ -164,22 +164,20 @@ class _MidtransHomeCareBookingScreenState
       );
     }
 
-    if (kIsWeb) {
-      final uri = Uri.parse(urlString);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (mounted) _showWaitingPaymentDialog();
-      }
+    // ✅ BUKA DI CHROME EKSTERNAL UNTUK SEMUA PLATFORM
+    final uri = Uri.parse(urlString);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (mounted) _showWaitingPaymentDialog();
     } else {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MidtransWebViewScreen(
-            url: urlString,
-            noPemeriksaan: noPemeriksaan,
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tidak dapat membuka halaman pembayaran'),
+            backgroundColor: Colors.red,
           ),
-        ),
-      );
+        );
+      }
     }
   }
 

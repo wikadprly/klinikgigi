@@ -15,6 +15,7 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
   final String keluhan;
   final int biaya;
   final String? noAntrian;
+  final String? statusPembayaran; // ✅ TAMBAHAN STATUS
 
   const TampilanAkhirReservasiMidtrans({
     super.key,
@@ -27,6 +28,7 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
     required this.keluhan,
     required this.biaya,
     this.noAntrian,
+    this.statusPembayaran, // ✅ TAMBAHAN STATUS
   });
 
   // --- DETAIL ROW HELPER ---
@@ -104,10 +106,7 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
                   height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.gold,
-                      width: 3,
-                    ),
+                    border: Border.all(color: AppColors.gold, width: 3),
                     color: AppColors.cardDark,
                   ),
                   child: const Center(
@@ -179,6 +178,40 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
 
                       const Divider(color: Colors.white24, height: 30),
 
+                      // --- STATUS PEMBAYARAN ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Status Pembayaran:",
+                            style: AppTextStyles.label.copyWith(
+                              fontSize: 15,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              statusPembayaran ?? "Lunas",
+                              style: const TextStyle(
+                                color: Colors.greenAccent,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const Divider(color: Colors.white24, height: 30),
+
                       // --- NOMOR ANTRIAN ---
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -191,21 +224,24 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
-                              color: noAntrian != null && noAntrian != '-' 
-                                ? Colors.green.withOpacity(0.2) 
-                                : Colors.amberAccent.withOpacity(0.2),
+                              color: noAntrian != null && noAntrian != '-'
+                                  ? Colors.green.withOpacity(0.2)
+                                  : Colors.amberAccent.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              noAntrian != null && noAntrian != '-' 
-                                ? noAntrian! 
-                                : "Menunggu Proses",
+                              noAntrian != null && noAntrian != '-'
+                                  ? noAntrian!
+                                  : "Menunggu Proses",
                               style: TextStyle(
-                                color: noAntrian != null && noAntrian != '-' 
-                                  ? Colors.greenAccent 
-                                  : Colors.amberAccent,
+                                color: noAntrian != null && noAntrian != '-'
+                                    ? Colors.greenAccent
+                                    : Colors.amberAccent,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -239,7 +275,11 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
                       detailRow(label: "Poli :", value: poli),
                       detailRow(label: "Jadwal :", value: "$tanggal ($jam)"),
                       const Divider(color: Colors.white12, height: 20),
-                      detailRow(label: "Total Biaya :", value: "Rp $biaya", isBold: true),
+                      detailRow(
+                        label: "Total Biaya :",
+                        value: "Rp $biaya",
+                        isBold: true,
+                      ),
                     ],
                   ),
                 ),
