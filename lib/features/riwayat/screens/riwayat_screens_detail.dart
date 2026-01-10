@@ -266,7 +266,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                "Rp.${data['pembayaran_total'] ?? data['biaya'] ?? '0'}",
+                                data['pembayaran_total'] ?? data['biaya'] ?? '0',
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
                                   fontSize: 18,
@@ -284,7 +284,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                "Rp.${data['total_biaya_tindakan'] ?? '0'}",
+                                data['total_biaya_tindakan'] ?? '0',
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
                                   fontSize: 18,
@@ -321,7 +321,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                "Rp.$biaya",
+                                biaya,
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
                                   fontSize: 18,

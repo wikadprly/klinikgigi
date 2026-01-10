@@ -43,12 +43,12 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 🔹 Update Logic: Reset data bawahannya jika Poli berubah
+  // Update Logic: Reset data bawahannya jika Poli berubah
   void setSelectedPoli(MasterPoliModel? poli) {
     _selectedPoli = poli;
     _selectedDokter = null; // Reset dokter terpilih
-    _dokterList = [];       // Reset list dokter
-    _jadwalList = [];       // Reset jadwal
+    _dokterList = []; // Reset list dokter
+    _jadwalList = []; // Reset jadwal
     notifyListeners();
   }
 
@@ -89,47 +89,53 @@ class ReservasiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 3. Fetch Jadwal (DIPERBAIKI ✅)
-  // Menyesuaikan dengan parameter Service baru
+  // 3. Fetch Jadwal
   Future<void> fetchJadwal({
-    required String kodePoli, 
-    String? kodeDokter, 
+    required String kodePoli,
+    String? kodeDokter,
     String? tanggalReservasi,
   }) async {
     _isLoadingJadwal = true;
-    _jadwalList = []; // Bersihkan dulu sebelum load baru
+    _jadwalList = [];
     notifyListeners();
-    
+
     try {
-      // Panggil service dengan Named Parameters
       _jadwalList = await _reservasiService.getJadwal(
         kodePoli: kodePoli,
         kodeDokter: kodeDokter,
         tanggalReservasi: tanggalReservasi,
       );
-      _errorMessage = null;
+
+      // Validasi hasil jadwal
+      if (_jadwalList.isEmpty && tanggalReservasi != null) {
+        _errorMessage = 'Tidak ada jadwal tersedia untuk tanggal yang dipilih';
+      } else if (_jadwalList.isEmpty && kodeDokter != null) {
+        _errorMessage = 'Tidak ada jadwal tersedia untuk dokter yang dipilih';
+      } else if (_jadwalList.isEmpty) {
+        _errorMessage = 'Tidak ada jadwal tersedia untuk kriteria yang dipilih';
+      } else {
+        _errorMessage = null;
+      }
     } catch (e) {
       _jadwalList = [];
-      _errorMessage = 'Gagal memuat jadwal dokter';
+      _errorMessage = 'Gagal memuat jadwal dokter. Silakan coba lagi.';
       if (kDebugMode) print('fetchJadwal Error: $e');
     }
-    
+
     _isLoadingJadwal = false;
     notifyListeners();
   }
 
-  // 4. Buat Reservasi (DIPERBAIKI ✅)
-  // Mengembalikan Map? agar UI bisa dapat data booking (no_pemeriksaan)
+  // 4. Buat Reservasi
   Future<Map<String, dynamic>?> buatReservasi(Map<String, dynamic> data) async {
     _isLoading = true;
     notifyListeners();
     try {
-      // Return value dari service sekarang adalah Map?
       final result = await _reservasiService.createReservasi(data);
       _errorMessage = null;
       return result;
     } catch (e) {
-      _errorMessage = 'Gagal membuat reservasi';
+      _errorMessage = 'Gagal membuat reservasi. Silakan coba lagi.';
       if (kDebugMode) print('buatReservasi Error: $e');
       return null;
     } finally {
@@ -147,7 +153,7 @@ class ReservasiProvider extends ChangeNotifier {
       _errorMessage = null;
     } catch (e) {
       _riwayatList = [];
-      _errorMessage = 'Gagal memuat riwayat reservasi';
+      _errorMessage = 'Gagal memuat riwayat reservasi. Silakan coba lagi.';
       if (kDebugMode) print('fetchRiwayat Error: $e');
     }
     _isLoading = false;
@@ -169,7 +175,7 @@ class ReservasiProvider extends ChangeNotifier {
       _errorMessage = null;
       return success;
     } catch (e) {
-      _errorMessage = 'Gagal update pembayaran';
+      _errorMessage = 'Gagal update pembayaran. Silakan coba lagi.';
       if (kDebugMode) print('updatePembayaran Error: $e');
       return false;
     } finally {
@@ -178,8 +184,10 @@ class ReservasiProvider extends ChangeNotifier {
     }
   }
 
-  // 7. Create Reservasi with Payment (Midtrans)
-  Future<Map<String, dynamic>?> createReservasiWithPayment(Map<String, dynamic> data) async {
+  // 7. Create Reservasi with Payment
+  Future<Map<String, dynamic>?> createReservasiWithPayment(
+    Map<String, dynamic> data,
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {
@@ -187,7 +195,7 @@ class ReservasiProvider extends ChangeNotifier {
       _errorMessage = null;
       return result;
     } catch (e) {
-      _errorMessage = 'Gagal membuat reservasi dengan pembayaran';
+      _errorMessage = 'Gagal membuat reservasi dengan pembayaran. Silakan coba lagi.';
       if (kDebugMode) print('createReservasiWithPayment Error: $e');
       return null;
     } finally {
@@ -206,6 +214,64 @@ class ReservasiProvider extends ChangeNotifier {
     }
   }
 
+  // 9. Fetch Tanggal Dengan Jadwal (FIXED RETURN TYPE)
+  // Sekarang mengembalikan List<Map> agar UI bisa render nama hari dan tanggal
+  Future<List<Map<String, dynamic>>> fetchTanggalDenganJadwal({
+    String? kodePoli,
+    String? kodeDokter,
+  }) async {
+    try {
+      final result = await _reservasiService.getTanggalDenganJadwal(
+        kodePoli: kodePoli,
+        kodeDokter: kodeDokter,
+      );
+
+      // Validasi hasil tanggal
+      if (result.isEmpty && kodePoli != null && kodeDokter != null) {
+        _errorMessage = 'Tidak ada tanggal dengan jadwal untuk poli dan dokter yang dipilih';
+      } else if (result.isEmpty && kodePoli != null) {
+        _errorMessage = 'Tidak ada tanggal dengan jadwal untuk poli yang dipilih';
+      } else if (result.isEmpty && kodeDokter != null) {
+        _errorMessage = 'Tidak ada tanggal dengan jadwal untuk dokter yang dipilih';
+      } else {
+        _errorMessage = null;
+      }
+
+      return result;
+    } catch (e) {
+      _errorMessage = 'Gagal memuat daftar tanggal. Silakan coba lagi.';
+      if (kDebugMode) print('fetchTanggalDenganJadwal Error: $e');
+      return [];
+    }
+  }
+
+  // 10. Fetch Dokter Dengan Jadwal (FIXED RETURN TYPE)
+  // Sekarang mengembalikan List<Map> agar UI bisa render nama dokter + sisa kuota
+  Future<List<Map<String, dynamic>>> fetchDokterDenganJadwal({
+    required String kodePoli,
+    required String tanggalReservasi,
+  }) async {
+    try {
+      final result = await _reservasiService.getDokterDenganJadwal(
+        kodePoli: kodePoli,
+        tanggalReservasi: tanggalReservasi,
+      );
+
+      // Validasi hasil dokter
+      if (result.isEmpty) {
+        _errorMessage = 'Tidak ada dokter dengan jadwal pada tanggal yang dipilih';
+      } else {
+        _errorMessage = null;
+      }
+
+      return result;
+    } catch (e) {
+      _errorMessage = 'Gagal memuat daftar dokter. Silakan coba lagi.';
+      if (kDebugMode) print('fetchDokterDenganJadwal Error: $e');
+      return [];
+    }
+  }
+
   void clearData() {
     _poliList = [];
     _dokterList = [];
@@ -217,5 +283,21 @@ class ReservasiProvider extends ChangeNotifier {
     _errorMessage = null;
     _isLoading = false;
     notifyListeners();
+  }
+
+  // Method untuk validasi input sebelum fetch data
+  bool validateInput({
+    String? kodePoli,
+    String? kodeDokter,
+    String? tanggalReservasi,
+  }) {
+    if (kodePoli == null || kodePoli.isEmpty) {
+      _errorMessage = 'Silakan pilih poli terlebih dahulu';
+      notifyListeners();
+      return false;
+    }
+
+    // Tidak wajibkan dokter dan tanggal karena bisa menampilkan semua
+    return true;
   }
 }

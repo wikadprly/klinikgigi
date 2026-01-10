@@ -230,6 +230,10 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
 
       debugPrint("🚀 Navigate ke success: $statusPembayaran");
 
+      // Reset state setelah pembayaran berhasil
+      // Ini akan membersihkan pilihan jadwal, dokter, tanggal, dll
+      provider.clearData();
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => TampilanAkhirReservasiMidtrans(
@@ -667,7 +671,7 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
                       ),
                     )
                   : const Text(
-                      "Bayar dengan Midtrans",
+                      "Bayar",
                       style: TextStyle(color: Colors.black),
                     ),
             ),
