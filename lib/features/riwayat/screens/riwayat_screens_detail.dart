@@ -200,7 +200,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                       children: [
                         Text(
                           "No. Pemeriksaan :",
-                          style: AppTextStyles.label.copyWith(fontSize: 14),
+                          style: AppTextStyles.label.copyWith(fontSize: 13),
                         ),
                         Text(
                           noPemeriksaan,
@@ -238,7 +238,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                           _item("Hari/Tanggal", tanggal),
                           _item("Waktu Layanan", jam),
                           _item("Dokter", dokter),
-                          _item("Poli", poli),
+                          _item("Layanan", poli),
                           _item("Keluhan", displaykeluhan()),
                           _item(
                             "Status Reservasi",
@@ -266,7 +266,9 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                data['pembayaran_total'] ?? data['biaya'] ?? '0',
+                                data['pembayaran_total'] ??
+                                    data['biaya'] ??
+                                    '0',
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
                                   fontSize: 18,
