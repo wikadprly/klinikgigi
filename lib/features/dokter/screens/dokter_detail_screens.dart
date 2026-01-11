@@ -10,7 +10,7 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 // Import Widgets
 import '../widgets/dokter_tentang_tab.dart';
 import '../widgets/dokter_layanan_tab.dart';
-import '../widgets/dokter_jadwal_tab.dart';
+
 import '../widgets/dokter_sliver_app_bar_delegate.dart';
 
 class DokterDetailScreen extends StatefulWidget {
@@ -30,7 +30,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _futureDetailDokter = _dokterService.fetchDokterDetail(
       widget.dokter.kodeDokter,
     );
@@ -219,7 +219,6 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                           tabs: const [
                             Tab(text: 'Tentang'),
                             Tab(text: 'Layanan'),
-                            Tab(text: 'Jadwal'),
                           ],
                         ),
                       ),
@@ -232,7 +231,6 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
               children: [
                 DokterTentangTab(dokter: masterDokter),
                 DokterLayananTab(poli: poli),
-                DokterJadwalTab(jadwalList: masterDokter.masterJadwal),
               ],
             ),
           );

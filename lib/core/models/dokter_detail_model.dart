@@ -28,7 +28,7 @@ class DokterDetailModel {
           : json['id'] ?? 0,
 
       nama: json['nama']?.toString(),
-      foto: json['foto']?.toString(),
+      foto: json['foto_profil']?.toString() ?? json['foto']?.toString(),
       spesialisasi: json['spesialisasi']?.toString(),
 
       masterPoli: (json['masterPoli'] is Map)

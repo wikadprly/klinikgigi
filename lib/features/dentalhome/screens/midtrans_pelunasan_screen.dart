@@ -76,7 +76,11 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
   Future<void> _fetchPromos() async {
     setState(() => _isLoadingPromos = true);
     try {
-      final promos = await _homeCareService.getPromos(type: 'settlement');
+      final user = await SharedPrefsHelper.getUser();
+      final promos = await _homeCareService.getPromos(
+        type: 'settlement',
+        userId: user?.userId,
+      );
       if (mounted) setState(() => _availablePromos = promos);
     } catch (e) {
       // Ignore
@@ -334,8 +338,15 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
     // Calc Total
     int discount = 0;
     if (_selectedPromo != null) {
-      discount =
-          int.tryParse(_selectedPromo!['nilai_potongan'].toString()) ?? 0;
+      final dynamic rawNilaiPotongan = _selectedPromo!['nilai_potongan'];
+      if (rawNilaiPotongan != null) {
+        if (rawNilaiPotongan is num) {
+          discount = rawNilaiPotongan.toInt();
+        } else if (rawNilaiPotongan is String) {
+          // Parse as double first since API returns "20000.00" format
+          discount = double.tryParse(rawNilaiPotongan)?.toInt() ?? 0;
+        }
+      }
     }
 
     int finalTotal = widget.totalTagihan - discount;

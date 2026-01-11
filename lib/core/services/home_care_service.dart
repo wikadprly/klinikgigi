@@ -239,9 +239,17 @@ class HomeCareService {
   // 8. GET PROMOS
   Future<List<Map<String, dynamic>>> getPromos({
     String type = 'booking',
+    String?
+    userId, // Optional: pass user_id to filter promos by user's usage limit
   }) async {
     final token = await _getToken();
-    final url = Uri.parse('${ApiEndpoint.homeCarePromos}?type=$type');
+
+    // Build URL with user_id if provided
+    String urlString = '${ApiEndpoint.homeCarePromos}?type=$type';
+    if (userId != null && userId.isNotEmpty) {
+      urlString += '&user_id=$userId';
+    }
+    final url = Uri.parse(urlString);
 
     final headers = {'Content-Type': 'application/json'};
     if (token != null && token.isNotEmpty) {
