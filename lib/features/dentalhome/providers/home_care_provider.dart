@@ -77,11 +77,11 @@ class HomeCareProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchPromos({String type = 'booking'}) async {
+  Future<void> fetchPromos({String type = 'booking', String? userId}) async {
     _isLoadingPromos = true;
     notifyListeners();
     try {
-      final data = await _service.getPromos(type: type);
+      final data = await _service.getPromos(type: type, userId: userId);
       _promos = data;
     } catch (e) {
       debugPrint("Error fetching promos: $e");

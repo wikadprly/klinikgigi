@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // for kIsWeb
+import 'package:flutter_klinik_gigi/config/api.dart'; // for baseUrl
 import 'package:flutter_klinik_gigi/core/models/dokter_model.dart';
 import 'package:flutter_klinik_gigi/core/models/jadwal_praktek_model.dart';
 import 'package:flutter_klinik_gigi/core/services/jadwal_praktek_service.dart';
@@ -147,12 +149,20 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
                   ? d.jadwal.first.hari
                   : "-";
 
-              // --- PERBAIKAN FOTO DOKTER: Logika Sederhana ---
-              // Mengambil URL dari API. Diasumsikan API sudah mengirimkan URL Jaringan LENGKAP.
-              final String photoUrl =
-                  (d.fotoProfil != null && d.fotoProfil!.isNotEmpty)
-                  ? d.fotoProfil!
-                  : ""; // String kosong jika tidak ada foto
+              // --- PERBAIKAN FOTO DOKTER: Logika Lengkap ---
+              String photoUrl = "";
+              if (d.fotoProfil != null && d.fotoProfil!.isNotEmpty) {
+                 String filename = d.fotoProfil!.split('/').last;
+                 photoUrl = "$baseUrl/dokter-image/$filename";
+
+                 if (!kIsWeb) {
+                   if (photoUrl.contains('localhost')) {
+                     photoUrl = photoUrl.replaceAll('localhost', '10.0.2.2');
+                   } else if (photoUrl.contains('127.0.0.1')) {
+                     photoUrl = photoUrl.replaceAll('127.0.0.1', '10.0.2.2');
+                   }
+                 }
+              }
 
               // 2. Tentukan ImageProvider. NetworkImage hanya jika URL tersedia.
               final ImageProvider? imageProvider = photoUrl.isNotEmpty

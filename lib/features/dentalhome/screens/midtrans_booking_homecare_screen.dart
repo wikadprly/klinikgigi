@@ -53,6 +53,7 @@ class _MidtransHomeCareBookingScreenState
 
   Map<String, dynamic>? _selectedPromo;
   int? _currentBookingId;
+  int _lastPaidTotal = 0; // Store the amount paid for success screen
 
   @override
   void initState() {
@@ -68,7 +69,7 @@ class _MidtransHomeCareBookingScreenState
     if (user != null && mounted) {
       final provider = Provider.of<HomeCareProvider>(context, listen: false);
       provider.fetchUserPoints(user.userId);
-      provider.fetchPromos(type: 'booking');
+      provider.fetchPromos(type: 'booking', userId: user.userId);
     }
   }
 
@@ -155,8 +156,10 @@ class _MidtransHomeCareBookingScreenState
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    PaymentSuccessScreen(bookingId: _currentBookingId),
+                builder: (context) => PaymentSuccessScreen(
+                  bookingId: _currentBookingId,
+                  totalBayar: _lastPaidTotal,
+                ),
               ),
             );
           }
@@ -243,15 +246,41 @@ class _MidtransHomeCareBookingScreenState
         // Recalculate based on promo
         int discount = 0;
         if (_selectedPromo != null) {
+          // Debug: Print the entire promo data
+          debugPrint('🔍 Selected Promo Data: $_selectedPromo');
+
           final transport = biaya['biaya_transport'] ?? 0;
           final int transportVal = (transport as num?)?.toInt() ?? 0;
+          final String? promoTipe = _selectedPromo!['tipe']?.toString();
 
-          if (_selectedPromo!['tipe'] == 'potongan_total') {
-            discount =
-                int.tryParse(_selectedPromo!['nilai_potongan'].toString()) ?? 0;
-          } else if (_selectedPromo!['tipe'] == 'free_transport') {
-            discount = transportVal;
+          // Try multiple ways to get nilai_potongan
+          final dynamic rawNilaiPotongan = _selectedPromo!['nilai_potongan'];
+          debugPrint(
+            '🔍 Raw nilai_potongan: $rawNilaiPotongan (type: ${rawNilaiPotongan?.runtimeType})',
+          );
+
+          int nilaiPotongan = 0;
+          if (rawNilaiPotongan != null) {
+            if (rawNilaiPotongan is num) {
+              nilaiPotongan = rawNilaiPotongan.toInt();
+            } else if (rawNilaiPotongan is String) {
+              nilaiPotongan = double.tryParse(rawNilaiPotongan)?.toInt() ?? 0;
+            }
           }
+
+          debugPrint(
+            '🔍 promoTipe: $promoTipe, nilaiPotongan: $nilaiPotongan, transportVal: $transportVal',
+          );
+
+          if (promoTipe == 'free_transport') {
+            // Jika tipe adalah free_transport, gunakan biaya transport sebagai diskon
+            discount = transportVal;
+          } else if (nilaiPotongan > 0) {
+            // Jika nilai_potongan ada dan > 0, gunakan sebagai diskon
+            discount = nilaiPotongan;
+          }
+
+          debugPrint('🔍 Final discount: $discount');
         }
 
         int finalTotal = total - discount;
@@ -311,7 +340,10 @@ class _MidtransHomeCareBookingScreenState
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: _prosesPembayaranMidtrans,
+                onPressed: () {
+                  _lastPaidTotal = finalTotal;
+                  _prosesPembayaranMidtrans();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   shadowColor: Colors.transparent,
@@ -687,20 +719,16 @@ class _MidtransHomeCareBookingScreenState
 
 class PaymentSuccessScreen extends StatelessWidget {
   final int? bookingId;
-  const PaymentSuccessScreen({super.key, this.bookingId});
+  final int totalBayar;
+  const PaymentSuccessScreen({super.key, this.bookingId, this.totalBayar = 0});
+  
+  int get earnedPoints => (totalBayar / 10000).floor();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          image: DecorationImage(
-            image: AssetImage('assets/images/pattern_bg.png'),
-            fit: BoxFit.cover,
-            opacity: 0.05,
-          ),
-        ),
+        decoration: const BoxDecoration(color: AppColors.background),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
@@ -804,6 +832,49 @@ class PaymentSuccessScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      // Add earned points info
+                      if (earnedPoints > 0) ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Poin Didapat",
+                              style: TextStyle(color: AppColors.textMuted),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withOpacity(0.2),
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(4),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    color: AppColors.gold,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "+$earnedPoints Poin",
+                                    style: const TextStyle(
+                                      color: AppColors.gold,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
