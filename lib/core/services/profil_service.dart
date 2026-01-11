@@ -82,7 +82,8 @@ class ProfilService {
     return list.join(", ");
   }
 
-  // ===================== UPDATE PROFILE PHOTO (JANGAN DIUBAH) =====================
+
+  // ===================== UPDATE PROFILE PHOTO =====================
   Future<Map<String, dynamic>> updateProfilePicture(
     String token,
     File imageFile,
@@ -95,14 +96,14 @@ class ProfilService {
 
     try {
       FormData formData = FormData.fromMap({
-        'file_foto': await MultipartFile.fromFile(
+        'foto': await MultipartFile.fromFile(
           imageFile.path,
           filename: imageFile.path.split('\\').last.split('/').last,
         ),
       });
 
       Response response = await dio.post(
-        "$baseUrl/profil/update/foto",
+        "$baseUrl/profil/upload",
         data: formData,
         options: Options(
           headers: {
@@ -122,10 +123,31 @@ class ProfilService {
     }
   }
 
+// ===================== GET PROFILE PHOTO =====================
+Future<Map<String, dynamic>?> getProfilePhoto(String token) async {
+  final response = await http.get(
+    Uri.parse("$baseUrl/profil/get"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Accept": "application/json",
+    },
+  );
+
+  print("STATUS GET FOTO: ${response.statusCode}");
+  print("RESPONSE GET FOTO: ${response.body}");
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  }
+
+  return null;
+}
+
+
   // ===================== DELETE PROFILE PHOTO (JANGAN DIUBAH) =====================
   Future<Map<String, dynamic>> deleteProfilePicture(String token) async {
     final response = await http.delete(
-      Uri.parse("$baseUrl/profil/hapus/foto"),
+      Uri.parse("$baseUrl/profil/delete"),
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
     );
 
