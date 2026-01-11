@@ -25,7 +25,9 @@ class ApiEndpoint {
   static const reservasiCreate = "$baseUrl/reservasi/create";
   static const reservasiGetPoli = "$baseUrl/reservasi/poli";
   static const reservasiGetDokter = "$baseUrl/reservasi/dokter";
-  static const reservasiGetJadwal = "$baseUrl/reservasi/jadwal";
+  static const reservasiGetJadwal = "$baseUrl/reservasi/jadwal"; // Updated to use jadwal_harian
+  static const reservasiGetTanggalDenganJadwal = "$baseUrl/reservasi/tanggal-dengan-jadwal"; // Updated endpoint
+  static const reservasiGetDokterDenganJadwal = "$baseUrl/reservasi/dokter-dengan-jadwal"; // Updated endpoint
   static const reservasiRiwayat = "$baseUrl/reservasi/riwayat";
   static const reservasiPembayaran = "$baseUrl/reservasi/pembayaran";
   static String riwayat(String rekamMedisId) =>

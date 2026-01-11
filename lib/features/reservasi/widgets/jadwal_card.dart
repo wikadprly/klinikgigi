@@ -10,6 +10,7 @@ class ScheduleCardWidget extends StatelessWidget {
 
   // 🔥 TAMBAHAN UI SAJA: Tanggal (Opsional)
   final String? tanggal;
+  final String? statusJadwal; // Tambahkan status jadwal
 
   final int quota;
   final int kuotaTerpakai;
@@ -23,6 +24,7 @@ class ScheduleCardWidget extends StatelessWidget {
     required this.hari,
     required this.jam,
     this.tanggal, // Boleh null
+    this.statusJadwal, // Tambahkan parameter status jadwal
     required this.quota,
     required this.kuotaTerpakai,
     required this.onTap,
@@ -32,10 +34,12 @@ class ScheduleCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // Logic Kuota Penuh
     bool isFull = kuotaTerpakai >= quota;
+    bool isLibur = statusJadwal == 'Libur'; // Tambahkan logika untuk status libur
+    bool isAvailable = statusJadwal == 'Tersedia' && !isFull;
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.cardWarm,
         borderRadius: BorderRadius.circular(16),
@@ -112,26 +116,44 @@ class ScheduleCardWidget extends StatelessWidget {
             ],
           ),
 
+          const SizedBox(height: 8),
+
+          // Status Jadwal
+          Row(
+            children: [
+              const Icon(Icons.info, color: AppColors.gold, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                "Status: ${statusJadwal ?? 'Tersedia'}",
+                style: AppTextStyles.label.copyWith(
+                  color: isLibur ? Colors.red : (isFull ? Colors.orange : AppColors.textLight),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 12),
 
           // Button Pilih
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              onTap: isFull ? null : onTap,
+              onTap: isAvailable ? onTap : null, // Hanya aktif jika tersedia
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isFull ? Colors.grey : AppColors.gold,
+                  color: isAvailable ? AppColors.gold : Colors.grey,
                   borderRadius: BorderRadius.circular(22),
                 ),
                 child: Text(
-                  isFull ? "Penuh" : "Pilih",
+                  isLibur ? "Libur" : (isFull ? "Penuh" : "Pilih"),
                   style: TextStyle(
-                    color: isFull ? Colors.white : Colors.black,
+                    color: isAvailable ? Colors.black : Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),

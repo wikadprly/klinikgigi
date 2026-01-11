@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
@@ -11,8 +12,6 @@ import 'package:flutter_klinik_gigi/features/reservasi/widgets/custom_date_field
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/custom_dropdown_field.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/widgets/jadwal_card.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/Konfirmasi_data_daftar.dart';
-
-// Pastikan import model master_dokter_model ada agar bisa dipakai tipenya
 
 class ReservasiScreen extends StatefulWidget {
   const ReservasiScreen({super.key});
@@ -26,19 +25,19 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
   String? selectedKodeDokter;
   String? selectedTanggal;
 
+  List<String> availableDates = [];
+  List<String> availableDoctors = [];
+
   UserModel? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('id_ID', null);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prov = Provider.of<ReservasiProvider>(context, listen: false);
-
-      // Bersihkan data lama biar fresh
       prov.clearData();
-
-      // Load data Poli saat pertama buka
       await prov.fetchPoli();
 
       try {
@@ -50,8 +49,17 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
     });
   }
 
-  String formatDate(DateTime date) {
+  String formatDateForApi(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  String formatDateForDisplay(String dateString) {
+    try {
+      DateTime date = DateTime.parse(dateString);
+      return DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date);
+    } catch (e) {
+      return dateString;
+    }
   }
 
   @override
@@ -67,20 +75,17 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // =============================================================
               // HEADER
-              // =============================================================
               Text(
                 user?.namaPengguna ?? 'Nama Pasien',
                 style: AppTextStyles.heading.copyWith(
-                  fontSize: 20,
+                  fontSize: 24,
                   color: AppColors.gold,
                 ),
               ),
-
               Text(
                 "No. Rekam Medis: ${user?.rekamMedisId ?? '-'}",
-                style: AppTextStyles.label,
+                style: AppTextStyles.label.copyWith(fontSize: 14),
               ),
 
               const SizedBox(height: 20),
@@ -89,7 +94,7 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                 child: Text(
                   "Pilih Jadwal Periksa",
                   style: AppTextStyles.heading.copyWith(
-                    fontSize: 20,
+                    fontSize: 18,
                     color: AppColors.gold,
                   ),
                 ),
@@ -97,26 +102,18 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
 
               const SizedBox(height: 35),
 
-              // =============================================================
-              // PILIH POLI
-              // =============================================================
-              Text(
-                "Pilih Poli",
-                style: AppTextStyles.label.copyWith(color: AppColors.gold),
-              ),
-              const SizedBox(height: 8),
-
+              // DROPDOWN POLI
               CustomDropdownField(
                 label: "Pilih Poli",
                 items: reservasiProv.poliList.map((p) => p.namaPoli).toList(),
                 value: selectedKodePoli == null
                     ? null
                     : reservasiProv.poliList
-                          .firstWhere(
-                            (p) => p.kodePoli == selectedKodePoli,
-                            orElse: () => reservasiProv.poliList.first,
-                          )
-                          .namaPoli,
+                        .firstWhere(
+                          (p) => p.kodePoli == selectedKodePoli,
+                          orElse: () => reservasiProv.poliList.first,
+                        )
+                        .namaPoli,
                 onChanged: (val) async {
                   final poli = reservasiProv.poliList.firstWhere(
                     (p) => p.namaPoli == val,
@@ -124,44 +121,50 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
 
                   setState(() {
                     selectedKodePoli = poli.kodePoli;
-                    selectedKodeDokter = null;
-                    selectedTanggal = null;
                   });
 
-                  // Update Provider
                   reservasiProv.setSelectedPoli(poli);
-                  // Ambil data dokter baru sesuai poli
                   await reservasiProv.fetchDokterByPoli(poli.kodePoli);
+
+                  // Fetch tanggal dengan jadwal berdasarkan poli yang dipilih
+                  final rawDates = await reservasiProv.fetchTanggalDenganJadwal(
+                    kodePoli: poli.kodePoli,
+                    kodeDokter: selectedKodeDokter,
+                  );
+                  availableDates = rawDates.map((e) => e['tanggal'] as String).toList();
+
+                  if (selectedTanggal != null &&
+                      !availableDates.contains(selectedTanggal)) {
+                    setState(() {
+                      selectedTanggal = null;
+                    });
+                  }
                 },
               ),
 
               const SizedBox(height: 25),
 
-              // =============================================================
-              // PILIH DOKTER (OPSIONAL)
-              // =============================================================
-              Text(
-                "Pilih Dokter",
-                style: AppTextStyles.label.copyWith(color: AppColors.gold),
-              ),
-              const SizedBox(height: 8),
-
+              // DROPDOWN DOKTER
               CustomDropdownField(
-                label: "Pilih Dokter (Opsional)",
-                items: reservasiProv.dokterList
-                    .map((d) => d.namaLengkap)
-                    .toList(),
-                value:
-                    (selectedKodeDokter == null ||
+                label: "Pilih Dokter",
+                items: availableDoctors.isNotEmpty
+                    ? reservasiProv.dokterList
+                        .where((d) => availableDoctors.contains(d.kodeDokter))
+                        .map((d) => d.namaLengkap)
+                        .toList()
+                    : reservasiProv.dokterList
+                        .map((d) => d.namaLengkap)
+                        .toList(),
+                value: (selectedKodeDokter == null ||
                         reservasiProv.dokterList.isEmpty)
                     ? null
                     : reservasiProv.dokterList
-                          .firstWhere(
-                            (d) => d.kodeDokter == selectedKodeDokter,
-                            orElse: () => reservasiProv.dokterList.first,
-                          )
-                          .namaLengkap,
-                onChanged: (val) {
+                        .firstWhere(
+                          (d) => d.kodeDokter == selectedKodeDokter,
+                          orElse: () => reservasiProv.dokterList.first,
+                        )
+                        .namaLengkap,
+                onChanged: (val) async {
                   final dokter = reservasiProv.dokterList.firstWhere(
                     (d) => d.namaLengkap == val,
                   );
@@ -171,57 +174,131 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                   });
 
                   reservasiProv.setSelectedDokter(dokter);
+
+                  // Fetch tanggal dengan jadwal berdasarkan dokter yang dipilih
+                  List<Map<String, dynamic>> rawDates;
+                  if (selectedKodePoli != null) {
+                    rawDates = await reservasiProv.fetchTanggalDenganJadwal(
+                      kodePoli: selectedKodePoli!,
+                      kodeDokter: selectedKodeDokter,
+                    );
+                  } else {
+                    // Jika poli belum dipilih, hanya filter berdasarkan dokter
+                    rawDates = await reservasiProv.fetchTanggalDenganJadwal(
+                      kodeDokter: selectedKodeDokter,
+                    );
+                  }
+                  availableDates = rawDates.map((e) => e['tanggal'] as String).toList();
+
+                  if (selectedTanggal != null &&
+                      !availableDates.contains(selectedTanggal)) {
+                    setState(() {
+                      selectedTanggal = null;
+                    });
+                  }
                 },
               ),
 
               const SizedBox(height: 25),
 
-              // =============================================================
-              // PILIH TANGGAL (OPSIONAL)
-              // =============================================================
-              Text(
-                "Pilih Tanggal",
-                style: AppTextStyles.label.copyWith(color: AppColors.gold),
-              ),
-              const SizedBox(height: 8),
-
+              // DATE FIELD
               CustomDateField(
-                label: "Pilih Tanggal (Opsional)",
-                displayedDate: selectedTanggal,
+                label: "Pilih Tanggal",
+                displayedDate: selectedTanggal != null
+                    ? formatDateForDisplay(selectedTanggal!)
+                    : null,
                 onTap: () async {
+                  // Jangan tampilkan date picker jika tidak ada tanggal yang tersedia
+                  if (availableDates.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Tidak ada tanggal yang tersedia untuk dipilih."),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final filteredFirstDate = DateTime.now();
+                  final filteredLastDate = DateTime.now().add(
+                    const Duration(days: 7), // Menampilkan 7 hari ke depan sesuai perubahan backend
+                  );
+
+                  // Tentukan initialDate berdasarkan tanggal yang tersedia
+                  DateTime initialDate = DateTime.now();
+
+                  // Jika selectedTanggal tidak null dan tersedia, gunakan itu
+                  if (selectedTanggal != null && availableDates.contains(selectedTanggal)) {
+                    initialDate = DateTime.parse(selectedTanggal!);
+                  }
+                  // Jika tidak, gunakan tanggal pertama dari availableDates
+                  else if (availableDates.isNotEmpty) {
+                    initialDate = DateTime.parse(availableDates.first);
+                  }
+
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    initialDate: initialDate,
+                    firstDate: filteredFirstDate,
+                    lastDate: filteredLastDate,
+                    selectableDayPredicate: (DateTime date) {
+                      if (availableDates.isEmpty) return true;
+                      final dateString = DateFormat('yyyy-MM-dd').format(date);
+                      return availableDates.contains(dateString);
+                    },
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppColors.gold,
+                            onPrimary: AppColors.textLight,
+                            onSurface: AppColors.textLight,
+                            surface: AppColors.cardWarm,
+                          ),
+                          dialogBackgroundColor: AppColors.cardWarm,
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
 
                   if (picked != null) {
+                    final formattedDate = formatDateForApi(picked);
                     setState(() {
-                      selectedTanggal = formatDate(picked);
+                      selectedTanggal = formattedDate;
                     });
+
+                    // Fetch dokter dengan jadwal berdasarkan tanggal yang dipilih
+                    if (selectedKodePoli != null) {
+                      final rawDocs = await reservasiProv.fetchDokterDenganJadwal(
+                        kodePoli: selectedKodePoli!,
+                        tanggalReservasi: formattedDate,
+                      );
+                      availableDoctors = rawDocs.map((e) => e['kode_dokter'] as String).toList();
+
+                      if (selectedKodeDokter != null &&
+                          !availableDoctors.contains(selectedKodeDokter)) {
+                        setState(() {
+                          selectedKodeDokter = null;
+                        });
+                        reservasiProv.setSelectedDokter(null);
+                      }
+                    }
                   }
                 },
               ),
 
               const SizedBox(height: 40),
 
-              // =============================================================
               // BUTTON CEK JADWAL
-              // =============================================================
               AuthButton(
                 text: "Cek Jadwal",
-                // Tombol hanya mati jika Poli belum dipilih
-                onPressed: (selectedKodePoli == null)
-                    ? null
-                    : () async {
-                        // Panggil fetchJadwal dengan parameter yang aman
+                onPressed: (selectedKodePoli != null)
+                    ? () async {
                         await reservasiProv.fetchJadwal(
-                          kodePoli: selectedKodePoli!, // Wajib
-                          kodeDokter:
-                              selectedKodeDokter, // Opsional (bisa null)
-                          tanggalReservasi:
-                              selectedTanggal, // Opsional (bisa null)
+                          kodePoli: selectedKodePoli!,
+                          kodeDokter: selectedKodeDokter,
+                          tanggalReservasi: selectedTanggal,
                         );
 
                         if (context.mounted) {
@@ -242,14 +319,13 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                             );
                           }
                         }
-                      },
+                      }
+                    : null,
               ),
 
               const SizedBox(height: 25),
 
-              // =============================================================
-              // LIST JADWAL
-              // =============================================================
+              // LIST JADWAL CARD
               Consumer<ReservasiProvider>(
                 builder: (context, prov, _) {
                   if (prov.isLoadingJadwal) {
@@ -262,9 +338,7 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                   }
 
                   if (prov.jadwalList.isEmpty) {
-                    // Jika poli belum dipilih, kosongkan saja tampilannya
                     if (selectedKodePoli == null) return const SizedBox();
-
                     return const Padding(
                       padding: EdgeInsets.all(20),
                       child: Center(
@@ -284,7 +358,6 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                     itemBuilder: (context, index) {
                       final jadwal = prov.jadwalList[index];
 
-                      // 🛠️ PENTING: MENCARI NAMA DOKTER
                       String namaDokterTampil = jadwal.kodeDokter;
                       try {
                         final dokterObj = prov.dokterList.firstWhere(
@@ -292,51 +365,57 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                         );
                         namaDokterTampil = dokterObj.namaLengkap;
                       } catch (_) {
-                        // Fallback jika tidak ketemu
                         namaDokterTampil = "Dokter ${jadwal.kodeDokter}";
                       }
 
-                      // 🔥 LOGIC UI STATUS (Agar tombol tidak bisa diklik jika penuh/libur)
                       bool isAvailable = jadwal.statusJadwal == 'Tersedia';
-                      String statusText =
-                          jadwal.statusJadwal; // 'Tersedia', 'Penuh', 'Libur'
+
+                      String namaPoliTampil = prov.selectedPoli?.namaPoli ?? jadwal.kodePoli;
+                      if (selectedKodePoli == null) {
+                         try {
+                          final poliObj = prov.poliList.firstWhere(
+                            (p) => p.kodePoli == jadwal.kodePoli,
+                          );
+                          namaPoliTampil = poliObj.namaPoli;
+                        } catch (_) {
+                          namaPoliTampil = "Poli ${jadwal.kodePoli}";
+                        }
+                      }
+
+                      // Gunakan tanggal_jadwal_harian jika tersedia, jika tidak gunakan tanggal yang dipilih
+                      // Format tanggal tanpa nama hari untuk menghindari duplikasi dengan variabel 'hari'
+                      String displayTanggal = selectedTanggal != null
+                          ? DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(selectedTanggal!))
+                          : jadwal.tanggalJadwalHarian != null
+                              ? DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(jadwal.tanggalJadwalHarian!))
+                              : '';
 
                       return Opacity(
-                        // Bikin agak transparan kalau tidak tersedia biar kelihatan inactive
                         opacity: isAvailable ? 1.0 : 0.6,
                         child: ScheduleCardWidget(
-                          namaPoli: prov.selectedPoli?.namaPoli ?? '-',
+                          namaPoli: namaPoliTampil,
                           namaDokter: namaDokterTampil,
                           hari: jadwal.hari,
                           jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
                           quota: jadwal.quota,
                           kuotaTerpakai: jadwal.kuotaTerpakai,
-
-                          // 🔥 UPDATE DISINI: KIRIM TANGGAL KE WIDGET
-                          // Jika user memilih tanggal, tampilkan. Jika tidak, kosong.
-                          tanggal: selectedTanggal,
-
+                          tanggal: displayTanggal,
+                          statusJadwal: jadwal.statusJadwal, // Tambahkan status jadwal
                           onTap: () {
-                            // 1. Validasi Tanggal
                             if (selectedTanggal == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    "Harap pilih tanggal terlebih dahulu untuk melakukan booking.",
-                                  ),
+                                  content: Text("Mohon pilih tanggal terlebih dahulu."),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                               return;
                             }
 
-                            // 2. 🔥 VALIDASI BARU: CEK STATUS JADWAL
                             if (!isAvailable) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    "Maaf, jadwal ini $statusText.",
-                                  ),
+                                  content: Text("Maaf, jadwal ini ${jadwal.statusJadwal}."),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -350,17 +429,13 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                               builder: (_) {
                                 return KonfirmasiReservasiSheet(
                                   namaPasien: user?.namaPengguna ?? "-",
-                                  rekamMedis:
-                                      user?.rekamMedisId.toString() ?? "-",
-                                  poli: prov.selectedPoli?.namaPoli ?? '-',
+                                  rekamMedis: user?.rekamMedisId.toString() ?? "-",
+                                  poli: namaPoliTampil,
                                   dokter: namaDokterTampil,
-                                  tanggal: selectedTanggal!,
-                                  jam:
-                                      "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+                                  tanggal: displayTanggal, // Gunakan tanggal yang sesuai
+                                  jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
                                   keluhan: "-",
                                   total: 25000,
-
-                                  // Data Backend (Kirim ID Int & String Dokter)
                                   jadwalId: jadwal.id,
                                   dokterId: jadwal.kodeDokter,
                                 );

@@ -277,7 +277,7 @@ class TampilanAkhirReservasiMidtrans extends StatelessWidget {
                       const Divider(color: Colors.white12, height: 20),
                       detailRow(
                         label: "Total Biaya :",
-                        value: "Rp $biaya",
+                        value: biaya.toString(),
                         isBold: true,
                       ),
                     ],

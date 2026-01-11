@@ -20,71 +20,44 @@ class CustomDropdownField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label
         Text(
           label,
           style: const TextStyle(
-            color: AppColors.textLight,
+            color: AppColors.gold,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
-
         const SizedBox(height: 8),
-
-        // Dropdown Wrapper
         Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardWarm, // ⬅ Warm tone
+            color: AppColors.cardWarm,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.gold, // ⬅ Gold elegan
-              width: 1.2,
-            ),
+            border: Border.all(color: AppColors.gold, width: 1.2),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-
-              // Background popup
-              dropdownColor: AppColors.cardWarmDark, // ⬅ Lebih gelap, biar kontras
-
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.gold,
-                size: 22,
-              ),
-
+              dropdownColor: AppColors.cardWarmDark,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.gold, size: 22),
               style: const TextStyle(
                 color: AppColors.textLight,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
-
               items: items.map((item) {
                 return DropdownMenuItem(
                   value: item,
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: Text(item, style: const TextStyle(color: AppColors.textLight, fontSize: 15)),
                 );
               }).toList(),
-
               onChanged: onChanged,
-
               hint: const Text(
                 'Pilih',
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 15,
-                ),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 15),
               ),
             ),
           ),
