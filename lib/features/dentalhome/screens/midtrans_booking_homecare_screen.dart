@@ -424,13 +424,18 @@ class _MidtransHomeCareBookingScreenState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Promo (${_selectedPromo!['judul_promo']})",
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      "Promo (${_selectedPromo!['judul_promo']})",
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     "- ${currencyFormatter.format(discount)}",
                     style: const TextStyle(
@@ -721,7 +726,7 @@ class PaymentSuccessScreen extends StatelessWidget {
   final int? bookingId;
   final int totalBayar;
   const PaymentSuccessScreen({super.key, this.bookingId, this.totalBayar = 0});
-  
+
   int get earnedPoints => (totalBayar / 10000).floor();
 
   @override
