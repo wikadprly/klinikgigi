@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      HomeScreen(userId: '2', onNavigate: _onItemTapped),
+      HomeScreen(onNavigate: _onItemTapped),
       ReservasiScreen(),
       DentalHomeScreen(),
       RiwayatScreen(),
