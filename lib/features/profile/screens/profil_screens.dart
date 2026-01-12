@@ -421,7 +421,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 14),
                         infoRow(Icons.location_on,
-                            provider.rekamMedisData?["alamat"] ?? "-",
+                            provider.userData?["alamat"] ?? "-",
                             textColor: AppColors.goldDark),
                         const SizedBox(height: 14),
                         infoRow(

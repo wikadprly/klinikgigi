@@ -60,6 +60,7 @@ class AuthProvider extends ChangeNotifier {
     String? noHp,
     String? tanggalLahir,
     String? jenisKelamin,
+    String? alamat,
     required String password,
     required String confirmPassword,
   }) async {
@@ -80,6 +81,7 @@ class AuthProvider extends ChangeNotifier {
         noHp: noHp,
         tanggalLahir: tanggalLahir,
         jenisKelamin: jenisKelamin,
+        alamat: alamat,
         password: password,
         confirmPassword: confirmPassword,
       );
