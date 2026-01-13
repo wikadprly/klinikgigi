@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_klinik_gigi/core/models/pasien_model.dart';
-import 'package:flutter_klinik_gigi/core/services/pasien_service.dart';
+import 'package:provider/provider.dart'; // ADDED
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart'; // ADDED
+// import 'package:flutter_klinik_gigi/core/models/pasien_model.dart'; // REMOVED
+// import 'package:flutter_klinik_gigi/core/services/pasien_service.dart'; // REMOVED
 import 'package:flutter_klinik_gigi/features/jadwalpraktek/screens/jadwalpraktek_screens.dart';
 import 'package:flutter_klinik_gigi/features/reward/point_reward_screen.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
@@ -34,25 +36,31 @@ class GradientMask extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
-  final String userId;
-  final void Function(int) onNavigate;
+  const HomeScreen({super.key, required this.onNavigate});
 
-  const HomeScreen({super.key, required this.userId, required this.onNavigate});
+  final void Function(int) onNavigate;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<Pasien> _pasien;
+  // late Future<Pasien> _pasien; // REMOVED
   late Future<List<Map<String, dynamic>>> _promosFuture;
-  final PasienService _pasienService = PasienService();
+  // final PasienService _pasienService = PasienService(); // REMOVED
   final HomeCareService _homeCareService = HomeCareService();
 
   @override
   void initState() {
     super.initState();
-    _pasien = _pasienService.getPasienByUserId(widget.userId);
+    // Fetch profile data via provider if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<ProfilProvider>(context, listen: false);
+      if (provider.user == null) {
+        provider.fetchProfilFromToken();
+      }
+    });
+
     _promosFuture = _homeCareService.getPromos(type: 'all');
   }
 
@@ -125,67 +133,77 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUserInfo(BuildContext context) {
-    return FutureBuilder<Pasien>(
-      future: _pasien,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    // Gunakan Consumer atau Provider.of untuk mendengarkan perubahan
+    return Consumer<ProfilProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
           return Container(
             height: 150,
             alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
+            child: const CircularProgressIndicator(color: AppColors.gold),
           );
         }
 
-        if (snapshot.hasError) {
+        // Jika data kosong tapi tidak loading
+        if (provider.user == null) {
           return Center(
-            child: Text(
-              'Gagal memuat data: ${snapshot.error}',
-              style: const TextStyle(color: Colors.red),
+            child: Column(
+              children: [
+                const Text(
+                  'Data profil belum dimuat.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                TextButton(
+                  onPressed: () => provider.fetchProfilFromToken(),
+                  child: const Text(
+                    'Muat Ulang',
+                    style: TextStyle(color: AppColors.gold),
+                  ),
+                ),
+              ],
             ),
           );
         }
 
-        if (snapshot.hasData) {
-          final pasien = snapshot.data!;
-          return Column(
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: const AssetImage(
-                      'assets/images/profil.jpeg',
+        final photoUrl = provider.photoUrl;
+        final name = provider.namaPengguna;
+
+        return Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppColors.cardDark,
+                  backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
+                      ? NetworkImage(
+                          "$photoUrl?v=${DateTime.now().millisecondsSinceEpoch}",
+                        )
+                      : const AssetImage('assets/images/profil.jpeg')
+                            as ImageProvider,
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: AppTextStyles.heading.copyWith(fontSize: 20),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pasien.nama,
-                        style: AppTextStyles.heading.copyWith(fontSize: 20),
-                      ),
-                      Text('Halo, Selamat Datang', style: AppTextStyles.label),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildInfoCard(pasien),
-            ],
-          );
-        }
-        return const Center(
-          child: Text(
-            'Data pasien tidak ditemukan',
-            style: AppTextStyles.input,
-          ),
+                    Text('Halo, Selamat Datang', style: AppTextStyles.label),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildInfoCard(provider),
+          ],
         );
       },
     );
   }
 
-  Widget _buildInfoCard(Pasien pasien) {
+  Widget _buildInfoCard(ProfilProvider provider) {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.goldGradient,
@@ -196,9 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildInfoColumn('Umur', "${pasien.umur} Thn"),
-            _buildInfoColumn('Jenis Kelamin', pasien.jenisKelamin),
-            _buildInfoColumn('Nomor Rekam Medis', pasien.rekamMedis),
+            _buildInfoColumn('Umur', "${provider.umur} Thn"),
+            _buildInfoColumn('Jenis Kelamin', provider.genderLabel),
+            _buildInfoColumn('Nomor Rekam Medis', provider.noRekamMedis),
           ],
         ),
       ),

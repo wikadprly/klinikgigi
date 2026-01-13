@@ -64,6 +64,7 @@ class AuthService {
     String? noHp,
     String? tanggalLahir,
     String? jenisKelamin,
+    String? alamat,
     required String password,
     required String confirmPassword,
   }) async {
@@ -82,6 +83,7 @@ class AuthService {
           'no_hp': noHp,
           'tanggal_lahir': tanggalLahir,
           'jenis_kelamin': jenisKelamin,
+          'alamat': alamat,
           'password': password,
           'password_confirmation': confirmPassword,
         }),

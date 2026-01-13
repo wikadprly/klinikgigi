@@ -21,6 +21,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController noHpController = TextEditingController();
   final TextEditingController tanggalLahirController = TextEditingController();
+  final TextEditingController alamatController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
@@ -101,6 +102,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                 AuthInputField(hintText: "NIK", controller: nikController),
                 AuthInputField(hintText: "Email", controller: emailController),
                 AuthInputField(hintText: "No. HP", controller: noHpController),
+                AuthInputField(hintText: "Alamat", controller: alamatController),
 
                 // 🔹 Tanggal Lahir
                 TextField(
@@ -229,6 +231,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                           noHp: noHpController.text.trim(),
                           tanggalLahir: tanggalLahirController.text.trim(),
                           jenisKelamin: jenisKelamin ?? '',
+                          alamat: alamatController.text.trim(),
                           password: passwordController.text.trim(),
                           confirmPassword: confirmPasswordController.text
                               .trim(),

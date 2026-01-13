@@ -101,6 +101,55 @@ class ProfileProvider with ChangeNotifier {
     }
     return false;
   }
+
+  // =====================
+  // Helpers / Computed Getters for Home Screen
+  // =====================
+  String get namaPengguna =>
+      user?['nama_pengguna'] ?? user?['nama'] ?? 'Pengguna';
+
+  String get noRekamMedis {
+    if (rekamMedis != null) {
+      return rekamMedis?['rekam_medis'] ??
+          rekamMedis?['id_rekam_medis'] ??
+          rekamMedis?['no_rekam_medis'] ??
+          rekamMedis?['nomor'] ??
+          '-';
+    }
+    return user?['rekam_medis_id'] ?? '-';
+  }
+
+  String get genderLabel {
+    final g = user?['jenis_kelamin']?.toString().toLowerCase();
+    if (g == null) return '-';
+    if (g.contains('l') || g.contains('pria')) return 'Pria';
+    if (g.contains('p') || g.contains('wanita') || g.contains('perempuan'))
+      return 'Wanita';
+    return g;
+  }
+
+  int get umur {
+    final tglArg = user?['tanggal_lahir']?.toString();
+    if (tglArg == null || tglArg.isEmpty) return 0;
+
+    try {
+      // Format backend bisa jadi "1990-01-01" atau "1990-01-01 00:00:00"
+      // Ambil bagian tanggal saja agar aman
+      final cleanDateStr = tglArg.split(' ').first; // "1990-01-01"
+      final birthDate = DateTime.parse(cleanDateStr);
+      final now = DateTime.now();
+
+      int age = now.year - birthDate.year;
+      if (now.month < birthDate.month ||
+          (now.month == birthDate.month && now.day < birthDate.day)) {
+        age--;
+      }
+      return age;
+    } catch (e) {
+      debugPrint("Error parsing umur: $e");
+      return 0;
+    }
+  }
 }
 
 // ============================================================
