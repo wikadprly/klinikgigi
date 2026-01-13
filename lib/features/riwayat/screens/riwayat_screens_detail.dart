@@ -2,11 +2,89 @@ import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/profile/widgets/custom_button.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
-class RiwayatDetailScreen extends StatelessWidget {
+class RiwayatDetailScreen extends StatefulWidget {
   final Map<String, dynamic> data;
 
   const RiwayatDetailScreen({super.key, required this.data});
+
+  @override
+  State<RiwayatDetailScreen> createState() => _RiwayatDetailScreenState();
+}
+
+class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
+  Timer? _timer;
+  Duration? _countDownDuration;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    if (widget.data['created_at'] != null) {
+      String createdAtStr = widget.data['created_at'].toString();
+      DateTime createdAt;
+
+      try {
+        createdAt = DateTime.parse(createdAtStr);
+      } catch (e) {
+        // Jika parsing gagal, gunakan waktu sekarang
+        createdAt = DateTime.now();
+      }
+
+      DateTime expiryTime = createdAt.add(const Duration(hours: 1));
+      Duration difference = expiryTime.difference(DateTime.now());
+
+      if (difference.inSeconds > 0) {
+        _countDownDuration = difference;
+        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            if (_countDownDuration!.inSeconds > 0) {
+              _countDownDuration = Duration(
+                seconds: _countDownDuration!.inSeconds - 1,
+              );
+            } else {
+              _timer?.cancel();
+            }
+          });
+        });
+      } else {
+        _countDownDuration = Duration.zero;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(Duration duration) {
+    if (duration.inSeconds <= 0) {
+      return 'Waktu habis';
+    }
+
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String hours = twoDigits(duration.inHours.remainder(24));
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+
+    return '${hours}j ${minutes}m ${seconds}d';
+  }
+
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,43 +105,44 @@ class RiwayatDetailScreen extends StatelessWidget {
     }
 
     final nama = pickFirst([
-      data['nama'],
-      data['user']?['nama'],
-      data['users']?['nama'],
-      data['pasien']?['nama'],
-      data['full_reservasi']?['user']?['nama'],
-      data['full_reservasi']?['users']?['nama'],
+      widget.data['nama'],
+      widget.data['user']?['nama'],
+      widget.data['users']?['nama'],
+      widget.data['pasien']?['nama'],
+      widget.data['full_reservasi']?['user']?['nama'],
+      widget.data['full_reservasi']?['users']?['nama'],
     ]);
 
     final rekamMedis = pickFirst([
-      data['rekam_medis'],
-      data['no_rekam_medis'],
-      data['no_rm'],
-      data['no_rm_pasien'],
-      data['pasien']?['rekam_medis'],
-      data['pasien']?['no_rekam_medis'],
-      data['user']?['rekam_medis'],
-      data['user']?['no_rekam_medis'],
+      widget.data['rekam_medis'],
+      widget.data['no_rekam_medis'],
+      widget.data['no_rm'],
+      widget.data['no_rm_pasien'],
+      widget.data['pasien']?['rekam_medis'],
+      widget.data['pasien']?['no_rekam_medis'],
+      widget.data['user']?['rekam_medis'],
+      widget.data['user']?['no_rekam_medis'],
     ]);
     final displayNama = nama.isEmpty ? '-' : nama;
     final displayRekamMedis = rekamMedis.isEmpty ? '-' : rekamMedis;
-    final noPemeriksaan = clean(data['no_pemeriksaan']);
-    final jam = "${clean(data['jam_mulai'])} - ${clean(data['jam_selesai'])}";
-    final tanggal = clean(data['tanggal']);
-    final dokter = clean(data['dokter']);
-    final poli = clean(data['poli']);
-    final keluhan = clean(data['keluhan'] ?? "Tidak ada keluhan");
+    final noPemeriksaan = clean(widget.data['no_pemeriksaan']);
+    final jam =
+        "${clean(widget.data['jam_mulai'])} - ${clean(widget.data['jam_selesai'])}";
+    final tanggal = clean(widget.data['tanggal']);
+    final dokter = clean(widget.data['dokter']);
+    final poli = clean(widget.data['poli']);
+    final keluhan = clean(widget.data['keluhan'] ?? "Tidak ada keluhan");
     // Normalisasi nama field: support both "status_reservasi" and "statusreservasi"
     final statusReservasi = clean(
-      data['status_reservasi'] ??
-          data['statusreservasi'] ??
-          data['status'] ??
+      widget.data['status_reservasi'] ??
+          widget.data['statusreservasi'] ??
+          widget.data['status'] ??
           '',
     );
     final statusPembayaran = clean(
-      data['status_pembayaran'] ?? data['status'] ?? '',
+      widget.data['status_pembayaran'] ?? widget.data['status'] ?? '',
     );
-    final biaya = clean(data['biaya'] ?? "0");
+    final biaya = clean(widget.data['biaya'] ?? "0");
 
     Color statusColor1() {
       final s = statusReservasi.toLowerCase().trim();
@@ -109,13 +188,13 @@ class RiwayatDetailScreen extends StatelessWidget {
 
     // Cari foto prioritas: users.file_foto -> full_reservasi.user.file_foto -> foto -> pasien.file_foto
     String getImageUrl() {
-      final u = data['user'];
+      final u = widget.data['user'];
       if (u != null) {
         final v = u['file_foto'] ?? u['foto'] ?? u['avatar'];
         if (v != null && v.toString().isNotEmpty) return v.toString();
       }
 
-      final full = data['full_reservasi'];
+      final full = widget.data['full_reservasi'];
       if (full is Map) {
         final fu = full['user'] ?? full['users'];
         if (fu != null) {
@@ -124,13 +203,16 @@ class RiwayatDetailScreen extends StatelessWidget {
         }
       }
 
-      final direct = data['foto'] ?? data['file_foto'] ?? data['avatar'];
+      final direct =
+          widget.data['foto'] ??
+          widget.data['file_foto'] ??
+          widget.data['avatar'];
       if (direct != null && direct.toString().isNotEmpty) {
         return direct.toString();
       }
 
       final pasienFoto =
-          data['pasien']?['file_foto'] ?? data['pasien']?['foto'];
+          widget.data['pasien']?['file_foto'] ?? widget.data['pasien']?['foto'];
       if (pasienFoto != null && pasienFoto.toString().isNotEmpty) {
         return pasienFoto.toString();
       }
@@ -231,7 +313,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Show different layout for homecare
-                        if ((data['jenis_layanan'] ?? '')
+                        if ((widget.data['jenis_layanan'] ?? '')
                                 .toString()
                                 .toLowerCase() ==
                             'homecare') ...[
@@ -247,12 +329,12 @@ class RiwayatDetailScreen extends StatelessWidget {
                           ),
                           _item(
                             "Status Booking",
-                            data['status_booking'] ?? '-',
+                            widget.data['status_booking'] ?? '-',
                             valueColor: statusColor1(),
                           ),
                           _item(
                             "Status Pembayaran",
-                            data['status'] ?? '-',
+                            widget.data['status'] ?? '-',
                             valueColor: statusColor2(),
                           ),
 
@@ -266,8 +348,8 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                data['pembayaran_total'] ??
-                                    data['biaya'] ??
+                                widget.data['pembayaran_total'] ??
+                                    widget.data['biaya'] ??
                                     '0',
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
@@ -286,7 +368,7 @@ class RiwayatDetailScreen extends StatelessWidget {
                                 style: AppTextStyles.label,
                               ),
                               Text(
-                                data['total_biaya_tindakan'] ?? '0',
+                                widget.data['total_biaya_tindakan'] ?? '0',
                                 style: AppTextStyles.heading.copyWith(
                                   color: AppColors.gold,
                                   fontSize: 18,
@@ -343,6 +425,90 @@ class RiwayatDetailScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 25),
+
+            // Countdown Timer (hanya muncul jika redirect_url tersedia dan countdown aktif)
+            if ((widget.data['redirect_url'] != null &&
+                    widget.data['redirect_url'].toString().isNotEmpty) ||
+                (widget.data['link_pembayaran'] != null &&
+                    widget.data['link_pembayaran'].toString().isNotEmpty))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        _countDownDuration != null &&
+                            _countDownDuration!.inSeconds > 0
+                        ? Colors.orange.shade100
+                        : Colors.red.shade100,
+                    border: Border.all(
+                      color:
+                          _countDownDuration != null &&
+                              _countDownDuration!.inSeconds > 0
+                          ? Colors.orange
+                          : Colors.red,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.timer,
+                        color:
+                            _countDownDuration != null &&
+                                _countDownDuration!.inSeconds > 0
+                            ? Colors.orange
+                            : Colors.red,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Sisa Waktu: ${_formatDuration(_countDownDuration ?? Duration.zero)}',
+                        style: TextStyle(
+                          color:
+                              _countDownDuration != null &&
+                                  _countDownDuration!.inSeconds > 0
+                              ? Colors.orange
+                              : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Tombol Pembayaran atau Tombol Dummy (hanya muncul jika redirect_url tersedia)
+            if ((widget.data['redirect_url'] != null &&
+                    widget.data['redirect_url'].toString().isNotEmpty) ||
+                (widget.data['link_pembayaran'] != null &&
+                    widget.data['link_pembayaran'].toString().isNotEmpty))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child:
+                    _countDownDuration != null &&
+                        _countDownDuration!.inSeconds > 0
+                    ? CustomButton(
+                        text: "Lanjutkan Pembayaran",
+                        onPressed: () {
+                          String paymentUrl =
+                              widget.data['redirect_url']?.toString() ??
+                              widget.data['link_pembayaran']?.toString() ??
+                              '';
+                          if (paymentUrl.isNotEmpty) {
+                            _launchURL(paymentUrl);
+                          }
+                        },
+                      )
+                    : CustomButton(
+                        text: "Waktu Pembayaran Habis",
+                        onPressed:
+                            null, // Nonaktifkan tombol ketika waktu habis
+                        color: Colors
+                            .grey, // Warna abu-abu untuk menunjukkan tombol nonaktif
+                      ),
+              ),
 
             // BUTTON KEMBALI
             CustomButton(

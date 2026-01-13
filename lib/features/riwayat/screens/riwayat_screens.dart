@@ -179,6 +179,17 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               // Payment
               "metode_pembayaran": item["metode_pembayaran"] ?? "-",
 
+              // Payment links (added to support redirect_url and link_pembayaran)
+              "redirect_url": item["redirect_url"] ?? "-",
+              "link_pembayaran": item["link_pembayaran"] ?? "-",
+              "snap_token": item["snap_token"] ?? "-",
+
+              // Payment availability (whether payment button is still available)
+              "payment_available": item["payment_available"] ?? true,
+
+              // Created at timestamp
+              "created_at": item["created_at"] ?? null,
+
               // Informasi pasien
               "nama": item["nama"] ?? "-",
               "rekam_medis":

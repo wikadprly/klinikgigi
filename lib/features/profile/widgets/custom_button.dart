@@ -4,12 +4,16 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final Color? color;
+  final Color? textColor;
 
   const CustomButton({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
+    this.color,
+    this.textColor,
   });
 
   @override
@@ -19,7 +23,7 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.goldDark,
+          backgroundColor: color ?? AppColors.goldDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -27,7 +31,9 @@ class CustomButton extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: AppTextStyles.button.copyWith(color: Colors.black),
+          style: AppTextStyles.button.copyWith(
+            color: textColor ?? Colors.black,
+          ),
         ),
       ),
     );
