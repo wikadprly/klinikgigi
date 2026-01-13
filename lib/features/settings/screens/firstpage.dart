@@ -9,6 +9,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 import 'package:flutter_klinik_gigi/features/auth/screens/start.dart';
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +19,22 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+
+  // ==============================
+  // FOTO PROFIL (SAMA DENGAN PROFILE PAGE)
+  // ==============================
+  ImageProvider _buildProfileImage(ProfilProvider provider) {
+    final url = provider.photoUrl;
+
+    if (url == null || url.isEmpty) {
+      return const AssetImage('assets/images/profil.jpeg');
+    }
+
+    return NetworkImage(
+      "$url?v=${DateTime.now().millisecondsSinceEpoch}",
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -65,16 +82,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Center(
                     child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.gold, width: 3),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const CircleAvatar(
-                            radius: 55,
-                            backgroundImage: AssetImage('assets/images/profile.jpg'),
-                          ),
+                        Consumer<ProfilProvider>(
+                          builder: (context, profilProvider, _) {
+                            return Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: AppColors.gold, width: 3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CircleAvatar(
+                                radius: 55,
+                                backgroundImage:
+                                    _buildProfileImage(profilProvider),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -131,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final token = snapshot.data ?? '';
 
         return Container(
-          padding: const EdgeInsets.only(bottom: 5), // ⬅⬅ BOX DIPERBESAR
+          padding: const EdgeInsets.only(bottom: 5),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.gold),
             borderRadius: BorderRadius.circular(14),
@@ -149,8 +172,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }),
 
               _divider(),
-
-              // ——— REKAM MEDIS DIHAPUS TOTAL ———
 
               _menuItem(Icons.lock, "Ubah Kata Sandi", () {
                 _confirmChangePassword(context, userEmail);
@@ -190,7 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _divider() => const Divider(color: AppColors.gold, height: 1);
 
-  // ====== POPUP UBAH SANDI ======
   void _confirmChangePassword(BuildContext context, String email) {
     showDialog(
       context: context,
@@ -203,9 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           title: Text(
             "Ubah Kata Sandi",
-            style: AppTextStyles.heading.copyWith(
-              color: AppColors.gold,
-            ),
+            style: AppTextStyles.heading.copyWith(color: AppColors.gold),
           ),
           content: Text(
             "Apakah kamu yakin ingin mengubah kata sandi?",
@@ -216,10 +234,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(
-                "Batal",
-                style: TextStyle(color: AppColors.goldDark),
-              ),
+              child: Text("Batal",
+                  style: TextStyle(color: AppColors.goldDark)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -243,7 +259,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ====== POPUP LOGOUT ======
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -256,9 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           title: Text(
             "Keluar Akun",
-            style: AppTextStyles.heading.copyWith(
-              color: AppColors.gold,
-            ),
+            style: AppTextStyles.heading.copyWith(color: AppColors.gold),
           ),
           content: Text(
             "Apakah kamu yakin ingin logout dari akun ini?",
@@ -269,10 +282,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(
-                "Batal",
-                style: TextStyle(color: AppColors.goldDark),
-              ),
+              child: Text("Batal",
+                  style: TextStyle(color: AppColors.goldDark)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -281,9 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: () async {
                 Navigator.pop(context);
-
                 await SharedPrefsHelper.clearToken();
-
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const StartScreen()),
