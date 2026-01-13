@@ -4,17 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 
 class ProfilService {
-  final String baseUrl = "http://127.0.0.1:8000/api";
+  final String baseUrl = "http://pbl250116.informatikapolines.id/api";
 
   // ========================= GET PROFIL =========================
   Future<Map<String, dynamic>> getProfil(String token) async {
     print("Fetching profile...");
     final response = await http.get(
       Uri.parse("$baseUrl/profil"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      },
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
     );
 
     print("STATUS GET: ${response.statusCode}");
@@ -62,7 +59,8 @@ class ProfilService {
       } else {
         return {
           'success': false,
-          'message': result['message'] ??
+          'message':
+              result['message'] ??
               "Gagal update profil (status ${response.statusCode})",
           'raw': result,
         };
@@ -81,7 +79,6 @@ class ProfilService {
     });
     return list.join(", ");
   }
-
 
   // ===================== UPDATE PROFILE PHOTO =====================
   Future<Map<String, dynamic>> updateProfilePicture(
@@ -123,26 +120,22 @@ class ProfilService {
     }
   }
 
-// ===================== GET PROFILE PHOTO =====================
-Future<Map<String, dynamic>?> getProfilePhoto(String token) async {
-  final response = await http.get(
-    Uri.parse("$baseUrl/profil/get"),
-    headers: {
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    },
-  );
+  // ===================== GET PROFILE PHOTO =====================
+  Future<Map<String, dynamic>?> getProfilePhoto(String token) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/profil/get"),
+      headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
+    );
 
-  print("STATUS GET FOTO: ${response.statusCode}");
-  print("RESPONSE GET FOTO: ${response.body}");
+    print("STATUS GET FOTO: ${response.statusCode}");
+    print("RESPONSE GET FOTO: ${response.body}");
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    return null;
   }
-
-  return null;
-}
-
 
   // ===================== DELETE PROFILE PHOTO (JANGAN DIUBAH) =====================
   Future<Map<String, dynamic>> deleteProfilePicture(String token) async {

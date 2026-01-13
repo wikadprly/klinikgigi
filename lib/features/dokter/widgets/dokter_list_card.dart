@@ -21,9 +21,15 @@ class DokterListCard extends StatelessWidget {
 
       if (!kIsWeb) {
         if (imageUrl.contains('localhost')) {
-          imageUrl = imageUrl.replaceAll('localhost', '10.0.2.2');
+          imageUrl = imageUrl.replaceAll(
+            'localhost',
+            'pbl250116.informatikapolines.id',
+          );
         } else if (imageUrl.contains('127.0.0.1')) {
-          imageUrl = imageUrl.replaceAll('127.0.0.1', '10.0.2.2');
+          imageUrl = imageUrl.replaceAll(
+            '127.0.0.1',
+            'pbl250116.informatikapolines.id',
+          );
         }
       }
 

@@ -152,16 +152,22 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
               // --- PERBAIKAN FOTO DOKTER: Logika Lengkap ---
               String photoUrl = "";
               if (d.fotoProfil != null && d.fotoProfil!.isNotEmpty) {
-                 String filename = d.fotoProfil!.split('/').last;
-                 photoUrl = "$baseUrl/dokter-image/$filename";
+                String filename = d.fotoProfil!.split('/').last;
+                photoUrl = "$baseUrl/dokter-image/$filename";
 
-                 if (!kIsWeb) {
-                   if (photoUrl.contains('localhost')) {
-                     photoUrl = photoUrl.replaceAll('localhost', '10.0.2.2');
-                   } else if (photoUrl.contains('127.0.0.1')) {
-                     photoUrl = photoUrl.replaceAll('127.0.0.1', '10.0.2.2');
-                   }
-                 }
+                if (!kIsWeb) {
+                  if (photoUrl.contains('localhost')) {
+                    photoUrl = photoUrl.replaceAll(
+                      'localhost',
+                      'pbl250116.informatikapolines.id',
+                    );
+                  } else if (photoUrl.contains('127.0.0.1')) {
+                    photoUrl = photoUrl.replaceAll(
+                      '127.0.0.1',
+                      'pbl250116.informatikapolines.id',
+                    );
+                  }
+                }
               }
 
               // 2. Tentukan ImageProvider. NetworkImage hanya jika URL tersedia.

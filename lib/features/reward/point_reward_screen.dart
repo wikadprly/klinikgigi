@@ -202,9 +202,15 @@ class _PointRewardScreenState extends State<PointRewardScreen> {
                       // Fix for Android Emulator: Replace localhost -> 10.0.2.2 if NOT on Web
                       if (!kIsWeb) {
                         if (imgUrl.contains('localhost')) {
-                          imgUrl = imgUrl.replaceAll('localhost', '10.0.2.2');
+                          imgUrl = imgUrl.replaceAll(
+                            'localhost',
+                            'pbl250116.informatikapolines.id',
+                          );
                         } else if (imgUrl.contains('127.0.0.1')) {
-                          imgUrl = imgUrl.replaceAll('127.0.0.1', '10.0.2.2');
+                          imgUrl = imgUrl.replaceAll(
+                            '127.0.0.1',
+                            'pbl250116.informatikapolines.id',
+                          );
                         }
                       }
 

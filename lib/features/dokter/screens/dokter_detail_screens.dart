@@ -88,9 +88,15 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
             // Fix for Android Emulator (10.0.2.2) vs Web (localhost)
             if (!kIsWeb) {
               if (fotoUrl.contains('localhost')) {
-                fotoUrl = fotoUrl.replaceAll('localhost', '10.0.2.2');
+                fotoUrl = fotoUrl.replaceAll(
+                  'localhost',
+                  'pbl250116.informatikapolines.id',
+                );
               } else if (fotoUrl.contains('127.0.0.1')) {
-                fotoUrl = fotoUrl.replaceAll('127.0.0.1', '10.0.2.2');
+                fotoUrl = fotoUrl.replaceAll(
+                  '127.0.0.1',
+                  'pbl250116.informatikapolines.id',
+                );
               }
             }
           }

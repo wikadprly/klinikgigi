@@ -5,7 +5,8 @@ import '../models/otp_request_response.dart';
 import '../models/otp_verify_response.dart';
 
 class OtpService {
-  static const String baseUrl = "http://127.0.0.1:8000/api/auth";
+  static const String baseUrl =
+      "http://pbl250116.informatikapolines.id/api/auth";
 
   Future<OtpRequestResponse> requestOtp(String email) async {
     final url = Uri.parse("$baseUrl/request-otp");
@@ -34,6 +35,7 @@ class OtpService {
 
     return OtpVerifyResponse.fromJson(data);
   }
+
   /// Request OTP RESET PASSWORD
   Future<bool> requestResetPassword(String email) async {
     try {
@@ -44,7 +46,6 @@ class OtpService {
 
       final data = jsonDecode(response.body);
       return data["success"] == true;
-
     } catch (e) {
       debugPrint("Error requestResetPassword: $e");
       return false;
@@ -61,7 +62,6 @@ class OtpService {
 
       final data = jsonDecode(response.body);
       return OtpVerifyResponse.fromJson(data);
-
     } catch (e) {
       debugPrint("Error verifyResetPassword: $e");
       return OtpVerifyResponse(
@@ -80,15 +80,11 @@ class OtpService {
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/reset-password"),
-        body: {
-          "reset_token": resetToken,
-          "password": password,
-        },
+        body: {"reset_token": resetToken, "password": password},
       );
 
       final data = jsonDecode(response.body);
       return data["success"] == true;
-
     } catch (e) {
       debugPrint("Error updatePassword: $e");
       return false;

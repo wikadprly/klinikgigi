@@ -15,9 +15,15 @@ class PromoDetailScreen extends StatelessWidget {
     String? rawImageUrl = promo['gambar_banner_url'] ?? promo['gambar_banner'];
     if (rawImageUrl != null && !kIsWeb) {
       if (rawImageUrl.contains('localhost')) {
-        rawImageUrl = rawImageUrl.replaceAll('localhost', '10.0.2.2');
+        rawImageUrl = rawImageUrl.replaceAll(
+          'localhost',
+          'pbl250116.informatikapolines.id',
+        );
       } else if (rawImageUrl.contains('127.0.0.1')) {
-        rawImageUrl = rawImageUrl.replaceAll('127.0.0.1', '10.0.2.2');
+        rawImageUrl = rawImageUrl.replaceAll(
+          '127.0.0.1',
+          'pbl250116.informatikapolines.id',
+        );
       }
     }
     final String? imageUrl = rawImageUrl;

@@ -1,4 +1,5 @@
-const String baseUrl = "http://127.0.0.1:8000/api"; // Laragon Virtual Host
+const String baseUrl =
+    "http://pbl250116.informatikapolines.id/api"; // Remote Server
 
 class ApiEndpoint {
   // AUTH
@@ -25,9 +26,12 @@ class ApiEndpoint {
   static const reservasiCreate = "$baseUrl/reservasi/create";
   static const reservasiGetPoli = "$baseUrl/reservasi/poli";
   static const reservasiGetDokter = "$baseUrl/reservasi/dokter";
-  static const reservasiGetJadwal = "$baseUrl/reservasi/jadwal"; // Updated to use jadwal_harian
-  static const reservasiGetTanggalDenganJadwal = "$baseUrl/reservasi/tanggal-dengan-jadwal"; // Updated endpoint
-  static const reservasiGetDokterDenganJadwal = "$baseUrl/reservasi/dokter-dengan-jadwal"; // Updated endpoint
+  static const reservasiGetJadwal =
+      "$baseUrl/reservasi/jadwal"; // Updated to use jadwal_harian
+  static const reservasiGetTanggalDenganJadwal =
+      "$baseUrl/reservasi/tanggal-dengan-jadwal"; // Updated endpoint
+  static const reservasiGetDokterDenganJadwal =
+      "$baseUrl/reservasi/dokter-dengan-jadwal"; // Updated endpoint
   static const reservasiRiwayat = "$baseUrl/reservasi/riwayat";
   static const reservasiPembayaran = "$baseUrl/reservasi/pembayaran";
   static String riwayat(String rekamMedisId) =>

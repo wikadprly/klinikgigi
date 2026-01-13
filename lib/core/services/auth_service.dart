@@ -4,7 +4,7 @@ import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl = 'http://pbl250116.informatikapolines.id/api';
   //ip sesuaikan kelen mau tes dimanaz, cek firewall mengijinkan port 8000
 
   Future<UserModel?> login(String identifier, String password) async {
