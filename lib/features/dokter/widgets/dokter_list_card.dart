@@ -15,22 +15,19 @@ class DokterListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget imageWidget;
     if (dokter.foto != null && dokter.foto!.isNotEmpty) {
-      // PROXY ROUTE: Use /api/dokter-image/{filename} to fix CORS on Web
-      String filename = dokter.foto!.split('/').last;
-      String imageUrl = "$baseUrl/dokter-image/$filename";
+      // Use URL directly from backend (which is now asset(Storage::url(...)))
+      String imageUrl = dokter.foto!;
 
-      if (!kIsWeb) {
-        if (imageUrl.contains('localhost')) {
-          imageUrl = imageUrl.replaceAll(
-            'localhost',
-            'pbl250116.informatikapolines.id',
-          );
-        } else if (imageUrl.contains('127.0.0.1')) {
-          imageUrl = imageUrl.replaceAll(
-            '127.0.0.1',
-            'pbl250116.informatikapolines.id',
-          );
-        }
+      if (imageUrl.contains('localhost')) {
+        imageUrl = imageUrl.replaceAll(
+          'localhost',
+          'pbl250116.informatikapolines.id',
+        );
+      } else if (imageUrl.contains('127.0.0.1')) {
+        imageUrl = imageUrl.replaceAll(
+          '127.0.0.1',
+          'pbl250116.informatikapolines.id',
+        );
       }
 
       imageWidget = CircleAvatar(
