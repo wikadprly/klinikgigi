@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 
 class ProfilService {
-  final String baseUrl = "http://pbl250116.informatikapolines.id/api";
+  final String baseUrl = "https://pbl250116.informatikapolines.id/api";
 
   // ========================= GET PROFIL =========================
   Future<Map<String, dynamic>> getProfil(String token) async {

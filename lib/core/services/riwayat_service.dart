@@ -4,7 +4,7 @@ import '../models/riwayat_model.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
 class RiwayatService {
-  static const String baseUrl = "http://pbl250116.informatikapolines.id/api";
+  static const String baseUrl = "https://pbl250116.informatikapolines.id/api";
 
   static Future<List<RiwayatModel>> fetchRiwayat() async {
     final token = await SharedPrefsHelper.getToken();

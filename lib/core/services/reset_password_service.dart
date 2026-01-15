@@ -6,7 +6,7 @@ class ResetPasswordService {
   ResetPasswordService(String token)
     : _dio = Dio(
         BaseOptions(
-          baseUrl: "http://pbl250116.informatikapolines.id/api",
+          baseUrl: "https://pbl250116.informatikapolines.id/api",
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json",

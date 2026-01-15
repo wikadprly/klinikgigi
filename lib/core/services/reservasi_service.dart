@@ -9,7 +9,7 @@ import 'package:flutter_klinik_gigi/config/api.dart';
 
 class ReservasiService {
   // Pastikan URL ini sesuai dengan environment kamu (emulator: 10.0.2.2, device: IP Laptop)
-  static const String baseUrl = 'http://pbl250116.informatikapolines.id/api';
+  static const String baseUrl = 'https://pbl250116.informatikapolines.id/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();

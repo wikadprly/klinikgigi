@@ -1,5 +1,5 @@
 const String baseUrl =
-    "http://pbl250116.informatikapolines.id/api"; // Remote Server
+    "https://pbl250116.informatikapolines.id/api"; // Remote Server
 
 class ApiEndpoint {
   // AUTH

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/nota_model.dart';
 
 class InvoiceService {
-  static const String baseUrl = "http://pbl250116.informatikapolines.id/api";
+  static const String baseUrl = "https://pbl250116.informatikapolines.id/api";
 
   Future<InvoiceModel> getInvoice(int idTransaksi) async {
     final res = await http.get(Uri.parse("$baseUrl/nota/$idTransaksi"));

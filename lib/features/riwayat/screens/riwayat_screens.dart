@@ -112,7 +112,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
       // Append filter for jenis layanan (poliklinik/homecare)
       final uri = Uri.parse(
-        'http://pbl250116.informatikapolines.id/api/riwayat',
+        'https://pbl250116.informatikapolines.id/api/riwayat',
       ).replace(queryParameters: {'jenis': selectedCare});
 
       final response = await http.get(

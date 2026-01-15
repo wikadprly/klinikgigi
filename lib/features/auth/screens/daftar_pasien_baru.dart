@@ -102,7 +102,10 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                 AuthInputField(hintText: "NIK", controller: nikController),
                 AuthInputField(hintText: "Email", controller: emailController),
                 AuthInputField(hintText: "No. HP", controller: noHpController),
-                AuthInputField(hintText: "Alamat", controller: alamatController),
+                AuthInputField(
+                  hintText: "Alamat",
+                  controller: alamatController,
+                ),
 
                 // 🔹 Tanggal Lahir
                 TextField(
@@ -223,7 +226,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                           return;
                         }
 
-                        final success = await authProvider.registerUser(
+                        final errorMessage = await authProvider.registerUser(
                           tipePasien: tipePasien,
                           namaPengguna: namaController.text.trim(),
                           nik: nikController.text.trim(),
@@ -237,7 +240,7 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                               .trim(),
                         );
 
-                        if (success) {
+                        if (errorMessage == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Registrasi berhasil!"),
@@ -250,7 +253,12 @@ class _DaftarPasienBaruPageState extends State<DaftarPasienBaruPage> {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Registrasi gagal.")),
+                            SnackBar(
+                              content: Text(
+                                errorMessage,
+                              ), // Show specific error
+                              backgroundColor: Colors.red,
+                            ),
                           );
                         }
                       },

@@ -31,7 +31,7 @@ void main() async {
 
   final token = tokenFromPrefs;
   final response = await http.get(
-    Uri.parse('http://pbl250116.informatikapolines.id/api/riwayat'),
+    Uri.parse('https://pbl250116.informatikapolines.id/api/riwayat'),
     headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
   );
 

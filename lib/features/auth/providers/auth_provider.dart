@@ -25,21 +25,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String identifier, String password) async {
+  Future<String?> login(String identifier, String password) async {
     _isLoading = true;
     notifyListeners();
 
-    final user = await _authService.login(identifier, password);
+    final result = await _authService.login(identifier, password);
     _isLoading = false;
 
-    if (user != null) {
-      _user = user;
+    if (result['success'] == true) {
+      _user = result['user'];
       _token = await SharedPrefsHelper.getToken(); // ambil token
       notifyListeners();
-      return true;
+      return null; // Success (no error)
     } else {
       notifyListeners();
-      return false;
+      return result['message'] ?? 'Login gagal'; // Return error message
     }
   }
 
@@ -51,7 +51,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> registerUser({
+  Future<String?> registerUser({
     required String tipePasien,
     String? rekamMedis,
     String? namaPengguna,
@@ -72,7 +72,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _authService.registerUser(
+      final result = await _authService.registerUser(
         tipePasien: tipePasien,
         rekamMedisId: rekamMedis,
         namaPengguna: namaPengguna,
@@ -88,12 +88,17 @@ class AuthProvider extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      return success;
+
+      if (result['success'] == true) {
+        return null; // Success
+      } else {
+        return result['message'] ?? 'Registrasi gagal';
+      }
     } catch (e) {
       _isLoading = false;
       notifyListeners();
       debugPrint("Error register user: $e");
-      return false;
+      return "Terjadi kesalahan sistem: $e";
     }
   }
 }

@@ -6,7 +6,7 @@ import '../models/otp_verify_response.dart';
 
 class OtpService {
   static const String baseUrl =
-      "http://pbl250116.informatikapolines.id/api/auth";
+      "https://pbl250116.informatikapolines.id/api/auth";
 
   Future<OtpRequestResponse> requestOtp(String email) async {
     final url = Uri.parse("$baseUrl/request-otp");

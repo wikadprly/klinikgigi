@@ -148,7 +148,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                           return;
                         }
 
-                        final success = await authProvider.registerUser(
+                        final errorMessage = await authProvider.registerUser(
                           tipePasien: tipePasien,
                           rekamMedis: rekamMedisController.text.trim(),
                           email: emailController.text.trim(),
@@ -158,7 +158,7 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                               .trim(),
                         );
 
-                        if (success) {
+                        if (errorMessage == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Registrasi berhasil!"),
@@ -171,7 +171,12 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Registrasi gagal.")),
+                            SnackBar(
+                              content: Text(
+                                errorMessage,
+                              ), // Show specific error
+                              backgroundColor: Colors.red,
+                            ),
                           );
                         }
                       },

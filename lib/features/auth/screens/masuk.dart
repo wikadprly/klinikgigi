@@ -104,25 +104,27 @@ class _LoginPageState extends State<LoginPage> {
                           return;
                         }
 
-                        final success = await authProvider.login(
+                        final errorMessage = await authProvider.login(
                           identifier,
                           password,
                         );
 
-                        if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Login berhasil!")),
-                          );
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/main_screen',
-                          );
+                        if (errorMessage == null) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Login berhasil!")),
+                            );
+                            Navigator.pushReplacementNamed(
+                              context,
+                              '/main_screen',
+                            );
+                          }
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Login gagal. Periksa data Anda."),
-                            ),
-                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(errorMessage)),
+                            );
+                          }
                         }
                       },
                     ),
