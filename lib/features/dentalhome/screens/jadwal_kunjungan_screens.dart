@@ -144,224 +144,232 @@ class _SchedulePageState extends State<SchedulePage> {
           return Stack(
             children: [
               SafeArea(
-                child: Column(
-                  children: [
-                    // ==== 1. CALENDAR WIDGET ====
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: CalendarWidget(
-                        selectedDay: _selectedDate.day,
-                        onDaySelected: (day, month, year) {
-                          setState(() {
-                            _selectedDate = DateTime(year, month, day);
-                            _selectedFilter =
-                                'Semua'; // Reset filter date change
-                          });
-                          _fetchDoctors();
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // ==== 2. PILIH JENIS KELUHAN ====
-                    _buildComplaintInput(),
-
-                    const SizedBox(height: 20),
-
-                    // ==== 3. HEADER LIST ====
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: const [
-                              Icon(
-                                Icons.medical_services,
-                                color: AppColors.gold,
-                                size: 20,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                "Dokter Tersedia",
-                                style: TextStyle(
-                                  color: AppColors.textLight,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            "${displayedDoctors.length} Dokter",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
+                          // ==== 1. CALENDAR WIDGET ====
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: CalendarWidget(
+                              selectedDay: _selectedDate.day,
+                              onDaySelected: (day, month, year) {
+                                setState(() {
+                                  _selectedDate = DateTime(year, month, day);
+                                  _selectedFilter =
+                                      'Semua'; // Reset filter date change
+                                });
+                                _fetchDoctors();
+                              },
                             ),
                           ),
+
+                          const SizedBox(height: 20),
+
+                          // ==== 2. PILIH JENIS KELUHAN ====
+                          _buildComplaintInput(),
+
+                          const SizedBox(height: 20),
+
+                          // ==== 3. HEADER LIST ====
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.medical_services,
+                                      color: AppColors.gold,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Dokter Tersedia",
+                                      style: TextStyle(
+                                        color: AppColors.textLight,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  "${displayedDoctors.length} Dokter",
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ==== 4. FILTER CHIPS ====
+                          if (displayedDoctors.isNotEmpty ||
+                              _selectedFilter != 'Semua')
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                children: filterCategories.map((category) {
+                                  final isSelected =
+                                      _selectedFilter == category;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: ChoiceChip(
+                                      label: Text(category),
+                                      selected: isSelected,
+                                      onSelected: (selected) {
+                                        if (selected) {
+                                          setState(() {
+                                            _selectedFilter = category;
+                                            _selectedIndex = -1;
+                                          });
+                                          _fetchDoctors();
+                                        }
+                                      },
+                                      backgroundColor: AppColors.cardDark,
+                                      selectedColor: AppColors.gold,
+                                      labelStyle: TextStyle(
+                                        color: isSelected
+                                            ? Colors.black
+                                            : Colors.white,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        side: BorderSide(
+                                          color: isSelected
+                                              ? AppColors.gold
+                                              : Colors.white24,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+
+                          if (displayedDoctors.isNotEmpty ||
+                              _selectedFilter != 'Semua')
+                            const SizedBox(height: 12),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // ==== 4. FILTER CHIPS ====
-                    if (displayedDoctors.isNotEmpty ||
-                        _selectedFilter != 'Semua')
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
+                    // ==== 5. LIST DOKTER (SLIVERS) ====
+                    if (isLoading)
+                      const SliverFillRemaining(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.gold,
+                          ),
                         ),
-                        child: Row(
-                          children: filterCategories.map((category) {
-                            final isSelected = _selectedFilter == category;
+                      )
+                    else if (displayedDoctors.isEmpty ||
+                        provider.errorMessage != null)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                provider.errorMessage != null
+                                    ? Icons.error_outline
+                                    : Icons.event_busy,
+                                color: Colors.grey,
+                                size: 50,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                provider.errorMessage != null
+                                    ? "Gagal memuat: ${provider.errorMessage}"
+                                    : "Tidak ada dokter tersedia\npada tanggal ini.",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              if (provider.errorMessage != null) ...[
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: _fetchDoctors,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.gold,
+                                    foregroundColor: Colors.black,
+                                  ),
+                                  child: const Text("Coba Lagi"),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((context, i) {
+                            final item = displayedDoctors[i];
+                            final jadwal = item['master_jadwal'];
+                            final dokter = jadwal?['dokter'];
+
+                            final int kuotaSisa = item['kuota_sisa'] ?? 0;
+                            final int kuotaMaster = item['kuota_master'] ?? 0;
+
+                            final String namaDokter =
+                                dokter?['nama'] ?? 'Dokter Tanpa Nama';
+                            final String spesialis =
+                                dokter?['spesialis']?['nama_spesialis'] ??
+                                dokter?['spesialisasi'] ??
+                                '-';
+                            final String jamPraktek =
+                                "${jadwal?['jam_mulai'] ?? '00:00'} - ${jadwal?['jam_selesai'] ?? '00:00'}";
+
+                            final Map<String, String> doctorDataMap = {
+                              'name': namaDokter,
+                              'time': jamPraktek,
+                              'quota': "$kuotaSisa/$kuotaMaster",
+                              'spesialis': spesialis,
+                            };
+
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                label: Text(category),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setState(() {
-                                      _selectedFilter = category;
-                                      _selectedIndex = -1;
-                                    });
-                                    _fetchDoctors();
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: DoctorCard(
+                                doctor: doctorDataMap,
+                                selected: i == _selectedIndex,
+                                onSelect: () {
+                                  if (kuotaSisa > 0) {
+                                    setState(() => _selectedIndex = i);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Kuota dokter ini sudah penuh",
+                                        ),
+                                        backgroundColor: Colors.red,
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                   }
                                 },
-                                backgroundColor: AppColors.cardDark,
-                                selectedColor: AppColors.gold,
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? Colors.black
-                                      : Colors.white,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(
-                                    color: isSelected
-                                        ? AppColors.gold
-                                        : Colors.white24,
-                                  ),
-                                ),
                               ),
                             );
-                          }).toList(),
+                          }, childCount: displayedDoctors.length),
                         ),
                       ),
-
-                    if (displayedDoctors.isNotEmpty ||
-                        _selectedFilter != 'Semua')
-                      const SizedBox(height: 12),
-
-                    // ==== 5. LIST DOKTER ====
-                    Expanded(
-                      child: isLoading
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.gold,
-                              ),
-                            )
-                          : displayedDoctors.isEmpty ||
-                                provider.errorMessage != null
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    provider.errorMessage != null
-                                        ? Icons.error_outline
-                                        : Icons.event_busy,
-                                    color: Colors.grey,
-                                    size: 50,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    provider.errorMessage != null
-                                        ? "Gagal memuat: ${provider.errorMessage}"
-                                        : "Tidak ada dokter tersedia\npada tanggal ini.",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  if (provider.errorMessage != null) ...[
-                                    const SizedBox(height: 10),
-                                    ElevatedButton(
-                                      onPressed: _fetchDoctors,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.gold,
-                                        foregroundColor: Colors.black,
-                                      ),
-                                      child: const Text("Coba Lagi"),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            )
-                          : ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(
-                                16,
-                                0,
-                                16,
-                                120,
-                              ),
-                              itemCount: displayedDoctors.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 12),
-                              itemBuilder: (context, i) {
-                                final item = displayedDoctors[i];
-                                final jadwal = item['master_jadwal'];
-                                final dokter = jadwal?['dokter'];
-
-                                final int kuotaSisa = item['kuota_sisa'] ?? 0;
-                                final int kuotaMaster =
-                                    item['kuota_master'] ?? 0;
-
-                                final String namaDokter =
-                                    dokter?['nama'] ?? 'Dokter Tanpa Nama';
-                                final String spesialis =
-                                    dokter?['spesialis']?['nama_spesialis'] ??
-                                    dokter?['spesialisasi'] ??
-                                    '-';
-                                final String jamPraktek =
-                                    "${jadwal?['jam_mulai'] ?? '00:00'} - ${jadwal?['jam_selesai'] ?? '00:00'}";
-
-                                final Map<String, String> doctorDataMap = {
-                                  'name': namaDokter,
-                                  'time': jamPraktek,
-                                  'quota': "$kuotaSisa/$kuotaMaster",
-                                  'spesialis': spesialis,
-                                };
-
-                                return DoctorCard(
-                                  doctor: doctorDataMap,
-                                  selected: i == _selectedIndex,
-                                  onSelect: () {
-                                    if (kuotaSisa > 0) {
-                                      setState(() => _selectedIndex = i);
-                                    } else {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Kuota dokter ini sudah penuh",
-                                          ),
-                                          backgroundColor: Colors.red,
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-                    ),
                   ],
                 ),
               ),
