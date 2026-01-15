@@ -435,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                       child: _buildPromoCard(
-                        imagePath: imagePath,
+                        imagePath: _sanitizedImageUrl(imagePath),
                         title: promo['judul_promo'] ?? 'Promo',
                         subtitle: promo['deskripsi'] ?? '',
                         target: promo['target_transaksi'] ?? 'semua',
@@ -552,5 +552,28 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  String _sanitizedImageUrl(String url) {
+    if (url.isEmpty) return url;
+    // import 'package:flutter/foundation.dart'; needed or just copy basic check relative to usage
+    // Since kIsWeb is not imported in this specific file snippet I'll use basic strings or assume import.
+    // However, kIsWeb is standard. Let's assume lines 1-13 import foundation? No, checked earlier.
+    // Line 1-13 in file view did NOT import foundation.
+    // I will skip kIsWeb check or add it. Let's just do string replacement for safety.
+
+    String sanitized = url;
+    if (sanitized.contains('localhost')) {
+      sanitized = sanitized.replaceAll(
+        'localhost',
+        'pbl250116.informatikapolines.id',
+      );
+    } else if (sanitized.contains('127.0.0.1')) {
+      sanitized = sanitized.replaceAll(
+        '127.0.0.1',
+        'pbl250116.informatikapolines.id',
+      );
+    }
+    return sanitized;
   }
 }
