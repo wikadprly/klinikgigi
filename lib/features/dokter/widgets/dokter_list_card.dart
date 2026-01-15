@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/text_styles.dart';
 import '../../../core/models/master_dokter_model.dart';
-import 'package:flutter_klinik_gigi/config/api.dart'; // Import baseUrl
 import '../screens/dokter_detail_screens.dart';
 
 class DokterListCard extends StatelessWidget {

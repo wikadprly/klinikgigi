@@ -528,37 +528,40 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Color(0xFF2C2C2C),
-          border: Border(top: BorderSide(color: Colors.white10)),
-        ),
-        child: ElevatedButton(
-          onPressed: _isProcessing ? null : _processSettlement,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.gold,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0,
+      bottomNavigationBar: SafeArea(
+        bottom: true,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF2C2C2C),
+            border: Border(top: BorderSide(color: Colors.white10)),
           ),
-          child: _isProcessing
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(color: Colors.black),
-                )
-              : Text(
-                  "Bayar Sekarang (${currencyFormatter.format(finalTotal)})",
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
+          child: ElevatedButton(
+            onPressed: _isProcessing ? null : _processSettlement,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: _isProcessing
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(color: Colors.black),
+                  )
+                : Text(
+                    "Bayar Sekarang (${currencyFormatter.format(finalTotal)})",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );

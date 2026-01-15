@@ -74,118 +74,89 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
       ),
       body: Consumer<HomeCareProvider>(
         builder: (context, provider, child) {
-          // If first load (and data is empty?), show loading
-          // But provider might have stale data.
-          // For now we assume provider updates quickly or we use local loading state if strictly needed.
-          // The provider has no 'isTrackingLoading' flag exposed cleanly yet except via internal.
-          // Let's implement dynamic checking if we want.
-          // But effectively, if status is 'pending' and we just started, it might be stale.
-          // However, startTrackingPolling fetches immediately.
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // 1. Info Card
+                  _buildDoctorInfoCard(provider),
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                // 1. Info Card
-                _buildDoctorInfoCard(provider),
+                  const SizedBox(height: 30),
 
-                const SizedBox(height: 30),
-
-                // 2. Timeline
-                // TimelineProgresModule needs to be updated or we pass data to it
-                // If TimelineProgresModule uses internal logic, we might need to check it.
-                // Assuming it takes simple args.
-                TimelineProgresModule(
-                  currentStatus: provider.currentStatus,
-                  doctorName: provider.doctorName,
-                ),
-
-                // Wait, the user's previous code called TimelineProgresModule.
-                // I should check if that widget needs refactoring too?
-                // It was imported from 'package:flutter_klinik_gigi/features/dentalhome/screens/timeline_progres.dart';
-                // I will assume it works with the passed params.
-
-                // Replacing the custom _buildFixedTimeline in the file with the Module or keeping the custom one?
-                // The previous file had `_buildFixedTimeline` function AND imported `TimelineProgresModule`.
-                // But in the body it used `TimelineProgresModule`.
-                // AND it had `_buildFixedTimeline` defined but NOT USED in the build method?
-                // Wait, looking at lines 120-123 of previous file:
-                /*
+                  // 2. Timeline
                   TimelineProgresModule(
-                    currentStatus: _currentStatus,
-                    doctorName: _doctorName,
+                    currentStatus: provider.currentStatus,
+                    doctorName: provider.doctorName,
                   ),
-                  */
-                // So `_buildFixedTimeline` was likely dead code or I missed where it was used.
-                // Ah, I see `_buildFixedTimeline` at line 234.
-                // But in `build` at line 120 it uses `TimelineProgresModule`.
-                // So I should use `TimelineProgresModule`.
-                const SizedBox(height: 40),
 
-                // 3. Action Buttons
-                if (provider.isReadyForSettlement &&
-                    provider.settlementStatus != 'lunas')
+                  const SizedBox(height: 40),
+
+                  // 3. Action Buttons
+                  if (provider.isReadyForSettlement &&
+                      provider.settlementStatus != 'lunas')
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/dentalhome/pelunasan',
+                            arguments: {
+                              'bookingId': widget.bookingId,
+                              'totalTagihan': provider.totalTagihan,
+                            },
+                          ).then((_) {
+                            // Refresh on return
+                            provider.fetchTrackingData(widget.bookingId);
+                          });
+                        },
+                        child: const Text(
+                          "Selesaikan Pembayaran",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: AppColors.gold),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/dentalhome/pelunasan',
-                          arguments: {
-                            'bookingId': widget.bookingId,
-                            'totalTagihan': provider.totalTagihan,
-                          },
-                        ).then((_) {
-                          // Refresh on return
-                          provider.fetchTrackingData(widget.bookingId);
-                        });
-                      },
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/main_screen',
+                        (route) => false,
+                      ),
                       child: const Text(
-                        "Selesaikan Pembayaran",
+                        "Kembali ke Beranda",
                         style: TextStyle(
-                          color: Colors.black,
+                          color: AppColors.gold,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
                         ),
                       ),
                     ),
                   ),
-
-                const SizedBox(height: 16),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: AppColors.gold),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/main_screen',
-                      (route) => false,
-                    ),
-                    child: const Text(
-                      "Kembali ke Beranda",
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

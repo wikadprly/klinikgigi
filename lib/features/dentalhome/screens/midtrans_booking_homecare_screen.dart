@@ -330,33 +330,36 @@ class _MidtransHomeCareBookingScreenState
               ],
             ),
           ),
-          bottomNavigationBar: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: AppColors.cardDark,
-              border: Border(top: BorderSide(color: Colors.white12)),
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  _lastPaidTotal = finalTotal;
-                  _prosesPembayaranMidtrans();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          bottomNavigationBar: SafeArea(
+            bottom: true,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColors.cardDark,
+                border: Border(top: BorderSide(color: Colors.white12)),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _lastPaidTotal = finalTotal;
+                    _prosesPembayaranMidtrans();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: Text(
-                  "Lanjut Pembayaran (${currencyFormatter.format(finalTotal)})",
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  child: Text(
+                    "Lanjut Pembayaran (${currencyFormatter.format(finalTotal)})",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),

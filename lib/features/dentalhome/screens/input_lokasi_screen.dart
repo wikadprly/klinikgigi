@@ -472,29 +472,32 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                       top: Radius.circular(20),
                     ),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: estimasiBiaya != null
-                            ? AppColors.gold
-                            : Colors.grey.shade800,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                  child: SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: estimasiBiaya != null
+                              ? AppColors.gold
+                              : Colors.grey.shade800,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
-                      ),
-                      onPressed: estimasiBiaya != null
-                          ? _lanjutKePembayaran
-                          : null,
-                      child: Text(
-                        "Konfirmasi Alamat",
-                        style: TextStyle(
-                          color: estimasiBiaya != null
-                              ? Colors.black
-                              : Colors.white54,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        onPressed: estimasiBiaya != null
+                            ? _lanjutKePembayaran
+                            : null,
+                        child: Text(
+                          "Konfirmasi Alamat",
+                          style: TextStyle(
+                            color: estimasiBiaya != null
+                                ? Colors.black
+                                : Colors.white54,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),

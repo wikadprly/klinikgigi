@@ -99,8 +99,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: const ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
                 .map(
-                  (day) => SizedBox(
-                    width: 40,
+                  (day) => Flexible(
                     child: Text(
                       day,
                       textAlign: TextAlign.center,
