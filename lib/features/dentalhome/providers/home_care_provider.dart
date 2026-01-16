@@ -37,6 +37,7 @@ class HomeCareProvider extends ChangeNotifier {
   String _doctorName = '-';
   String _scheduleDate = '-';
   String _scheduleTime = '-';
+  int _queueNumber = 0;
 
   // ===========================================================================
   // GETTERS
@@ -58,6 +59,7 @@ class HomeCareProvider extends ChangeNotifier {
   String get doctorName => _doctorName;
   String get scheduleDate => _scheduleDate;
   String get scheduleTime => _scheduleTime;
+  int get queueNumber => _queueNumber;
 
   bool get isReadyForSettlement {
     return _currentStatus == 'menunggu_pelunasan' ||
@@ -289,6 +291,7 @@ class HomeCareProvider extends ChangeNotifier {
       _doctorName = statusData['nama_dokter'] ?? '-';
       _scheduleDate = statusData['jadwal_tanggal'] ?? '-';
       _scheduleTime = statusData['jadwal_jam'] ?? '-';
+      _queueNumber = statusData['no_antrian'] ?? 0; // Parse Queue Number
 
       notifyListeners();
     } catch (e) {

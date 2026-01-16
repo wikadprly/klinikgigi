@@ -202,6 +202,24 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
             "Jadwal : $formattedDate, ${provider.scheduleTime}",
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
+          if (provider.queueNumber > 0) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.gold,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "Urutan Kunjungan #${provider.queueNumber}",
+                style: const TextStyle(
+                  color: Colors.black, // Dark text on Gold
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

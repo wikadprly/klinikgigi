@@ -22,25 +22,27 @@ class TimelineProgresModule extends StatelessWidget {
       'Menunggu Pembayaran', // Fallback from main status column
       'menunggu_dokter',
       'terverifikasi',
-      'menunggu_konfirmasi', // Add capitalization variants just in case
+      'menunggu_konfirmasi',
       'Menunggu Konfirmasi',
+      'Menunggu Konfirmasi Admin', // New
     ].contains(status)) {
       return 1;
     }
     // 2: OTW
-    if (['otw_lokasi', 'dokter_menuju_lokasi'].contains(status)) return 2;
+    if (['otw_lokasi', 'dokter_menuju_lokasi', 'Dokter Sedang Menuju Lokasi'].contains(status)) return 2;
     // 3: In Progress
-    if (['sedang_diperiksa', 'dalam_pemeriksaan'].contains(status)) return 3;
+    if (['sedang_diperiksa', 'dalam_pemeriksaan', 'Sedang Dalam Pemeriksaan'].contains(status)) return 3;
     // 4: Billing / Done
     if ([
       'selesai_diperiksa',
       'menunggu_pelunasan',
       'menunggu_pembayaran_obat',
+      'Pemeriksaan Selesai (Menunggu Pembayaran)', // New
     ].contains(status)) {
       return 4;
     }
     // 5: Lunas
-    if (['lunas'].contains(status)) return 5;
+    if (['lunas', 'Layanan Selesai & Lunas'].contains(status)) return 5;
 
     return 0; // Default pending
   }
