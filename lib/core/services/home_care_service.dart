@@ -308,11 +308,10 @@ class HomeCareService {
   }
 
   // --- FITUR BARU: CEK BOOKING AKTIF ---
-  // --- FITUR BARU: CEK BOOKING AKTIF ---
   Future<Map<String, dynamic>?> checkActiveBooking() async {
     final token = await _getToken();
-    final urlString = '$baseUrl/homecare/booking/active'; 
-    final uri = Uri.parse(urlString); 
+    final urlString = '$baseUrl/homecare/booking/active';
+    final uri = Uri.parse(urlString);
 
     final headers = {
       'Content-Type': 'application/json',
@@ -321,18 +320,6 @@ class HomeCareService {
 
     try {
       final response = await client.get(uri, headers: headers);
-      
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['status'] == 'success' && jsonResponse['data'] != null) {
-          return Map<String, dynamic>.from(jsonResponse['data']);
-        }
-      }
-    } catch (e) {
-      debugPrint("Error checking active booking service: $e");
-    }
-    return null;
-  }
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -342,7 +329,7 @@ class HomeCareService {
         }
       }
     } catch (e) {
-      print("Error checking active booking: $e");
+      // print("Error checking active booking service: $e");
     }
     return null;
   }

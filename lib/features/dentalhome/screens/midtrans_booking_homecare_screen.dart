@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../theme/colors.dart';
 import '../../../core/storage/shared_prefs_helper.dart';
 import '../providers/home_care_provider.dart';
-import 'midtrans_webview_screen.dart';
 
 class MidtransHomeCareBookingScreen extends StatefulWidget {
   final int masterJadwalId;
@@ -98,6 +96,8 @@ class _MidtransHomeCareBookingScreenState
         );
         return;
       }
+
+      if (!mounted) return; // FIX: Async Gap Check
 
       final provider = Provider.of<HomeCareProvider>(context, listen: false);
 
