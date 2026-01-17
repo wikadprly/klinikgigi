@@ -150,13 +150,16 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
       final s = statusReservasi.toLowerCase().trim();
       switch (s) {
         case 'menunggu':
+        case 'belum_lunas':
           return Colors.orange;
         case 'dalam_proses':
         case 'dalam proses':
           return Colors.blue;
         case 'selesai':
+        case 'lunas':
           return Colors.green;
         case 'batal':
+        case 'gagal':
           return Colors.red;
         default:
           return AppColors.goldDark;
@@ -167,11 +170,13 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
       final s = statusPembayaran.toLowerCase().trim();
       switch (s) {
         case 'menunggu_pembayaran':
+        case 'belum_lunas':
           return Colors.orange;
         case 'menunggu_verifikasi':
         case 'menunggu verifikasi':
           return Colors.blue;
         case 'terverifikasi':
+        case 'lunas':
           return Colors.green;
         case 'gagal':
           return Colors.red;
@@ -287,23 +292,53 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                       // === TEKS NO PEMERIKSAAN (DALAM PADDING) ===
                       Padding(
                         padding: const EdgeInsets.all(18),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "No. Pemeriksaan :",
-                              style: AppTextStyles.label.copyWith(fontSize: 13),
-                            ),
-                            Text(
-                              noPemeriksaan,
-                              style: AppTextStyles.heading.copyWith(
-                                color: AppColors.gold,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.right,
-                            ),
-                          ],
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // If available width is less than threshold, use column layout
+                            if (constraints.maxWidth < 300) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "No. Pemeriksaan :",
+                                    style: AppTextStyles.label.copyWith(fontSize: 13),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    noPemeriksaan,
+                                    style: AppTextStyles.heading.copyWith(
+                                      color: AppColors.gold,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            } else {
+                              // Original row layout for wider screens
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "No. Pemeriksaan :",
+                                    style: AppTextStyles.label.copyWith(fontSize: 13),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      noPemeriksaan,
+                                      style: AppTextStyles.heading.copyWith(
+                                        color: AppColors.gold,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                          },
                         ),
                       ),
 
@@ -358,9 +393,9 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                                     style: AppTextStyles.label,
                                   ),
                                   Text(
-                                    widget.data['pembayaran_total'] ??
+                                    'Rp. ${(widget.data['pembayaran_total'] ??
                                         widget.data['biaya'] ??
-                                        '0',
+                                        '0')}',
                                     style: AppTextStyles.heading.copyWith(
                                       color: AppColors.gold,
                                       fontSize: 18,
@@ -378,7 +413,7 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                                     style: AppTextStyles.label,
                                   ),
                                   Text(
-                                    widget.data['total_biaya_tindakan'] ?? '0',
+                                    'Rp. ${(widget.data['total_biaya_tindakan'] ?? '0')}',
                                     style: AppTextStyles.heading.copyWith(
                                       color: AppColors.gold,
                                       fontSize: 18,
@@ -415,7 +450,7 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                                     style: AppTextStyles.label,
                                   ),
                                   Text(
-                                    biaya,
+                                    'Rp. $biaya',
                                     style: AppTextStyles.heading.copyWith(
                                       color: AppColors.gold,
                                       fontSize: 18,
