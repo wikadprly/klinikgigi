@@ -3,6 +3,8 @@ import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/profile/widgets/custom_button.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
 import 'dart:async';
 
 class RiwayatDetailScreen extends StatefulWidget {
@@ -222,302 +224,312 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
 
     final imageUrl = getImageUrl();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ===== JUDUL =====
-            const Text("Riwayat", style: AppTextStyles.heading),
-            const SizedBox(height: 20),
+    return Consumer<ProfilProvider>(
+      builder: (context, profilProvider, child) {
+        // Use the profile provider's photo URL as fallback if no image in data
+        String finalImageUrl = imageUrl;
+        if (finalImageUrl.isEmpty && profilProvider.photoUrl != null && profilProvider.photoUrl!.isNotEmpty) {
+          finalImageUrl = profilProvider.photoUrl!;
+        }
 
-            // ===== PROFILE PASIEN =====
-            Row(
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundImage: imageUrl.isNotEmpty
-                      ? NetworkImage(imageUrl)
-                      : const NetworkImage("https://via.placeholder.com/150"),
-                ),
-                const SizedBox(width: 15),
+                // ===== JUDUL =====
+                const Text("Riwayat", style: AppTextStyles.heading),
+                const SizedBox(height: 20),
 
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // ===== PROFILE PASIEN =====
+                Row(
                   children: [
-                    Text(
-                      "Nama : $displayNama",
-                      style: AppTextStyles.heading.copyWith(fontSize: 16),
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundImage: finalImageUrl.isNotEmpty
+                          ? NetworkImage(finalImageUrl)
+                          : const NetworkImage("https://via.placeholder.com/150"),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "NO.RM : $displayRekamMedis",
-                      style: AppTextStyles.label,
+                    const SizedBox(width: 15),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Nama : $displayNama",
+                          style: AppTextStyles.heading.copyWith(fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "NO.RM : $displayRekamMedis",
+                          style: AppTextStyles.label,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-            // ===== CARD DETAIL =====
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.gold, width: 1.2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // === TEKS NO PEMERIKSAAN (DALAM PADDING) ===
-                  Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "No. Pemeriksaan :",
-                          style: AppTextStyles.label.copyWith(fontSize: 13),
-                        ),
-                        Text(
-                          noPemeriksaan,
-                          style: AppTextStyles.heading.copyWith(
-                            color: AppColors.gold,
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // === GARIS FULL TANPA PADDING ===
-                  Container(
-                    height: 1.8,
-                    width: double.infinity,
-                    color: AppColors.gold,
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // === DETAIL ITEM LAIN (DAPAT PADDING) ===
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Show different layout for homecare
-                        if ((widget.data['jenis_layanan'] ?? '')
-                                .toString()
-                                .toLowerCase() ==
-                            'homecare') ...[
-                          _item("Hari/Tanggal", tanggal),
-                          _item("Waktu Layanan", jam),
-                          _item("Dokter", dokter),
-                          _item("Layanan", poli),
-                          _item("Keluhan", displaykeluhan()),
-                          _item(
-                            "Status Reservasi",
-                            statusReservasi,
-                            valueColor: statusColor1(),
-                          ),
-                          _item(
-                            "Status Booking",
-                            widget.data['status_booking'] ?? '-',
-                            valueColor: statusColor1(),
-                          ),
-                          _item(
-                            "Status Pembayaran",
-                            widget.data['status'] ?? '-',
-                            valueColor: statusColor2(),
-                          ),
-
-                          const SizedBox(height: 15),
-                          // ===== DETAIL BIAYA =====
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total Biaya',
-                                style: AppTextStyles.label,
-                              ),
-                              Text(
-                                widget.data['pembayaran_total'] ??
-                                    widget.data['biaya'] ??
-                                    '0',
-                                style: AppTextStyles.heading.copyWith(
-                                  color: AppColors.gold,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total Biaya Tindakan',
-                                style: AppTextStyles.label,
-                              ),
-                              Text(
-                                widget.data['total_biaya_tindakan'] ?? '0',
-                                style: AppTextStyles.heading.copyWith(
-                                  color: AppColors.gold,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          _item("Waktu Layanan", jam),
-                          _item("Hari/Tanggal", tanggal),
-                          _item("Dokter", dokter),
-                          _item("Poli", poli),
-                          _item("Keluhan", displaykeluhan()),
-                          _item(
-                            "Status Reservasi",
-                            statusReservasi,
-                            valueColor: statusColor1(),
-                          ),
-                          _item(
-                            "Status Pembayaran",
-                            statusPembayaran,
-                            valueColor: statusColor2(),
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          // ===== TOTAL BIAYA =====
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Total Biaya :",
-                                style: AppTextStyles.label,
-                              ),
-                              Text(
-                                biaya,
-                                style: AppTextStyles.heading.copyWith(
-                                  color: AppColors.gold,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 15),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // Countdown Timer (hanya muncul jika redirect_url tersedia dan countdown aktif)
-            if ((widget.data['redirect_url'] != null &&
-                    widget.data['redirect_url'].toString().isNotEmpty) ||
-                (widget.data['link_pembayaran'] != null &&
-                    widget.data['link_pembayaran'].toString().isNotEmpty))
-              Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
+                // ===== CARD DETAIL =====
+                Container(
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    color:
-                        _countDownDuration != null &&
-                            _countDownDuration!.inSeconds > 0
-                        ? Colors.orange.shade100
-                        : Colors.red.shade100,
-                    border: Border.all(
-                      color:
-                          _countDownDuration != null &&
-                              _countDownDuration!.inSeconds > 0
-                          ? Colors.orange
-                          : Colors.red,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.cardDark,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.gold, width: 1.2),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.timer,
-                        color:
-                            _countDownDuration != null &&
-                                _countDownDuration!.inSeconds > 0
-                            ? Colors.orange
-                            : Colors.red,
-                        size: 18,
+                      // === TEKS NO PEMERIKSAAN (DALAM PADDING) ===
+                      Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "No. Pemeriksaan :",
+                              style: AppTextStyles.label.copyWith(fontSize: 13),
+                            ),
+                            Text(
+                              noPemeriksaan,
+                              style: AppTextStyles.heading.copyWith(
+                                color: AppColors.gold,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Sisa Waktu: ${_formatDuration(_countDownDuration ?? Duration.zero)}',
-                        style: TextStyle(
-                          color:
-                              _countDownDuration != null &&
-                                  _countDownDuration!.inSeconds > 0
-                              ? Colors.orange
-                              : Colors.red,
-                          fontWeight: FontWeight.bold,
+
+                      // === GARIS FULL TANPA PADDING ===
+                      Container(
+                        height: 1.8,
+                        width: double.infinity,
+                        color: AppColors.gold,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // === DETAIL ITEM LAIN (DAPAT PADDING) ===
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Show different layout for homecare
+                            if ((widget.data['jenis_layanan'] ?? '')
+                                    .toString()
+                                    .toLowerCase() ==
+                                'homecare') ...[
+                              _item("Hari/Tanggal", tanggal),
+                              _item("Waktu Layanan", jam),
+                              _item("Dokter", dokter),
+                              _item("Layanan", poli),
+                              _item("Keluhan", displaykeluhan()),
+                              _item(
+                                "Status Reservasi",
+                                statusReservasi,
+                                valueColor: statusColor1(),
+                              ),
+                              _item(
+                                "Status Booking",
+                                widget.data['status_booking'] ?? '-',
+                                valueColor: statusColor1(),
+                              ),
+                              _item(
+                                "Status Pembayaran",
+                                widget.data['status'] ?? '-',
+                                valueColor: statusColor2(),
+                              ),
+
+                              const SizedBox(height: 15),
+                              // ===== DETAIL BIAYA =====
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Total Biaya',
+                                    style: AppTextStyles.label,
+                                  ),
+                                  Text(
+                                    widget.data['pembayaran_total'] ??
+                                        widget.data['biaya'] ??
+                                        '0',
+                                    style: AppTextStyles.heading.copyWith(
+                                      color: AppColors.gold,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Total Biaya Tindakan',
+                                    style: AppTextStyles.label,
+                                  ),
+                                  Text(
+                                    widget.data['total_biaya_tindakan'] ?? '0',
+                                    style: AppTextStyles.heading.copyWith(
+                                      color: AppColors.gold,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ] else ...[
+                              _item("Waktu Layanan", jam),
+                              _item("Hari/Tanggal", tanggal),
+                              _item("Dokter", dokter),
+                              _item("Poli", poli),
+                              _item("Keluhan", displaykeluhan()),
+                              _item(
+                                "Status Reservasi",
+                                statusReservasi,
+                                valueColor: statusColor1(),
+                              ),
+                              _item(
+                                "Status Pembayaran",
+                                statusPembayaran,
+                                valueColor: statusColor2(),
+                              ),
+
+                              const SizedBox(height: 15),
+
+                              // ===== TOTAL BIAYA =====
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    "Total Biaya :",
+                                    style: AppTextStyles.label,
+                                  ),
+                                  Text(
+                                    biaya,
+                                    style: AppTextStyles.heading.copyWith(
+                                      color: AppColors.gold,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+
+                            const SizedBox(height: 15),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
 
-            // Tombol Pembayaran atau Tombol Dummy (hanya muncul jika redirect_url tersedia)
-            if ((widget.data['redirect_url'] != null &&
-                    widget.data['redirect_url'].toString().isNotEmpty) ||
-                (widget.data['link_pembayaran'] != null &&
-                    widget.data['link_pembayaran'].toString().isNotEmpty))
-              Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child:
-                    _countDownDuration != null &&
-                        _countDownDuration!.inSeconds > 0
-                    ? CustomButton(
-                        text: "Lanjutkan Pembayaran",
-                        onPressed: () {
-                          String paymentUrl =
-                              widget.data['redirect_url']?.toString() ??
-                              widget.data['link_pembayaran']?.toString() ??
-                              '';
-                          if (paymentUrl.isNotEmpty) {
-                            _launchURL(paymentUrl);
-                          }
-                        },
-                      )
-                    : CustomButton(
-                        text: "Waktu Pembayaran Habis",
-                        onPressed:
-                            null, // Nonaktifkan tombol ketika waktu habis
-                        color: Colors
-                            .grey, // Warna abu-abu untuk menunjukkan tombol nonaktif
+                const SizedBox(height: 25),
+
+                // Countdown Timer (hanya muncul jika redirect_url tersedia dan countdown aktif)
+                if ((widget.data['redirect_url'] != null &&
+                        widget.data['redirect_url'].toString().isNotEmpty) ||
+                    (widget.data['link_pembayaran'] != null &&
+                        widget.data['link_pembayaran'].toString().isNotEmpty))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color:
+                            _countDownDuration != null &&
+                                _countDownDuration!.inSeconds > 0
+                            ? Colors.orange.shade100
+                            : Colors.red.shade100,
+                        border: Border.all(
+                          color:
+                              _countDownDuration != null &&
+                                  _countDownDuration!.inSeconds > 0
+                              ? Colors.orange
+                              : Colors.red,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color:
+                                _countDownDuration != null &&
+                                    _countDownDuration!.inSeconds > 0
+                                ? Colors.orange
+                                : Colors.red,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sisa Waktu: ${_formatDuration(_countDownDuration ?? Duration.zero)}',
+                            style: TextStyle(
+                              color:
+                                  _countDownDuration != null &&
+                                      _countDownDuration!.inSeconds > 0
+                                  ? Colors.orange
+                                  : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
-            // BUTTON KEMBALI
-            CustomButton(
-              text: "Kembali",
-              onPressed: () => Navigator.pop(context),
+                // Tombol Pembayaran atau Tombol Dummy (hanya muncul jika redirect_url tersedia)
+                if ((widget.data['redirect_url'] != null &&
+                        widget.data['redirect_url'].toString().isNotEmpty) ||
+                    (widget.data['link_pembayaran'] != null &&
+                        widget.data['link_pembayaran'].toString().isNotEmpty))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child:
+                        _countDownDuration != null &&
+                            _countDownDuration!.inSeconds > 0
+                        ? CustomButton(
+                            text: "Lanjutkan Pembayaran",
+                            onPressed: () {
+                              String paymentUrl =
+                                  widget.data['redirect_url']?.toString() ??
+                                  widget.data['link_pembayaran']?.toString() ??
+                                  '';
+                              if (paymentUrl.isNotEmpty) {
+                                _launchURL(paymentUrl);
+                              }
+                            },
+                          )
+                        : CustomButton(
+                            text: "Waktu Pembayaran Habis",
+                            onPressed:
+                                null, // Nonaktifkan tombol ketika waktu habis
+                            color: Colors
+                                .grey, // Warna abu-abu untuk menunjukkan tombol nonaktif
+                          ),
+                  ),
+
+                // BUTTON KEMBALI
+                CustomButton(
+                  text: "Kembali",
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
