@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import '../../../../core/utils/polyline_decoder.dart';
 import '../providers/home_care_provider.dart';
 
 class InputLokasiScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
   double? _latitude;
   double? _longitude;
   bool _isLoadingLocation = false;
+  List<LatLng> _routePoints = []; // State for route path
 
   // Form Data (from Arguments)
   Map<String, dynamic> _bookingData = {};
@@ -81,10 +83,10 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
       }
 
       // Get Position
-      // Using a timeout can prevent hanging
+      // Adjusted timeout to 30s to prevent Future time exception on slow devices
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        timeLimit: const Duration(seconds: 30),
       );
 
       _updateMapPosition(position.latitude, position.longitude);
@@ -135,9 +137,26 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
     // 2. Calculate Cost via Provider
     if (mounted) {
-      context.read<HomeCareProvider>().calculateCost(lat, lng).catchError((e) {
+      final provider = context.read<HomeCareProvider>();
+      await provider.calculateCost(lat, lng).catchError((e) {
         _showSnack("Gagal menghitung biaya: $e");
       });
+
+      // Update Route from Provider Result
+      final estimasi = provider.estimasiBiaya;
+      if (estimasi != null && estimasi['data'] != null) {
+        final data = estimasi['data'];
+        if (data['route_geometry'] != null) {
+          try {
+            final points = PolylineDecoder.decode(data['route_geometry']);
+            setState(() {
+              _routePoints = points;
+            });
+          } catch (e) {
+            debugPrint("Error decoding polyline: $e");
+          }
+        }
+      }
     }
   }
 
@@ -262,6 +281,16 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                                   urlTemplate:
                                       'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 ),
+                                if (_routePoints.isNotEmpty)
+                                  PolylineLayer(
+                                    polylines: [
+                                      Polyline(
+                                        points: _routePoints,
+                                        strokeWidth: 4.0,
+                                        color: AppColors.gold,
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),

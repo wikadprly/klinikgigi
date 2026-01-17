@@ -152,14 +152,18 @@ class _JadwalScreenState extends State<JadwalPraktekScreen> {
               // --- PERBAIKAN FOTO DOKTER: Logika Lengkap ---
               String photoUrl = "";
               if (d.fotoProfil != null && d.fotoProfil!.isNotEmpty) {
-                String filename = d.fotoProfil!.split('/').last;
-                photoUrl = "$baseUrl/dokter-image/$filename";
+                photoUrl = d.fotoProfil!;
+                // Jika URL dari backend sudah full path (misal http://...), gunakan langsung.
+                // Jika path relatif (jarang terjadi di controller ini karena pakai storage::url tapi kita jaga2)
+                if (!photoUrl.startsWith('http')) {
+                  photoUrl = "$baseUrl/$photoUrl";
+                }
 
                 if (!kIsWeb) {
                   if (photoUrl.contains('localhost')) {
                     photoUrl = photoUrl.replaceAll(
                       'localhost',
-                      'pbl250116.informatikapolines.id',
+                      'pbl250116.informatikapolines.id', // Sesuaikan dengan domain server/IP
                     );
                   } else if (photoUrl.contains('127.0.0.1')) {
                     photoUrl = photoUrl.replaceAll(

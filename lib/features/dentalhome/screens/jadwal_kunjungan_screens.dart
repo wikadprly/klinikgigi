@@ -95,7 +95,7 @@ class _SchedulePageState extends State<SchedulePage> {
     // Ambil spesialis aman
     String spesialis = '-';
     if (dokter != null && dokter['spesialis'] != null) {
-      spesialis = dokter['spesialis']['nama_spesialis'] ?? '-';
+      spesialis = dokter['spesialis']['nama'] ?? '-';
     } else if (dokter != null) {
       spesialis = dokter['spesialisasi'] ?? '-';
     }
