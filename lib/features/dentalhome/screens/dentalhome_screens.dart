@@ -1,5 +1,7 @@
 // lib/features/dental_home/screens/dental_home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Add Provider
+import 'package:flutter_klinik_gigi/features/dentalhome/providers/home_care_provider.dart'; // Add Provider Import
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 
@@ -11,6 +13,17 @@ class DentalHomeScreen extends StatefulWidget {
 }
 
 class _DentalHomeScreenState extends State<DentalHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HomeCareProvider>(
+        context,
+        listen: false,
+      ).checkActiveBooking();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,39 +134,101 @@ class _DentalHomeScreenState extends State<DentalHomeScreen> {
               const SizedBox(height: 30),
 
               // MAIN ACTION BUTTON
-              Container(
-                decoration: BoxDecoration(
-                  gradient: AppColors.goldGradient,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.gold.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/dentalhome/jadwal');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
+              Consumer<HomeCareProvider>(
+                builder: (context, provider, child) {
+                  // Trigger check onload (once)
+                  // Note: setState during build is bad. Ideally call in initState. Used WidgetsBinding there.
+                  // Here we just consume.
+
+                  if (provider.activeBookingId != null) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.goldGradient,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.gold.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Navigasi ke Tracking Screen dengan booking ID aktif
+                          Navigator.pushNamed(
+                            context,
+                            '/dentalhome/tracking',
+                            arguments: provider.activeBookingId,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Lihat Status Kunjungan',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (provider.activeBookingStatus != null)
+                              Text(
+                                'Status: ${provider.activeBookingStatus!.replaceAll('_', ' ').toUpperCase()}',
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
                       borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text(
-                    'Booking Jadwal Sekarang',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/dentalhome/jadwal');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Booking Jadwal Sekarang',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

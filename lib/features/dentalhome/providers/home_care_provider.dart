@@ -13,6 +13,28 @@ class HomeCareProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _promos = [];
   bool _isLoadingPromos = false;
 
+  // Active Booking Check
+  int? _activeBookingId;
+  int? get activeBookingId => _activeBookingId;
+  String? _activeBookingStatus;
+  String? get activeBookingStatus => _activeBookingStatus;
+
+  Future<void> checkActiveBooking() async {
+    try {
+      final data = await _service.checkActiveBooking();
+      if (data != null) {
+        _activeBookingId = data['id'];
+        _activeBookingStatus = data['status_reservasi'];
+      } else {
+        _activeBookingId = null;
+        _activeBookingStatus = null;
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error checking active booking provider: $e");
+    }
+  }
+
   // ===========================================================================
   // STATE: JADWAL & DOCTORS
   // ===========================================================================
