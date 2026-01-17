@@ -157,49 +157,68 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
       // Update Route from Provider Result
       if (mounted) {
         final estimasi = provider.estimasiBiaya;
+        List<LatLng> points = [];
+
         if (estimasi != null && estimasi['data'] != null) {
           final data = estimasi['data'];
+
+          // 1. Coba decode route dari OSRM (Jalan Raya)
           if (data['route_geometry'] != null) {
             try {
-              final points = PolylineDecoder.decode(data['route_geometry']);
-              setState(() {
-                _routePoints = points;
-                if (points.isNotEmpty) {
-                  // Calculate bounds
-                  double minLat = points.first.latitude;
-                  double maxLat = points.first.latitude;
-                  double minLng = points.first.longitude;
-                  double maxLng = points.first.longitude;
-
-                  for (var p in points) {
-                    if (p.latitude < minLat) minLat = p.latitude;
-                    if (p.latitude > maxLat) maxLat = p.latitude;
-                    if (p.longitude < minLng) minLng = p.longitude;
-                    if (p.longitude > maxLng) maxLng = p.longitude;
-                  }
-
-                  // Add padding - Gunakan delay sedikit agar map siap
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    if (mounted) {
-                      try {
-                        _mapController.fitCamera(
-                          CameraFit.bounds(
-                            bounds: LatLngBounds(
-                              LatLng(minLat, minLng),
-                              LatLng(maxLat, maxLng),
-                            ),
-                            padding: const EdgeInsets.all(50),
-                          ),
-                        );
-                      } catch (_) {}
-                    }
-                  });
-                }
-              });
+              points = PolylineDecoder.decode(data['route_geometry']);
             } catch (e) {
               debugPrint("Error decoding polyline: $e");
             }
           }
+
+          // 2. FALLBACK: Jika OSRM gagal/kosong, buat garis lurus (Straight Line)
+          // Ini agar visual tetap ada meskipun server routing sibuk
+          if (points.isEmpty) {
+            // Koordinat Klinik (Hardcoded sama dengan Backend untuk visualisasi darurat)
+            // Idealnya dikirim dari API, tapi untuk fallback ini cukup.
+            const clinicLat = -7.0005141;
+            const clinicLng = 110.4250683;
+            points = [const LatLng(clinicLat, clinicLng), LatLng(lat, lng)];
+
+            // Opsional: Beri notifikasi visual bahwa ini "Estimasi Lurus"
+            // _showSnack("Menampilkan rute estimasi lurus (Server sibuk)");
+          }
+
+          setState(() {
+            _routePoints = points;
+
+            if (points.isNotEmpty) {
+              // Calculate bounds safely
+              double minLat = points.first.latitude;
+              double maxLat = points.first.latitude;
+              double minLng = points.first.longitude;
+              double maxLng = points.first.longitude;
+
+              for (var p in points) {
+                if (p.latitude < minLat) minLat = p.latitude;
+                if (p.latitude > maxLat) maxLat = p.latitude;
+                if (p.longitude < minLng) minLng = p.longitude;
+                if (p.longitude > maxLng) maxLng = p.longitude;
+              }
+
+              // Add padding - Gunakan delay sedikit agar map siap
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  try {
+                    _mapController.fitCamera(
+                      CameraFit.bounds(
+                        bounds: LatLngBounds(
+                          LatLng(minLat, minLng),
+                          LatLng(maxLat, maxLng),
+                        ),
+                        padding: const EdgeInsets.all(50),
+                      ),
+                    );
+                  } catch (_) {}
+                }
+              });
+            }
+          });
         }
       }
     } catch (e) {
@@ -334,7 +353,12 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                                       Polyline(
                                         points: _routePoints,
                                         strokeWidth: 4.0,
-                                        color: AppColors.gold,
+                                        color: _routePoints.length == 2
+                                            ? Colors.red.withOpacity(
+                                                0.7,
+                                              ) // Style for Straight Line Fallback (Red/Dashed implicit meaning)
+                                            : AppColors
+                                                  .gold, // Style for Real Road (Gold)
                                       ),
                                     ],
                                   ),
