@@ -233,7 +233,9 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
       builder: (context, profilProvider, child) {
         // Use the profile provider's photo URL as fallback if no image in data
         String finalImageUrl = imageUrl;
-        if (finalImageUrl.isEmpty && profilProvider.photoUrl != null && profilProvider.photoUrl!.isNotEmpty) {
+        if (finalImageUrl.isEmpty &&
+            profilProvider.photoUrl != null &&
+            profilProvider.photoUrl!.isNotEmpty) {
           finalImageUrl = profilProvider.photoUrl!;
         }
 
@@ -255,7 +257,9 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                       radius: 35,
                       backgroundImage: finalImageUrl.isNotEmpty
                           ? NetworkImage(finalImageUrl)
-                          : const NetworkImage("https://via.placeholder.com/150"),
+                          : const NetworkImage(
+                              "https://via.placeholder.com/150",
+                            ),
                     ),
                     const SizedBox(width: 15),
 
@@ -301,7 +305,9 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                                 children: [
                                   Text(
                                     "No. Pemeriksaan :",
-                                    style: AppTextStyles.label.copyWith(fontSize: 13),
+                                    style: AppTextStyles.label.copyWith(
+                                      fontSize: 13,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -317,11 +323,14 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                             } else {
                               // Original row layout for wider screens
                               return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "No. Pemeriksaan :",
-                                    style: AppTextStyles.label.copyWith(fontSize: 13),
+                                    style: AppTextStyles.label.copyWith(
+                                      fontSize: 13,
+                                    ),
                                   ),
                                   Flexible(
                                     child: Text(
@@ -386,16 +395,15 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                               const SizedBox(height: 15),
                               // ===== DETAIL BIAYA =====
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     'Total Biaya',
                                     style: AppTextStyles.label,
                                   ),
                                   Text(
-                                    'Rp. ${(widget.data['pembayaran_total'] ??
-                                        widget.data['biaya'] ??
-                                        '0')}',
+                                    'Rp. ${(widget.data['pembayaran_total'] ?? widget.data['biaya'] ?? '0')}',
                                     style: AppTextStyles.heading.copyWith(
                                       color: AppColors.gold,
                                       fontSize: 18,
@@ -406,7 +414,8 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
                               ),
                               const SizedBox(height: 8),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     'Total Biaya Tindakan',
@@ -443,14 +452,15 @@ class _RiwayatDetailScreenState extends State<RiwayatDetailScreen> {
 
                               // ===== TOTAL BIAYA =====
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     "Total Biaya :",
                                     style: AppTextStyles.label,
                                   ),
                                   Text(
-                                    'Rp. $biaya',
+                                    '$biaya',
                                     style: AppTextStyles.heading.copyWith(
                                       color: AppColors.gold,
                                       fontSize: 18,
