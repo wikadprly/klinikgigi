@@ -40,7 +40,7 @@ class HomeCareBooking {
     return HomeCareBooking(
       id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
       noPemeriksaan: json['no_pemeriksaan'] ?? '',
-      noAntrian: json['no_antrian'],
+      noAntrian: json['no_antrian']?.toString(),
       pasienId: json['pasien_id']?.toString() ?? '',
       dokterId: json['dokter_id']?.toString(),
       jadwalId: json['jadwal_id'] is int

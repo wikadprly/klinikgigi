@@ -157,7 +157,10 @@ class HomeCareProvider extends ChangeNotifier {
 
       String labelUI = '-';
       if (dokter != null && dokter['spesialis'] != null) {
-        labelUI = dokter['spesialis']['nama_spesialis'] ?? '-';
+        labelUI =
+            dokter['spesialis']['nama'] ??
+            dokter['spesialis']['nama_poli'] ??
+            '-';
       } else if (poli != null) {
         labelUI = poli['nama_poli'] ?? '-';
       } else {

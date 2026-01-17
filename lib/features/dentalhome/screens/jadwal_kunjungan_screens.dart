@@ -332,7 +332,8 @@ class _SchedulePageState extends State<SchedulePage> {
                             final String namaDokter =
                                 dokter?['nama'] ?? 'Dokter Tanpa Nama';
                             final String spesialis =
-                                dokter?['spesialis']?['nama_spesialis'] ??
+                                dokter?['spesialis']?['nama'] ??
+                                dokter?['spesialis']?['nama_poli'] ??
                                 dokter?['spesialisasi'] ??
                                 '-';
                             final String jamPraktek =

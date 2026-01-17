@@ -113,7 +113,14 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
 
   // Logic to reverse geocode and calculate cost
   Future<void> _processLocation(double lat, double lng) async {
-    // 1. Reverse Geocoding
+    // Jalankan Geocoding & Hitung Biaya secara paralel untuk mempercepat waktu load
+    final geocodingFuture = _performReverseGeocoding(lat, lng);
+    final costCalculationFuture = _performCostCalculation(lat, lng);
+
+    await Future.wait([geocodingFuture, costCalculationFuture]);
+  }
+
+  Future<void> _performReverseGeocoding(double lat, double lng) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
       if (placemarks.isNotEmpty) {
@@ -128,35 +135,75 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
               "Lokasi (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})";
         }
 
-        _alamatController.text = fullAddress;
+        if (mounted) {
+          _alamatController.text = fullAddress;
+        }
       }
     } catch (e) {
-      _alamatController.text =
-          "Lokasi (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})";
+      if (mounted) {
+        _alamatController.text =
+            "Lokasi (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})";
+      }
     }
+  }
 
-    // 2. Calculate Cost via Provider
-    if (mounted) {
+  Future<void> _performCostCalculation(double lat, double lng) async {
+    if (!mounted) return;
+
+    try {
       final provider = context.read<HomeCareProvider>();
-      await provider.calculateCost(lat, lng).catchError((e) {
-        _showSnack("Gagal menghitung biaya: $e");
-      });
+      await provider.calculateCost(lat, lng);
 
       // Update Route from Provider Result
-      final estimasi = provider.estimasiBiaya;
-      if (estimasi != null && estimasi['data'] != null) {
-        final data = estimasi['data'];
-        if (data['route_geometry'] != null) {
-          try {
-            final points = PolylineDecoder.decode(data['route_geometry']);
-            setState(() {
-              _routePoints = points;
-            });
-          } catch (e) {
-            debugPrint("Error decoding polyline: $e");
+      if (mounted) {
+        final estimasi = provider.estimasiBiaya;
+        if (estimasi != null && estimasi['data'] != null) {
+          final data = estimasi['data'];
+          if (data['route_geometry'] != null) {
+            try {
+              final points = PolylineDecoder.decode(data['route_geometry']);
+              setState(() {
+                _routePoints = points;
+                if (points.isNotEmpty) {
+                  // Calculate bounds
+                  double minLat = points.first.latitude;
+                  double maxLat = points.first.latitude;
+                  double minLng = points.first.longitude;
+                  double maxLng = points.first.longitude;
+
+                  for (var p in points) {
+                    if (p.latitude < minLat) minLat = p.latitude;
+                    if (p.latitude > maxLat) maxLat = p.latitude;
+                    if (p.longitude < minLng) minLng = p.longitude;
+                    if (p.longitude > maxLng) maxLng = p.longitude;
+                  }
+
+                  // Add padding - Gunakan delay sedikit agar map siap
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    if (mounted) {
+                      try {
+                        _mapController.fitCamera(
+                          CameraFit.bounds(
+                            bounds: LatLngBounds(
+                              LatLng(minLat, minLng),
+                              LatLng(maxLat, maxLng),
+                            ),
+                            padding: const EdgeInsets.all(50),
+                          ),
+                        );
+                      } catch (_) {}
+                    }
+                  });
+                }
+              });
+            } catch (e) {
+              debugPrint("Error decoding polyline: $e");
+            }
           }
         }
       }
+    } catch (e) {
+      _showSnack("Gagal estimasi biaya (Server Busy). Coba lagi.");
     }
   }
 
@@ -279,7 +326,7 @@ class _InputLokasiScreenState extends State<InputLokasiScreen> {
                               children: [
                                 TileLayer(
                                   urlTemplate:
-                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                      'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                                 ),
                                 if (_routePoints.isNotEmpty)
                                   PolylineLayer(
