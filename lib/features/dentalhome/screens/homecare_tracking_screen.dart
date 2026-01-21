@@ -185,7 +185,7 @@ class _HomeCareTrackingScreenState extends State<HomeCareTrackingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "ID Kunjungan : #${widget.bookingId}",
+            "No. Pemeriksaan : ${provider.noPemeriksaan}",
             style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 8),

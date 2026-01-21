@@ -60,6 +60,7 @@ class HomeCareProvider extends ChangeNotifier {
   String _scheduleDate = '-';
   String _scheduleTime = '-';
   int _queueNumber = 0;
+  String _noPemeriksaan = '-'; // New Field
 
   // ===========================================================================
   // GETTERS
@@ -82,9 +83,12 @@ class HomeCareProvider extends ChangeNotifier {
   String get scheduleDate => _scheduleDate;
   String get scheduleTime => _scheduleTime;
   int get queueNumber => _queueNumber;
+  String get noPemeriksaan => _noPemeriksaan;
 
   bool get isReadyForSettlement {
+    // _currentStatus is already lowercased in fetchTrackingData
     return _currentStatus == 'menunggu_pelunasan' ||
+        _currentStatus == 'menunggu pelunasan' ||
         _currentStatus == 'selesai_diperiksa';
   }
 
@@ -308,15 +312,25 @@ class HomeCareProvider extends ChangeNotifier {
     try {
       final statusData = await _service.checkPaymentStatus(bookingId);
 
-      _currentStatus = statusData['status_reservasi'] ?? _currentStatus;
+      String rawStatus = statusData['status_reservasi'] ?? _currentStatus;
+      _currentStatus = rawStatus.toLowerCase().trim(); // NORMALIZE HERE
+      debugPrint("HomeCareProvider: Tracking Status Updated -> $_currentStatus (raw: $rawStatus)");
+
       _paymentStatus = statusData['status_pembayaran'];
       _settlementStatus = statusData['status_pelunasan'] ?? 'belum_lunas';
-      _totalTagihan =
-          int.tryParse(statusData['total_biaya_tindakan'].toString()) ?? 0;
+      
+      // SAFE PARSING: Handle String/Int/Decimal from JSON (e.g "35000.00")
+      _totalTagihan = (double.tryParse(statusData['total_biaya_tindakan'].toString()) ?? 0).toInt();
+      
       _doctorName = statusData['nama_dokter'] ?? '-';
       _scheduleDate = statusData['jadwal_tanggal'] ?? '-';
       _scheduleTime = statusData['jadwal_jam'] ?? '-';
-      _queueNumber = statusData['no_antrian'] ?? 0; // Parse Queue Number
+      
+      // PARSE No Pemeriksaan
+      _noPemeriksaan = statusData['no_pemeriksaan'] ?? '-';
+      
+      // SAFE PARSING: no_antrian might be string or int
+      _queueNumber = int.tryParse(statusData['no_antrian'].toString()) ?? 0;
 
       notifyListeners();
     } catch (e) {
@@ -333,17 +347,18 @@ class HomeCareProvider extends ChangeNotifier {
 
   // Status Helper for UI
   int getStatusLevel() {
-    final status = _currentStatus;
+    final status = _currentStatus.toLowerCase(); // Ensure lowercase
 
     // 1: Assigned / Initial State (Menunggu Dokter)
     if ([
       'menunggu',
       'menunggu_pembayaran',
-      'Menunggu Pembayaran',
+      'menunggu pembayaran',
       'menunggu_dokter',
+      'menunggu dokter',
       'terverifikasi',
       'menunggu_konfirmasi',
-      'Menunggu Konfirmasi',
+      'menunggu konfirmasi',
     ].contains(status)) {
       return 1;
     }
@@ -355,6 +370,7 @@ class HomeCareProvider extends ChangeNotifier {
     if ([
       'selesai_diperiksa',
       'menunggu_pelunasan',
+      'menunggu pelunasan',
       'menunggu_pembayaran_obat',
     ].contains(status)) {
       return 4;
