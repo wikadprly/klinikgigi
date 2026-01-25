@@ -10,7 +10,6 @@ class ProfileProvider with ChangeNotifier {
   Map<String, dynamic>? rekamMedis;
   String? _namaAsuransi;
   String? _noPeserta;
-  String? _statusAktif;
 
   // =====================
   // FOTO PROFIL (FIXED)
@@ -33,7 +32,6 @@ class ProfileProvider with ChangeNotifier {
       rekamMedis = result["data"]["rekam_medis"];
       _namaAsuransi = result["data"]["nama_asuransi"]?.toString();
       _noPeserta = result["data"]["no_peserta"]?.toString();
-      _statusAktif = result["data"]["status_aktif"]?.toString();
     }
 
     // 🔥 AMBIL FOTO DARI ENDPOINT KHUSUS
@@ -171,7 +169,6 @@ class ProfilProvider extends ProfileProvider {
 
   String? get namaAsuransi => _namaAsuransi;
   String? get noPeserta => _noPeserta;
-  String? get statusAktif => _statusAktif;
 
   String? get errorMessage => null;
 }

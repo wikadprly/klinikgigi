@@ -16,12 +16,17 @@ String _formatTanggalLahir(String? tanggalLahir) {
   if (tanggalLahir == null || tanggalLahir.isEmpty) return "-";
 
   try {
-    DateTime parsedDate = DateTime.parse(tanggalLahir.split('.')[0]);
+    // Ambil bagian tanggal saja (YYYY-MM-DD)
+    String dateStr = tanggalLahir.split('T')[0].split(' ')[0];
+    
+    // Parse sebagai UTC untuk menghindari timezone offset
+    DateTime parsedDate = DateTime.parse(dateStr);
     String day = parsedDate.day.toString().padLeft(2, '0');
     String month = parsedDate.month.toString().padLeft(2, '0');
     String year = parsedDate.year.toString();
     return '$day-$month-$year';
   } catch (e) {
+    print('Error formatting date: $e');
     return tanggalLahir;
   }
 }
@@ -471,12 +476,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         Text(
                           "Nomor Peserta : ${provider.noPeserta ?? "-"}",
-                          style: AppTextStyles.input.copyWith(
-                            color: AppColors.goldDark,
-                          ),
-                        ),
-                        Text(
-                          "Status : ${provider.statusAktif ?? "-"}",
                           style: AppTextStyles.input.copyWith(
                             color: AppColors.goldDark,
                           ),

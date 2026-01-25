@@ -166,9 +166,18 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
   }
 
   Future<void> _selectDate(TextEditingController controller) async {
+    DateTime initialDate = DateTime(2000);
+    try {
+      if (controller.text.isNotEmpty) {
+        initialDate = DateTime.parse(controller.text);
+      }
+    } catch (e) {
+      debugPrint('Error parsing initial date: $e');
+    }
+
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(controller.text) ?? DateTime(2000),
+      initialDate: initialDate,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (context, child) {
@@ -187,6 +196,7 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     );
 
     if (pickedDate != null) {
+      // Format tanggal sebagai YYYY-MM-DD tanpa timezone untuk API
       controller.text =
           "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
     }
