@@ -190,7 +190,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   }
                 },
                 child: Text(
-                  'Kirim ulang atau gunakan metode lain',
+                  'Kirim ulang kode OTP',
                   style: AppTextStyles.label.copyWith(
                     color: AppColors.goldDark,
                     fontWeight: FontWeight.w600,
