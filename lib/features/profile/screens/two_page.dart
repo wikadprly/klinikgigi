@@ -32,8 +32,25 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
       noHpController.text = profil.user?['no_hp'] ?? '';
       emailController.text = profil.user?['email'] ?? '';
       genderController.text = profil.user?['jenis_kelamin'] ?? '';
-      birthController.text =
-          profil.user?['tanggal_lahir']?.toString().substring(0, 10) ?? '';
+      // Extract just the date part (YYYY-MM-DD) from the string to avoid timezone issues
+      String? rawDate = profil.user?['tanggal_lahir']?.toString();
+      debugPrint('Raw date from API in two_page: $rawDate');
+
+      String formattedDate = '';
+
+      if (rawDate != null && rawDate.isNotEmpty) {
+        // Handle different date formats that might come from the API
+        if (rawDate.contains('T')) {
+          formattedDate = rawDate.split('T')[0];
+        } else if (rawDate.contains(' ')) {
+          formattedDate = rawDate.split(' ')[0];
+        } else {
+          formattedDate = rawDate.substring(0, rawDate.length >= 10 ? 10 : rawDate.length);
+        }
+      }
+
+      debugPrint('Formatted date for birthController: $formattedDate');
+      birthController.text = formattedDate;
       alamatController.text = profil.user?['alamat'] ?? '';
     });
   }
@@ -52,6 +69,8 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     try {
       setState(() => isSaving = true);
 
+      debugPrint('About to save date: ${birthController.text.trim()}');
+
       final data = {
         'nama_pengguna': namaController.text.trim(),
         'no_hp': noHpController.text.trim(),
@@ -60,6 +79,8 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
         'tanggal_lahir': birthController.text.trim(),
         'alamat': alamatController.text.trim(),
       };
+
+      debugPrint('Sending data to API: $data');
 
       final success = await profil.updateProfil(token, data);
 
@@ -196,9 +217,11 @@ class _EditProfilPage2State extends State<EditProfilPage2> {
     );
 
     if (pickedDate != null) {
+      debugPrint('Selected date from picker: $pickedDate');
       // Format tanggal sebagai YYYY-MM-DD tanpa timezone untuk API
-      controller.text =
-          "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+      final formattedDate = "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+      debugPrint('Formatted date for controller: $formattedDate');
+      controller.text = formattedDate;
     }
   }
 

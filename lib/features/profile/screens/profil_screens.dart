@@ -13,20 +13,78 @@ import 'package:flutter_klinik_gigi/core/utils/image_picker_helper.dart';
 // FORMAT TANGGAL
 // =======================================================
 String _formatTanggalLahir(String? tanggalLahir) {
+  debugPrint('Raw tanggal_lahir from API: $tanggalLahir');
+
   if (tanggalLahir == null || tanggalLahir.isEmpty) return "-";
 
   try {
-    // Ambil bagian tanggal saja (YYYY-MM-DD)
-    String dateStr = tanggalLahir.split('T')[0].split(' ')[0];
-    
-    // Parse sebagai UTC untuk menghindari timezone offset
-    DateTime parsedDate = DateTime.parse(dateStr);
-    String day = parsedDate.day.toString().padLeft(2, '0');
-    String month = parsedDate.month.toString().padLeft(2, '0');
-    String year = parsedDate.year.toString();
-    return '$day-$month-$year';
+    DateTime parsedDate;
+
+    // Handle different date formats that might come from the API
+    if (tanggalLahir.contains('T')) {
+      // If it's an ISO format with time (e.g., "2005-12-18T17:00:00.000000Z")
+      // Simply extract the date part before 'T' to avoid timezone conversion issues
+      String dateString = tanggalLahir.split('T')[0];
+      debugPrint('Extracted date part: $dateString');
+
+      List<String> dateComponents = dateString.split('-');
+      if (dateComponents.length == 3) {
+        int year = int.tryParse(dateComponents[0]) ?? 0;
+        int month = int.tryParse(dateComponents[1]) ?? 0;
+        int day = int.tryParse(dateComponents[2]) ?? 0;
+
+        if (year != 0 && month != 0 && day != 0) {
+          parsedDate = DateTime.utc(year, month, day);
+        } else {
+          return tanggalLahir; // Return original if parsing failed
+        }
+      } else {
+        return tanggalLahir; // Return original if format is unexpected
+      }
+    } else if (tanggalLahir.contains(' ')) {
+      // If it's a datetime format with space (e.g., "2025-01-31 00:00:00")
+      String datePart = tanggalLahir.split(' ')[0];
+      List<String> dateComponents = datePart.split('-');
+      if (dateComponents.length == 3) {
+        int year = int.tryParse(dateComponents[0]) ?? 0;
+        int month = int.tryParse(dateComponents[1]) ?? 0;
+        int day = int.tryParse(dateComponents[2]) ?? 0;
+
+        if (year != 0 && month != 0 && day != 0) {
+          parsedDate = DateTime.utc(year, month, day);
+        } else {
+          return tanggalLahir; // Return original if parsing failed
+        }
+      } else {
+        return tanggalLahir; // Return original if format is unexpected
+      }
+    } else {
+      // If it's just a date in YYYY-MM-DD format
+      List<String> dateComponents = tanggalLahir.split('-');
+      if (dateComponents.length == 3) {
+        int year = int.tryParse(dateComponents[0]) ?? 0;
+        int month = int.tryParse(dateComponents[1]) ?? 0;
+        int day = int.tryParse(dateComponents[2]) ?? 0;
+
+        if (year != 0 && month != 0 && day != 0) {
+          parsedDate = DateTime.utc(year, month, day);
+        } else {
+          return tanggalLahir; // Return original if parsing failed
+        }
+      } else {
+        return tanggalLahir; // Return original if format is unexpected
+      }
+    }
+
+    debugPrint('Final parsed UTC date: $parsedDate');
+
+    // Format as DD-MM-YYYY
+    final formatted = '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}';
+    debugPrint('Final formatted date: $formatted');
+
+    return formatted;
   } catch (e) {
-    print('Error formatting date: $e');
+    debugPrint('Error formatting date: $e');
     return tanggalLahir;
   }
 }
@@ -151,7 +209,8 @@ class _ProfilePageState extends State<ProfilePage> {
           _showErrorMessage(provider.errorMessage ?? "Gagal mengunggah foto");
         }
       } catch (e) {
-        if (e is UnsupportedError && e.message == "File tidak didukung di Web") {
+        if (e is UnsupportedError &&
+            e.message == "File tidak didukung di Web") {
           _showErrorMessage("Upload foto tidak didukung di Web");
         } else {
           _showErrorMessage("Gagal mengunggah foto: ${e.toString()}");
@@ -170,8 +229,9 @@ class _ProfilePageState extends State<ProfilePage> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: const Text("Konfirmasi Hapus"),
-                content:
-                    const Text("Apakah Anda yakin ingin menghapus foto profil?"),
+                content: const Text(
+                  "Apakah Anda yakin ingin menghapus foto profil?",
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -244,8 +304,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close,
-                        color: AppColors.goldDark, size: 26),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.goldDark,
+                      size: 26,
+                    ),
                     onPressed: () => Navigator.pop(modalContext),
                   ),
                 ],
@@ -256,7 +319,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 backgroundImage: _buildProfileImage(provider),
               ),
               const SizedBox(height: 16),
-              Container(height: 1, width: double.infinity, color: AppColors.goldDark),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: AppColors.goldDark,
+              ),
               const SizedBox(height: 18),
               _menuItem(
                 icon: Icons.photo,
@@ -324,8 +391,10 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: FutureBuilder(
-          future: Provider.of<ProfilProvider>(context, listen: false)
-              .fetchProfil(widget.token),
+          future: Provider.of<ProfilProvider>(
+            context,
+            listen: false,
+          ).fetchProfil(widget.token),
           builder: (context, snapshot) {
             final provider = Provider.of<ProfilProvider>(context);
 
@@ -410,29 +479,37 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        infoRow(Icons.phone,
-                            provider.userData?["no_hp"] ?? "-",
-                            textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.phone,
+                          provider.userData?["no_hp"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
-                        infoRow(Icons.email,
-                            provider.userData?["email"] ?? "-",
-                            textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.email,
+                          provider.userData?["email"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
                         infoRow(
                           Icons.calendar_today,
                           _formatTanggalLahir(
-                              provider.userData?["tanggal_lahir"]),
+                            provider.userData?["tanggal_lahir"],
+                          ),
                           textColor: AppColors.goldDark,
                         ),
                         const SizedBox(height: 14),
-                        infoRow(Icons.location_on,
-                            provider.userData?["alamat"] ?? "-",
-                            textColor: AppColors.goldDark),
+                        infoRow(
+                          Icons.location_on,
+                          provider.userData?["alamat"] ?? "-",
+                          textColor: AppColors.goldDark,
+                        ),
                         const SizedBox(height: 14),
                         infoRow(
                           Icons.man,
                           _convertJenisKelamin(
-                              provider.userData?["jenis_kelamin"]),
+                            provider.userData?["jenis_kelamin"],
+                          ),
                           textColor: AppColors.goldDark,
                         ),
                         const SizedBox(height: 16),

@@ -60,9 +60,14 @@ class ProfileProvider with ChangeNotifier {
   // Update data profil (tanpa foto)
   // =====================
   Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
+    debugPrint('Provider: About to update profile with data: $data');
     final result = await _profilService.updateProfil(token, data);
+    debugPrint('Provider: Update result: $result');
+
     if (result["success"] == true) {
+      debugPrint('Provider: Fetching updated profile after successful update');
       await fetchProfile(token);
+      debugPrint('Provider: Updated profile fetched. Birth date in user: ${user?["tanggal_lahir"]}');
       return true;
     }
     return false;
