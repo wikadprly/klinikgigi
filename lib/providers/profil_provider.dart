@@ -101,6 +101,18 @@ class ProfileProvider with ChangeNotifier {
   }
 
   // =====================
+  // Clear Data (Logout)
+  // =====================
+  void clearProfile() {
+    user = null;
+    rekamMedis = null;
+    _namaAsuransi = null;
+    _noPeserta = null;
+    _photoUrl = null;
+    notifyListeners();
+  }
+
+  // =====================
   // Helpers / Computed Getters for Home Screen
   // =====================
   String get namaPengguna =>

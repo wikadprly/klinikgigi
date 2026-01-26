@@ -49,19 +49,28 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _promosFuture;
   // final PasienService _pasienService = PasienService(); // REMOVED
   final HomeCareService _homeCareService = HomeCareService();
+  String? _lastUserId;
 
   @override
   void initState() {
     super.initState();
+    final provider = Provider.of<ProfilProvider>(context, listen: false);
+
     // Fetch profile data via provider if needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ProfilProvider>(context, listen: false);
       if (provider.user == null) {
         provider.fetchProfilFromToken();
       }
     });
 
-    _promosFuture = _homeCareService.getPromos(type: 'all');
+    // Initial fetch - try to use existing user ID if available
+    final userId = provider.user?['id']?.toString();
+    if (userId != null) {
+      _lastUserId = userId;
+      _promosFuture = _homeCareService.getPromos(type: 'all', userId: userId);
+    } else {
+      _promosFuture = _homeCareService.getPromos(type: 'all');
+    }
   }
 
   @override
@@ -75,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
               left: 16.0,
               right: 16.0,
               top: 12.0,
-              bottom: 100.0,
+              bottom: 120.0,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,86 +377,101 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GradientMask(
-          gradient: AppColors.goldGradient,
-          child: Text(
-            'Promo Terbaru',
-            style: AppTextStyles.heading.copyWith(fontSize: 18),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 220,
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: _promosFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.gold),
-                );
-              }
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text(
-                    "Gagal memuat promo",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                );
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(
-                  child: Text(
-                    "Tidak ada promo saat ini",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
+    return Consumer<ProfilProvider>(
+      builder: (context, provider, child) {
+        final userId = provider.user?['id']?.toString();
 
-              // AMBIL 5 TERBARU
-              final promos = snapshot.data!.take(5).toList();
+        // Update future if user ID changes (e.g. after login/profile load or logout)
+        if (userId != _lastUserId) {
+          _lastUserId = userId;
+          _promosFuture = _homeCareService.getPromos(
+            type: 'all',
+            userId: userId,
+          );
+        }
 
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: promos.length,
-                itemBuilder: (context, index) {
-                  final promo = promos[index];
-                  // Pastikan URL gambar valid
-                  final String imagePath =
-                      promo['gambar_banner_url'] ??
-                      promo['gambar_banner'] ??
-                      '';
-
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      right: index == promos.length - 1 ? 0 : 16,
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                PromoDetailScreen(promo: promo),
-                          ),
-                        );
-                      },
-                      child: _buildPromoCard(
-                        imagePath: _sanitizedImageUrl(imagePath),
-                        title: promo['judul_promo'] ?? 'Promo',
-                        subtitle: promo['deskripsi'] ?? '',
-                        target: promo['target_transaksi'] ?? 'semua',
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GradientMask(
+              gradient: AppColors.goldGradient,
+              child: Text(
+                'Promo Terbaru',
+                style: AppTextStyles.heading.copyWith(fontSize: 18),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 220,
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _promosFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: AppColors.gold),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        "Gagal memuat promo",
+                        style: TextStyle(color: Colors.red),
                       ),
-                    ),
+                    );
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Tidak ada promo saat ini",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  // AMBIL 5 TERBARU
+                  final promos = snapshot.data!.take(5).toList();
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: promos.length,
+                    itemBuilder: (context, index) {
+                      final promo = promos[index];
+                      // Pastikan URL gambar valid
+                      final String imagePath =
+                          promo['gambar_banner_url'] ??
+                          promo['gambar_banner'] ??
+                          '';
+
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          right: index == promos.length - 1 ? 0 : 16,
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PromoDetailScreen(promo: promo),
+                              ),
+                            );
+                          },
+                          child: _buildPromoCard(
+                            imagePath: _sanitizedImageUrl(imagePath),
+                            title: promo['judul_promo'] ?? 'Promo',
+                            subtitle: promo['deskripsi'] ?? '',
+                            target: promo['target_transaksi'] ?? 'semua',
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

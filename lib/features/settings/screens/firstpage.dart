@@ -19,7 +19,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   // ==============================
   // FOTO PROFIL (SAMA DENGAN PROFILE PAGE)
   // ==============================
@@ -30,9 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const AssetImage('assets/images/profil.jpeg');
     }
 
-    return NetworkImage(
-      "$url?v=${DateTime.now().millisecondsSinceEpoch}",
-    );
+    return NetworkImage("$url?v=${DateTime.now().millisecondsSinceEpoch}");
   }
 
   @override
@@ -88,13 +85,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                    color: AppColors.gold, width: 3),
+                                  color: AppColors.gold,
+                                  width: 3,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: CircleAvatar(
                                 radius: 55,
-                                backgroundImage:
-                                    _buildProfileImage(profilProvider),
+                                backgroundImage: _buildProfileImage(
+                                  profilProvider,
+                                ),
                               ),
                             );
                           },
@@ -165,9 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _menuItem(Icons.person, "Profil Saya", () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => ProfilePage(token: token),
-                  ),
+                  MaterialPageRoute(builder: (_) => ProfilePage(token: token)),
                 );
               }),
 
@@ -227,15 +225,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           content: Text(
             "Apakah kamu yakin ingin mengubah kata sandi?",
-            style: AppTextStyles.button.copyWith(
-              color: AppColors.textLight,
-            ),
+            style: AppTextStyles.button.copyWith(color: AppColors.textLight),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Batal",
-                  style: TextStyle(color: AppColors.goldDark)),
+              child: Text("Batal", style: TextStyle(color: AppColors.goldDark)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -275,15 +270,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           content: Text(
             "Apakah kamu yakin ingin logout dari akun ini?",
-            style: AppTextStyles.button.copyWith(
-              color: AppColors.textLight,
-            ),
+            style: AppTextStyles.button.copyWith(color: AppColors.textLight),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Batal",
-                  style: TextStyle(color: AppColors.goldDark)),
+              child: Text("Batal", style: TextStyle(color: AppColors.goldDark)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -292,6 +284,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: () async {
                 Navigator.pop(context);
+                // Clear profile state in memory
+                Provider.of<ProfilProvider>(
+                  context,
+                  listen: false,
+                ).clearProfile();
                 await SharedPrefsHelper.clearToken();
                 Navigator.pushAndRemoveUntil(
                   context,
