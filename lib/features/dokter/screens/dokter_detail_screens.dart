@@ -80,24 +80,19 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
 
           String fotoUrl = "";
           if (masterDokter.foto != null && masterDokter.foto!.isNotEmpty) {
-            // PROXY ROUTE: Use /api/dokter-image/{filename} to fix CORS on Web
-            // Data: "uploads/dokter/filename.jpg" -> "filename.jpg"
-            String filename = masterDokter.foto!.split('/').last;
-            fotoUrl = "$baseUrl/dokter-image/$filename";
+            fotoUrl = masterDokter.foto!;
 
             // Fix for Android Emulator (10.0.2.2) vs Web (localhost)
-            if (!kIsWeb) {
-              if (fotoUrl.contains('localhost')) {
-                fotoUrl = fotoUrl.replaceAll(
-                  'localhost',
-                  'pbl250116.informatikapolines.id',
-                );
-              } else if (fotoUrl.contains('127.0.0.1')) {
-                fotoUrl = fotoUrl.replaceAll(
-                  '127.0.0.1',
-                  'pbl250116.informatikapolines.id',
-                );
-              }
+            if (fotoUrl.contains('localhost')) {
+              fotoUrl = fotoUrl.replaceAll(
+                'localhost',
+                'pbl250116.informatikapolines.id',
+              );
+            } else if (fotoUrl.contains('127.0.0.1')) {
+              fotoUrl = fotoUrl.replaceAll(
+                '127.0.0.1',
+                'pbl250116.informatikapolines.id',
+              );
             }
           }
 
