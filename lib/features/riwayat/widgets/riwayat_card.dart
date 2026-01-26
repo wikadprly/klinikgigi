@@ -27,8 +27,22 @@ class RiwayatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color statusColor() {
-      final s = statusReservasi.toLowerCase().trim();
-      switch (s) {
+      // Extract status_pelunasan from data map if available, otherwise use reservation status
+      final dataStatusPelunasan = data['status_pelunasan']?.toString();
+      final status = (dataStatusPelunasan ?? statusReservasi).toLowerCase().trim();
+
+      // First check for payment status values (from status_pelunasan column)
+      switch (status) {
+        case 'belum_lunas':
+          return Colors.orange;
+        case 'lunas':
+          return Colors.green;
+        case 'gagal':
+          return Colors.red;
+      }
+
+      // Then check for reservation status values (fallback for backward compatibility)
+      switch (status) {
         case 'menunggu':
           return Colors.orange;
         case 'dalam_proses':

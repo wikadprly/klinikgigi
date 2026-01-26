@@ -13,6 +13,7 @@ class HomeCareRiwayatCard extends StatelessWidget {
   final String pembayaranTotal;
   final String metodePembayaran;
   final String statusReservasi;
+  final String? statusPembayaran; // Optional payment status parameter
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
 
@@ -25,24 +26,37 @@ class HomeCareRiwayatCard extends StatelessWidget {
     required this.pembayaranTotal,
     required this.metodePembayaran,
     required this.statusReservasi,
+    this.statusPembayaran, // Optional parameter
     required this.data,
     this.onTap,
   });
 
   Color statusColor() {
-    final s = statusReservasi.toLowerCase().trim();
-    switch (s) {
+    // Cek beberapa kemungkinan field status dari backend
+    final status =
+        data['status_pembayaran']?.toString().toLowerCase().trim() ??
+        data['status_pelunasan']?.toString().toLowerCase().trim() ??
+        data['status_booking']?.toString().toLowerCase().trim() ??
+        data['status']?.toString().toLowerCase().trim() ??
+        '';
+
+    switch (status) {
+      case 'belum_lunas':
+      case 'belum lunas':
+      case 'pending':
       case 'menunggu':
         return Colors.orange;
-      case 'dalam_proses':
-      case 'dalam proses':
-        return Colors.blue;
-      case 'selesai':
+      case 'lunas':
+      case 'paid':
+      case 'berhasil':
         return Colors.green;
+      case 'gagal':
+      case 'failed':
       case 'batal':
+      case 'cancelled':
         return Colors.red;
       default:
-        return AppColors.goldDark;
+        return AppColors.goldDark; // fallback kalau null / tidak dikenal
     }
   }
 
