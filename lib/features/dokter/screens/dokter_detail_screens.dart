@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart';
 import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart';
-import 'package:flutter_klinik_gigi/config/api.dart';
 import 'package:flutter_klinik_gigi/core/services/dokter_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';

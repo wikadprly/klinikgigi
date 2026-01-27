@@ -435,7 +435,8 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                                   tanggal: displayTanggal, // Gunakan tanggal yang sesuai
                                   jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
                                   keluhan: "-",
-                                  total: 25000,
+                                  tipeLayanan: "klinik", // Tipe layanan default
+                                  jenisPasien: "Umum", // Jenis pasien default
                                   jadwalId: jadwal.id,
                                   dokterId: jadwal.kodeDokter,
                                 );

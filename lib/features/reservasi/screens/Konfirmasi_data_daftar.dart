@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
-import 'package:flutter_klinik_gigi/features/reservasi/screens/MidTransWebReservasi.dart';
+import 'package:flutter_klinik_gigi/providers/biaya_layanan_provider.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi_midtrans.dart';
 import 'package:flutter_klinik_gigi/core/models/user_model.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
@@ -18,7 +18,8 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
   final String tanggal;
   final String jam;
   final String keluhan;
-  final int total;
+  final String tipeLayanan; // Tambahkan tipe layanan
+  final String jenisPasien; // Tambahkan jenis pasien
   final int jadwalId;
   final String dokterId;
 
@@ -31,7 +32,8 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
     required this.tanggal,
     required this.jam,
     required this.keluhan,
-    required this.total,
+    this.tipeLayanan = 'klinik', // Default ke klinik
+    this.jenisPasien = 'Umum', // Default ke Umum
     required this.jadwalId,
     required this.dokterId,
   });
@@ -48,6 +50,8 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
   bool _isUserDataLoaded = false;
   int _pollingAttempts = 0; // ✅ TRACKING polling attempts
   static const int MAX_POLLING_ATTEMPTS = 120; // ✅ Max 10 menit (120 * 5 detik)
+  int? _dynamicTotal; // Biaya dinamis dari API
+  bool _isLoadingBiaya = true; // Status loading biaya
 
   @override
   void initState() {
@@ -57,6 +61,10 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         context.read<ReservasiProvider>().setKeluhan(widget.keluhan);
+
+        // Ambil biaya dari API
+        await _loadBiayaLayanan();
+
         final user = await SharedPrefsHelper.getUser();
         if (user != null && mounted) {
           setState(() {
@@ -70,6 +78,36 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
         }
       }
     });
+  }
+
+  /// Load biaya layanan dari API
+  Future<void> _loadBiayaLayanan() async {
+    try {
+      final biayaProvider = context.read<BiayaLayananProvider>();
+      final biaya = await biayaProvider.fetchBiayaLayanan(
+        tipeLayanan: widget.tipeLayanan,
+        jenisPasien: widget.jenisPasien,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (biaya != null) {
+            _dynamicTotal = biaya.biayaReservasi;
+          } else {
+            // Fallback ke nilai default jika API tidak menemukan biaya
+            _dynamicTotal = 0; // Atau nilai default lain yang sesuai
+          }
+          _isLoadingBiaya = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _dynamicTotal = 0; // Fallback ke 0 jika terjadi error
+          _isLoadingBiaya = false;
+        });
+      }
+    }
   }
 
   @override
@@ -244,7 +282,7 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
             tanggal: widget.tanggal,
             jam: widget.jam,
             keluhan: widget.keluhan,
-            biaya: widget.total,
+            biaya: _dynamicTotal ?? 0, // Gunakan biaya dinamis
             noAntrian: statusData?['no_antrian'],
             statusPembayaran: statusPembayaran,
           ),
@@ -419,14 +457,23 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
               fontSize: 14,
             ),
           ),
-          Text(
-            "Rp ${widget.total}",
-            style: AppTextStyles.heading.copyWith(
-              color: AppColors.gold,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          _isLoadingBiaya
+              ? const SizedBox(
+                  width: 60,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.gold,
+                  ),
+                )
+              : Text(
+                  "Rp ${_dynamicTotal?.toString() ?? '0'}",
+                  style: AppTextStyles.heading.copyWith(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ],
       ),
     );
@@ -670,10 +717,7 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text(
-                      "Bayar",
-                      style: TextStyle(color: Colors.black),
-                    ),
+                  : const Text("Bayar", style: TextStyle(color: Colors.black)),
             ),
           ),
         ),

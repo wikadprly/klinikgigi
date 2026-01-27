@@ -82,7 +82,10 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
             backgroundColor: AppColors.background,
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: ListView(
                   children: [
                     SizedBox(
@@ -162,9 +165,13 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
                             borderRadius: BorderRadius.circular(50),
                           ),
                         ),
-                        onPressed: provider.isLoading ? null : () => _onConfirmPressed(provider),
+                        onPressed: provider.isLoading
+                            ? null
+                            : () => _onConfirmPressed(provider),
                         child: provider.isLoading
-                            ? const CircularProgressIndicator(color: Colors.black)
+                            ? const CircularProgressIndicator(
+                                color: Colors.black,
+                              )
                             : const Text(
                                 "Konfirmasi",
                                 style: TextStyle(
@@ -203,9 +210,7 @@ class _UbahKataSandi2PageState extends State<UbahKataSandi2Page> {
         ),
         filled: true,
         fillColor: AppColors.white.withOpacity(0.1),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(color: AppColors.inputBorder),

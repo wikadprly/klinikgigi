@@ -4,7 +4,6 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_klinik_gigi/core/utils/file_shim.dart';
 import 'package:flutter_klinik_gigi/core/utils/image_picker_helper.dart';
@@ -79,7 +78,8 @@ String _formatTanggalLahir(String? tanggalLahir) {
     debugPrint('Final parsed UTC date: $parsedDate');
 
     // Format as DD-MM-YYYY
-    final formatted = '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}';
+    final formatted =
+        '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}';
     debugPrint('Final formatted date: $formatted');
 
     return formatted;
@@ -187,7 +187,6 @@ class _ProfilePageState extends State<ProfilePage> {
   // ==========================
   // IMAGE PICKER
   // ==========================
-  final ImagePicker _imagePicker = ImagePicker();
 
   // =======================================================
   // PATCH AMAN (ANTI ERROR WEB)

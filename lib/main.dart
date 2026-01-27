@@ -8,6 +8,7 @@ import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/otp_provider.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
+import 'package:flutter_klinik_gigi/providers/biaya_layanan_provider.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/providers/home_care_provider.dart';
 
 // Auth Screens
@@ -65,6 +66,9 @@ void main() async {
         ChangeNotifierProvider<OtpProvider>(create: (_) => OtpProvider()),
         ChangeNotifierProvider<ReservasiProvider>(
           create: (_) => ReservasiProvider(),
+        ),
+        ChangeNotifierProvider<BiayaLayananProvider>(
+          create: (_) => BiayaLayananProvider(),
         ),
         ChangeNotifierProvider<ProfilProvider>(create: (_) => ProfilProvider()),
         ChangeNotifierProvider<HomeCareProvider>(
