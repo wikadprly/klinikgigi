@@ -54,5 +54,9 @@ class ApiEndpoint {
   // JadwalPraktek
   static const String jadwalPraktek = "$baseUrl/jadwal-praktek";
 
+  // SETTINGS
+  static const String settings = "$baseUrl/settings";
+  static const String setting = "$baseUrl/setting";
+
   // HOME CARE (optional endpoints used by HomeCareService)
 }

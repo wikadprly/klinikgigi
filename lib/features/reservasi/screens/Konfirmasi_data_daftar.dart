@@ -18,7 +18,7 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
   final String tanggal;
   final String jam;
   final String keluhan;
-  final int total;
+  final int? total; // Changed to nullable to allow fetching from backend
   final int jadwalId;
   final String dokterId;
 
@@ -31,7 +31,7 @@ class KonfirmasiReservasiSheet extends StatefulWidget {
     required this.tanggal,
     required this.jam,
     required this.keluhan,
-    required this.total,
+    this.total, // Made optional
     required this.jadwalId,
     required this.dokterId,
   });
@@ -48,6 +48,8 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
   bool _isUserDataLoaded = false;
   int _pollingAttempts = 0; // ✅ TRACKING polling attempts
   static const int MAX_POLLING_ATTEMPTS = 120; // ✅ Max 10 menit (120 * 5 detik)
+  int _reservationFee = 25000; // Default value
+  bool _isLoadingFee = true; // Track loading state
 
   @override
   void initState() {
@@ -57,6 +59,17 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         context.read<ReservasiProvider>().setKeluhan(widget.keluhan);
+
+        // Fetch reservation fee from backend
+        final provider = context.read<ReservasiProvider>();
+        final fee = await provider.getReservationFee();
+        if (mounted) {
+          setState(() {
+            _reservationFee = fee;
+            _isLoadingFee = false;
+          });
+        }
+
         final user = await SharedPrefsHelper.getUser();
         if (user != null && mounted) {
           setState(() {
@@ -244,7 +257,7 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
             tanggal: widget.tanggal,
             jam: widget.jam,
             keluhan: widget.keluhan,
-            biaya: widget.total,
+            biaya: widget.total ?? _reservationFee,
             noAntrian: statusData?['no_antrian'],
             statusPembayaran: statusPembayaran,
           ),
@@ -419,14 +432,25 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
               fontSize: 14,
             ),
           ),
-          Text(
-            "Rp ${widget.total}",
-            style: AppTextStyles.heading.copyWith(
-              color: AppColors.gold,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          _isLoadingFee
+              ? const SizedBox(
+                  width: 60,
+                  height: 20,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.gold,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
+              : Text(
+                  "Rp ${widget.total ?? _reservationFee}",
+                  style: AppTextStyles.heading.copyWith(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ],
       ),
     );

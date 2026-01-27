@@ -300,4 +300,14 @@ class ReservasiProvider extends ChangeNotifier {
     // Tidak wajibkan dokter dan tanggal karena bisa menampilkan semua
     return true;
   }
+
+  // Get reservation fee from settings
+  Future<int> getReservationFee() async {
+    try {
+      return await _reservasiService.getReservationFee();
+    } catch (e) {
+      if (kDebugMode) print('getReservationFee Error: $e');
+      return 25000; // Default value if API call fails
+    }
+  }
 }

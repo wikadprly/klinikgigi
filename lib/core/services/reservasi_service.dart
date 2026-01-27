@@ -282,4 +282,28 @@ class ReservasiService {
       return null;
     }
   }
+
+  // 11. Get Reservation Fee from Settings
+  Future<int> getReservationFee() async {
+    final url = Uri.parse('${ApiEndpoint.setting}?key=reservation_fee');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        url,
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return int.tryParse(data['value'].toString()) ?? 25000;
+        }
+      }
+      print("Gagal get reservation fee: ${response.body}");
+    } catch (e) {
+      print("Error getReservationFee: $e");
+    }
+    // Return default value if API call fails
+    return 25000;
+  }
 }

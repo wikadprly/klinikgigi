@@ -109,11 +109,11 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                 value: selectedKodePoli == null
                     ? null
                     : reservasiProv.poliList
-                        .firstWhere(
-                          (p) => p.kodePoli == selectedKodePoli,
-                          orElse: () => reservasiProv.poliList.first,
-                        )
-                        .namaPoli,
+                          .firstWhere(
+                            (p) => p.kodePoli == selectedKodePoli,
+                            orElse: () => reservasiProv.poliList.first,
+                          )
+                          .namaPoli,
                 onChanged: (val) async {
                   final poli = reservasiProv.poliList.firstWhere(
                     (p) => p.namaPoli == val,
@@ -131,7 +131,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                     kodePoli: poli.kodePoli,
                     kodeDokter: selectedKodeDokter,
                   );
-                  availableDates = rawDates.map((e) => e['tanggal'] as String).toList();
+                  availableDates = rawDates
+                      .map((e) => e['tanggal'] as String)
+                      .toList();
 
                   if (selectedTanggal != null &&
                       !availableDates.contains(selectedTanggal)) {
@@ -149,21 +151,22 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                 label: "Pilih Dokter",
                 items: availableDoctors.isNotEmpty
                     ? reservasiProv.dokterList
-                        .where((d) => availableDoctors.contains(d.kodeDokter))
-                        .map((d) => d.namaLengkap)
-                        .toList()
+                          .where((d) => availableDoctors.contains(d.kodeDokter))
+                          .map((d) => d.namaLengkap)
+                          .toList()
                     : reservasiProv.dokterList
-                        .map((d) => d.namaLengkap)
-                        .toList(),
-                value: (selectedKodeDokter == null ||
+                          .map((d) => d.namaLengkap)
+                          .toList(),
+                value:
+                    (selectedKodeDokter == null ||
                         reservasiProv.dokterList.isEmpty)
                     ? null
                     : reservasiProv.dokterList
-                        .firstWhere(
-                          (d) => d.kodeDokter == selectedKodeDokter,
-                          orElse: () => reservasiProv.dokterList.first,
-                        )
-                        .namaLengkap,
+                          .firstWhere(
+                            (d) => d.kodeDokter == selectedKodeDokter,
+                            orElse: () => reservasiProv.dokterList.first,
+                          )
+                          .namaLengkap,
                 onChanged: (val) async {
                   final dokter = reservasiProv.dokterList.firstWhere(
                     (d) => d.namaLengkap == val,
@@ -188,7 +191,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       kodeDokter: selectedKodeDokter,
                     );
                   }
-                  availableDates = rawDates.map((e) => e['tanggal'] as String).toList();
+                  availableDates = rawDates
+                      .map((e) => e['tanggal'] as String)
+                      .toList();
 
                   if (selectedTanggal != null &&
                       !availableDates.contains(selectedTanggal)) {
@@ -212,7 +217,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                   if (availableDates.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Tidak ada tanggal yang tersedia untuk dipilih."),
+                        content: Text(
+                          "Tidak ada tanggal yang tersedia untuk dipilih.",
+                        ),
                         backgroundColor: Colors.orange,
                       ),
                     );
@@ -221,14 +228,17 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
 
                   final filteredFirstDate = DateTime.now();
                   final filteredLastDate = DateTime.now().add(
-                    const Duration(days: 7), // Menampilkan 7 hari ke depan sesuai perubahan backend
+                    const Duration(
+                      days: 7,
+                    ), // Menampilkan 7 hari ke depan sesuai perubahan backend
                   );
 
                   // Tentukan initialDate berdasarkan tanggal yang tersedia
                   DateTime initialDate = DateTime.now();
 
                   // Jika selectedTanggal tidak null dan tersedia, gunakan itu
-                  if (selectedTanggal != null && availableDates.contains(selectedTanggal)) {
+                  if (selectedTanggal != null &&
+                      availableDates.contains(selectedTanggal)) {
                     initialDate = DateTime.parse(selectedTanggal!);
                   }
                   // Jika tidak, gunakan tanggal pertama dari availableDates
@@ -270,11 +280,14 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
 
                     // Fetch dokter dengan jadwal berdasarkan tanggal yang dipilih
                     if (selectedKodePoli != null) {
-                      final rawDocs = await reservasiProv.fetchDokterDenganJadwal(
-                        kodePoli: selectedKodePoli!,
-                        tanggalReservasi: formattedDate,
-                      );
-                      availableDoctors = rawDocs.map((e) => e['kode_dokter'] as String).toList();
+                      final rawDocs = await reservasiProv
+                          .fetchDokterDenganJadwal(
+                            kodePoli: selectedKodePoli!,
+                            tanggalReservasi: formattedDate,
+                          );
+                      availableDoctors = rawDocs
+                          .map((e) => e['kode_dokter'] as String)
+                          .toList();
 
                       if (selectedKodeDokter != null &&
                           !availableDoctors.contains(selectedKodeDokter)) {
@@ -370,9 +383,10 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
 
                       bool isAvailable = jadwal.statusJadwal == 'Tersedia';
 
-                      String namaPoliTampil = prov.selectedPoli?.namaPoli ?? jadwal.kodePoli;
+                      String namaPoliTampil =
+                          prov.selectedPoli?.namaPoli ?? jadwal.kodePoli;
                       if (selectedKodePoli == null) {
-                         try {
+                        try {
                           final poliObj = prov.poliList.firstWhere(
                             (p) => p.kodePoli == jadwal.kodePoli,
                           );
@@ -385,10 +399,15 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                       // Gunakan tanggal_jadwal_harian jika tersedia, jika tidak gunakan tanggal yang dipilih
                       // Format tanggal tanpa nama hari untuk menghindari duplikasi dengan variabel 'hari'
                       String displayTanggal = selectedTanggal != null
-                          ? DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(selectedTanggal!))
+                          ? DateFormat(
+                              'd MMMM yyyy',
+                              'id_ID',
+                            ).format(DateTime.parse(selectedTanggal!))
                           : jadwal.tanggalJadwalHarian != null
-                              ? DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(jadwal.tanggalJadwalHarian!))
-                              : '';
+                          ? DateFormat('d MMMM yyyy', 'id_ID').format(
+                              DateTime.parse(jadwal.tanggalJadwalHarian!),
+                            )
+                          : '';
 
                       return Opacity(
                         opacity: isAvailable ? 1.0 : 0.6,
@@ -400,12 +419,15 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                           quota: jadwal.quota,
                           kuotaTerpakai: jadwal.kuotaTerpakai,
                           tanggal: displayTanggal,
-                          statusJadwal: jadwal.statusJadwal, // Tambahkan status jadwal
+                          statusJadwal:
+                              jadwal.statusJadwal, // Tambahkan status jadwal
                           onTap: () {
                             if (selectedTanggal == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Mohon pilih tanggal terlebih dahulu."),
+                                  content: Text(
+                                    "Mohon pilih tanggal terlebih dahulu.",
+                                  ),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -415,7 +437,9 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                             if (!isAvailable) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text("Maaf, jadwal ini ${jadwal.statusJadwal}."),
+                                  content: Text(
+                                    "Maaf, jadwal ini ${jadwal.statusJadwal}.",
+                                  ),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -429,13 +453,15 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                               builder: (_) {
                                 return KonfirmasiReservasiSheet(
                                   namaPasien: user?.namaPengguna ?? "-",
-                                  rekamMedis: user?.rekamMedisId.toString() ?? "-",
+                                  rekamMedis:
+                                      user?.rekamMedisId.toString() ?? "-",
                                   poli: namaPoliTampil,
                                   dokter: namaDokterTampil,
-                                  tanggal: displayTanggal, // Gunakan tanggal yang sesuai
-                                  jam: "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
+                                  tanggal:
+                                      displayTanggal, // Gunakan tanggal yang sesuai
+                                  jam:
+                                      "${jadwal.jamMulai} - ${jadwal.jamSelesai}",
                                   keluhan: "-",
-                                  total: 25000,
                                   jadwalId: jadwal.id,
                                   dokterId: jadwal.kodeDokter,
                                 );
