@@ -49,7 +49,6 @@ class _MidtransHomeCareBookingScreenState
     decimalDigits: 2,
   );
 
-  Map<String, dynamic>? _selectedPromo;
   int? _currentBookingId;
   int _lastPaidTotal = 0; // Store the amount paid for success screen
 
@@ -58,17 +57,12 @@ class _MidtransHomeCareBookingScreenState
     super.initState();
     // Load initial data via Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
+      _loadData(); // Just basic helper, no fetch needed if we don't display user points
     });
   }
 
   Future<void> _loadData() async {
-    final user = await SharedPrefsHelper.getUser();
-    if (user != null && mounted) {
-      final provider = Provider.of<HomeCareProvider>(context, listen: false);
-      provider.fetchUserPoints(user.userId);
-      provider.fetchPromos(type: 'booking', userId: user.userId);
-    }
+    // Points & Promos removed (27 Jan 2026)
   }
 
   // --- CREATE BOOKING ---
@@ -113,7 +107,8 @@ class _MidtransHomeCareBookingScreenState
         lng: widget.longitude,
         alamat: widget.alamat,
         metodePembayaran: 'midtrans',
-        promoId: _selectedPromo?['id'],
+
+        promoId: null, // Promo Removed
       );
 
       if (mounted) Navigator.pop(context);
@@ -244,44 +239,9 @@ class _MidtransHomeCareBookingScreenState
         final total = (biaya['estimasi_total'] as num?)?.toInt() ?? 0;
 
         // Recalculate based on promo
+        // Usage of _selectedPromo removed
         int discount = 0;
-        if (_selectedPromo != null) {
-          // Debug: Print the entire promo data
-          debugPrint('🔍 Selected Promo Data: $_selectedPromo');
-
-          final transport = biaya['biaya_transport'] ?? 0;
-          final int transportVal = (transport as num?)?.toInt() ?? 0;
-          final String? promoTipe = _selectedPromo!['tipe']?.toString();
-
-          // Try multiple ways to get nilai_potongan
-          final dynamic rawNilaiPotongan = _selectedPromo!['nilai_potongan'];
-          debugPrint(
-            '🔍 Raw nilai_potongan: $rawNilaiPotongan (type: ${rawNilaiPotongan?.runtimeType})',
-          );
-
-          int nilaiPotongan = 0;
-          if (rawNilaiPotongan != null) {
-            if (rawNilaiPotongan is num) {
-              nilaiPotongan = rawNilaiPotongan.toInt();
-            } else if (rawNilaiPotongan is String) {
-              nilaiPotongan = double.tryParse(rawNilaiPotongan)?.toInt() ?? 0;
-            }
-          }
-
-          debugPrint(
-            '🔍 promoTipe: $promoTipe, nilaiPotongan: $nilaiPotongan, transportVal: $transportVal',
-          );
-
-          if (promoTipe == 'free_transport') {
-            // Jika tipe adalah free_transport, gunakan biaya transport sebagai diskon
-            discount = transportVal;
-          } else if (nilaiPotongan > 0) {
-            // Jika nilai_potongan ada dan > 0, gunakan sebagai diskon
-            discount = nilaiPotongan;
-          }
-
-          debugPrint('🔍 Final discount: $discount');
-        }
+        // Logic Promo Removed (27 Jan 2026)
 
         int finalTotal = total - discount;
         if (finalTotal < 0) finalTotal = 0;
@@ -415,101 +375,7 @@ class _MidtransHomeCareBookingScreenState
           _rowBiaya("Biaya Layanan", layanan),
           _rowBiaya("Biaya Transport ($jarak km)", transport),
 
-          if (_selectedPromo != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      "Promo (${_selectedPromo!['judul_promo']})",
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "- ${currencyFormatter.format(discount)}",
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-
-          const Divider(color: Colors.white24, height: 24),
-
-          // PILIH PROMO
-          InkWell(
-            onTap: () => _showPromoModal(provider),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold.withOpacity(0.5)),
-                borderRadius: BorderRadius.circular(12),
-                color: AppColors.background,
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.confirmation_number_outlined,
-                    color: AppColors.gold,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedPromo != null
-                              ? "Promo Terpasang"
-                              : "Gunakan Promo / Poin",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        if (_selectedPromo == null)
-                          Text(
-                            "Poin Anda: ${provider.userPoints}",
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 12,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (_selectedPromo != null)
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => setState(() => _selectedPromo = null),
-                    )
-                  else
-                    const Icon(Icons.chevron_right, color: Colors.grey),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
+          // PROMO UI BLOCK REMOVED
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -536,147 +402,7 @@ class _MidtransHomeCareBookingScreenState
     );
   }
 
-  void _showPromoModal(HomeCareProvider provider) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) {
-            return Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Pilih Promo",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Poin Anda: ${provider.userPoints}",
-                    style: const TextStyle(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: provider.isLoadingPromos
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.gold,
-                            ),
-                          )
-                        : provider.promos.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "Tidak ada promo tersedia saat ini",
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: provider.promos.length,
-                            itemBuilder: (context, index) {
-                              final promo = provider.promos[index];
-                              final hargaPoin = promo['harga_poin'] ?? 0;
-                              final bool canRedeem =
-                                  provider.userPoints >= hargaPoin;
-
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white10),
-                                ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  title: Text(
-                                    promo['judul_promo'],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Text(
-                                      "${promo['deskripsi']}\n-$hargaPoin Poin",
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                  trailing: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: canRedeem
-                                          ? AppColors.gold
-                                          : Colors.grey,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    onPressed: canRedeem
-                                        ? () {
-                                            setState(
-                                              () => _selectedPromo = promo,
-                                            );
-                                            Navigator.pop(context);
-                                          }
-                                        : null,
-                                    child: Text(
-                                      "Gunakan",
-                                      style: TextStyle(
-                                        color: canRedeem
-                                            ? Colors.black
-                                            : Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  // _showPromoModal removed
 
   Widget _rowDetail(String label, String value, {bool isMultiline = false}) {
     return Padding(

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart';
 import 'package:flutter_klinik_gigi/core/models/dokter_detail_model.dart';
-import 'package:flutter_klinik_gigi/config/api.dart';
 import 'package:flutter_klinik_gigi/core/services/dokter_service.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
@@ -108,7 +106,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                       leading: Container(
                         margin: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
@@ -146,7 +144,7 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                                 child: Icon(
                                   Icons.person,
                                   size: 100,
-                                  color: AppColors.gold.withOpacity(0.5),
+                                  color: AppColors.gold.withValues(alpha: 0.5),
                                 ),
                               ),
 
@@ -186,10 +184,10 @@ class _DokterDetailScreenState extends State<DokterDetailScreen>
                                 vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.gold.withOpacity(0.15),
+                                color: AppColors.gold.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: AppColors.gold.withOpacity(0.3),
+                                  color: AppColors.gold.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(
