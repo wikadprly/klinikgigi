@@ -8,9 +8,10 @@ bagian client dari sistem 3K Dental Care; backend dan web admin ada di repo
 ## Live Demo
 
 - Web demo: <https://klinikgigi-wika.netlify.app>
-- Mode demo memakai data contoh (`DEMO_MODE=true`) dan tidak memanggil backend.
-- Untuk demo integrasi penuh, jalankan backend Laravel lalu build ulang dengan
-  `DEMO_MODE=false`.
+- Build production web terhubung ke API Railway:
+  `https://web-production-3e9a.up.railway.app/api` dengan `DEMO_MODE=false`.
+- Backend/admin: <https://web-production-3e9a.up.railway.app/admin/login>
+- Mode demo (`DEMO_MODE=true`) tetap tersedia untuk development tanpa backend.
 
 ## Fitur
 
@@ -68,10 +69,12 @@ Jika backend sudah berjalan dan di-seed:
 
 | Role | Username / Email | Password |
 | --- | --- | --- |
-| Admin | `Farrel` | `admin123` |
+| Admin lokal | `Farrel` | `admin123` |
+| Admin production | `Farrel` | diatur lewat `ADMIN_PASSWORD` |
 | Pasien | `farrelsheva@gmail.com` | `password123` |
 
-Ganti password default sebelum dipakai publik.
+Ganti password default sebelum dipakai publik. Password production tidak
+ditulis di repo.
 
 ## Menjalankan
 
@@ -85,7 +88,7 @@ Menjalankan tanpa mode demo (memerlukan backend):
 ```bash
 flutter run -d chrome \
   --dart-define=DEMO_MODE=false \
-  --dart-define=API_BASE_URL=https://domain-backend-anda.com/api
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
 ```
 
 Untuk development lokal:
@@ -95,6 +98,16 @@ Untuk development lokal:
 - Production: gunakan HTTPS
 
 ## Build Web
+
+Production (terhubung API Railway):
+
+```bash
+flutter build web --release \
+  --dart-define=DEMO_MODE=false \
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
+```
+
+Demo tanpa backend:
 
 ```bash
 flutter build web --release --dart-define=DEMO_MODE=true
@@ -114,19 +127,24 @@ flutter build web --release --base-href /nama-repo/ --dart-define=DEMO_MODE=true
 ```bash
 flutter build apk --release \
   --dart-define=DEMO_MODE=false \
-  --dart-define=API_BASE_URL=https://domain-backend-anda.com/api
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
 ```
 
 Hasil build berada di `build/app/outputs/flutter-apk/app-release.apk`.
 
 ## Deploy Web Demo
 
-### Netlify Drop
+### Netlify CLI
 
-1. Jalankan `flutter build web --release --dart-define=DEMO_MODE=true`.
-2. Buka <https://app.netlify.com/drop>.
-3. Unggah atau seret folder `build/web`.
-4. Situs langsung online dan dapat dibagikan sebagai portofolio.
+```bash
+flutter build web --release \
+  --dart-define=DEMO_MODE=false \
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
+netlify deploy --prod --dir=build/web
+```
+
+Site production: <https://klinikgigi-wika.netlify.app>. Alternatif tanpa CLI:
+unggah folder `build/web` lewat <https://app.netlify.com/drop>.
 
 ### Firebase Hosting
 
@@ -139,7 +157,9 @@ firebase init hosting
 Pilih folder publik `build/web`, lalu:
 
 ```bash
-flutter build web --release --dart-define=DEMO_MODE=true
+flutter build web --release \
+  --dart-define=DEMO_MODE=false \
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
 firebase deploy --only hosting
 ```
 
@@ -148,7 +168,9 @@ firebase deploy --only hosting
 Gunakan `build/web` sebagai Output Directory dan build command berikut:
 
 ```bash
-flutter build web --release --dart-define=DEMO_MODE=true
+flutter build web --release \
+  --dart-define=DEMO_MODE=false \
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
 ```
 
 Pastikan Flutter SDK tersedia pada environment build Vercel.
@@ -175,8 +197,8 @@ web/                konfigurasi dan aset web
 
 ## Checklist Portofolio
 
-- [ ] Isi URL backend yang sudah live di README.
-- [ ] Sediakan akun demo dan data contoh.
+- [x] Isi URL backend yang sudah live di README.
+- [x] Sediakan akun demo dan data contoh.
 - [ ] Tambahkan screenshot aplikasi.
-- [ ] Tampilkan versi `DEMO_MODE=false` yang benar-benar terhubung ke API.
+- [x] Tampilkan versi `DEMO_MODE=false` yang benar-benar terhubung ke API.
 - [ ] Jelaskan arsitektur Flutter + Laravel + MySQL di case study.
