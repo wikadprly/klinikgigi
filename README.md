@@ -69,9 +69,9 @@ Jika backend sudah berjalan dan di-seed:
 
 | Role | Username / Email | Password |
 | --- | --- | --- |
-| Admin lokal | `Farrel` | `admin123` |
-| Admin production | `Farrel` | diatur lewat `ADMIN_PASSWORD` |
-| Pasien | `farrelsheva@gmail.com` | `password123` |
+| Admin lokal | `admin` | `admin123` |
+| Admin production | `admin3k` | diatur lewat `ADMIN_PASSWORD` |
+| Pasien | `pasien.demo@3kdentalcare.id` | `password123` |
 
 Ganti password default sebelum dipakai publik. Password production tidak
 ditulis di repo.
