@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_klinik_gigi/features/dentalhome/screens/dentalhome_screens.dart';
 import 'package:provider/provider.dart';
@@ -50,13 +51,13 @@ import 'package:flutter_klinik_gigi/features/settings/screens/panduanubahsandi.d
 
 // Profile
 import 'package:flutter_klinik_gigi/features/profile/screens/profil_screens.dart';
-import 'package:flutter_klinik_gigi/features/profile/screens/two_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final authProvider = AuthProvider();
   await authProvider.loadUser();
+  await authProvider.enableDemoSession();
 
   runApp(
     MultiProvider(
@@ -76,6 +77,43 @@ void main() async {
   );
 }
 
+/// Membatasi lebar aplikasi saat dibuka di browser desktop agar layout
+/// mobile tetap proporsional (seperti frame HP di tengah layar).
+class _WebFrame extends StatelessWidget {
+  const _WebFrame({required this.child});
+
+  final Widget child;
+
+  static const double _maxWidth = 430;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
+    if (!kIsWeb || mediaQuery.size.width <= _maxWidth + 80) {
+      return child;
+    }
+
+    return ColoredBox(
+      color: const Color(0xFF050505),
+      child: Center(
+        child: SizedBox(
+          width: _maxWidth,
+          child: MediaQuery(
+            data: mediaQuery.copyWith(
+              size: Size(_maxWidth, mediaQuery.size.height),
+              padding: EdgeInsets.zero,
+              viewPadding: EdgeInsets.zero,
+              viewInsets: EdgeInsets.zero,
+            ),
+            child: ClipRect(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class KlinikGigiApp extends StatelessWidget {
   const KlinikGigiApp({super.key});
 
@@ -93,6 +131,7 @@ class KlinikGigiApp extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
 
+      builder: (context, child) => _WebFrame(child: child ?? const SizedBox()),
       initialRoute: authProvider.isLoggedIn ? '/main_screen' : '/start',
       routes: {
         // AUTH

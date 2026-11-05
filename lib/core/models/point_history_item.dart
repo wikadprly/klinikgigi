@@ -1,6 +1,5 @@
 // Model ini digunakan untuk memetakan data JSON (Riwayat Poin) dari API Laravel 
 // yang dikirim dari endpoint `/points/history`
-import 'package:intl/intl.dart';
 
 class PointHistoryItem {
   final int id;

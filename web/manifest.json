@@ -1,11 +1,11 @@
 {
-    "name": "flutter_klinik_gigi",
-    "short_name": "flutter_klinik_gigi",
+    "name": "3K Dental Care",
+    "short_name": "3K Dental",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B0A0A",
+    "theme_color": "#FFD700",
+    "description": "Aplikasi klinik gigi untuk reservasi online, dental home care, riwayat pemeriksaan, dan reward pasien.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -3,11 +3,24 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_klinik_gigi/config/api.dart'; // Import API Config
 import '../models/pasien_model.dart';
 import '../storage/shared_prefs_helper.dart';
+import '../../config/app_config.dart';
 
 class PasienService {
   // Removed hardcoded baseUrl
 
   Future<Pasien> getPasienByUserId(String userId) async {
+    if (AppConfig.demoMode) {
+      return Pasien(
+        id: 2,
+        nama: 'Pasien Demo',
+        jenisKelamin: 'Wanita',
+        foto: 'default.png',
+        rekamMedis: 'RM-0002',
+        tanggalLahir: DateTime(2000, 1, 1),
+        poin: 120,
+      );
+    }
+
     // ✅ Ambil token dari SharedPrefs
     final token = await SharedPrefsHelper.getToken();
 

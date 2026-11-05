@@ -1,14 +1,43 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 
 class ProfilService {
-  final String baseUrl = "http://127.0.0.1:8000/api";
+  final String baseUrl = AppConfig.apiBaseUrl;
+
+  static final Map<String, dynamic> _demoProfil = {
+    'success': true,
+    'message': 'Profil demo',
+    'data': {
+      'user': {
+        'id': 2,
+        'nama_pengguna': 'Pasien Demo',
+        'nik': '3374000000000001',
+        'email': 'demo@3kdentalcare.id',
+        'no_hp': '081234567890',
+        'tanggal_lahir': '2000-01-01',
+        'jenis_kelamin': 'Perempuan',
+        'file_foto': '',
+      },
+      'rekam_medis': {
+        'id': 2,
+        'no_rekam_medis': 'RM-0002',
+        'alamat': 'Jl. Kesehatan No. 1, Semarang',
+      },
+      'nama_asuransi': 'BPJS Kesehatan',
+      'no_peserta': '0001234567890',
+      'status_aktif': 'Aktif',
+    },
+  };
 
   // ========================= GET PROFIL =========================
   Future<Map<String, dynamic>> getProfil(String token) async {
-    print("Fetching profile...");
+    if (AppConfig.demoMode) {
+      return jsonDecode(jsonEncode(_demoProfil)) as Map<String, dynamic>;
+    }
+
     final response = await http.get(
       Uri.parse("$baseUrl/profil"),
       headers: {
@@ -17,8 +46,6 @@ class ProfilService {
       },
     );
 
-    print("STATUS GET: ${response.statusCode}");
-    print("RESPONSE GET: ${response.body}");
     return jsonDecode(response.body);
   }
 
@@ -27,11 +54,19 @@ class ProfilService {
     String token,
     Map<String, dynamic> data,
   ) async {
-    try {
-      print("🚀 Updating profile...");
-      print("📤 Body: $data");
+    if (AppConfig.demoMode) {
+      final user = _demoProfil['data']['user'] as Map<String, dynamic>;
+      data.forEach((key, value) {
+        if (value != null) user[key] = value;
+      });
+      return {
+        'success': true,
+        'message': 'Profil demo berhasil diperbarui',
+        'data': _demoProfil['data'],
+      };
+    }
 
-      // CORRECT ENDPOINT: /profil/update
+    try {
       final response = await http.post(
         Uri.parse('$baseUrl/profil/update'),
         headers: {
@@ -41,9 +76,6 @@ class ProfilService {
         },
         body: json.encode(data),
       );
-
-      print("📡 STATUS UPDATE: ${response.statusCode}");
-      print("📡 BODY UPDATE: ${response.body}");
 
       final result = json.decode(response.body);
 
@@ -68,7 +100,6 @@ class ProfilService {
         };
       }
     } catch (e) {
-      print("❌ ERROR UPDATE SERVICE: $e");
       return {'success': false, 'message': 'Terjadi kesalahan: $e'};
     }
   }
@@ -82,23 +113,28 @@ class ProfilService {
     return list.join(", ");
   }
 
-  // ===================== UPDATE PROFILE PHOTO (JANGAN DIUBAH) =====================
+  // ===================== UPDATE PROFILE PHOTO =====================
   Future<Map<String, dynamic>> updateProfilePicture(
     String token,
-    File imageFile,
+    XFile imageFile,
   ) async {
-    Dio dio = Dio();
-
-    if (!await imageFile.exists()) {
-      throw Exception('File does not exist at path: ${imageFile.path}');
+    if (AppConfig.demoMode) {
+      return {
+        'success': true,
+        'message': 'Foto profil demo berhasil diperbarui',
+      };
     }
 
+    Dio dio = Dio();
+
     try {
+      final bytes = await imageFile.readAsBytes();
+      final filename = imageFile.name.isNotEmpty
+          ? imageFile.name
+          : 'foto_profil.jpg';
+
       FormData formData = FormData.fromMap({
-        'file_foto': await MultipartFile.fromFile(
-          imageFile.path,
-          filename: imageFile.path.split('\\').last.split('/').last,
-        ),
+        'file_foto': MultipartFile.fromBytes(bytes, filename: filename),
       });
 
       Response response = await dio.post(
@@ -112,25 +148,25 @@ class ProfilService {
         ),
       );
 
-      print("STATUS UPDATE PHOTO: ${response.statusCode}");
-      print("RESPONSE UPDATE PHOTO: ${response.data}");
-
       return response.data;
     } catch (e) {
-      print("Error uploading photo: $e");
       rethrow;
     }
   }
 
-  // ===================== DELETE PROFILE PHOTO (JANGAN DIUBAH) =====================
+  // ===================== DELETE PROFILE PHOTO =====================
   Future<Map<String, dynamic>> deleteProfilePicture(String token) async {
+    if (AppConfig.demoMode) {
+      return {
+        'success': true,
+        'message': 'Foto profil demo berhasil dihapus',
+      };
+    }
+
     final response = await http.delete(
       Uri.parse("$baseUrl/profil/hapus/foto"),
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
     );
-
-    print("STATUS DELETE PHOTO: ${response.statusCode}");
-    print("RESPONSE DELETE PHOTO: ${response.body}");
 
     return jsonDecode(response.body);
   }

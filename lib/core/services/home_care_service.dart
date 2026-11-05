@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 // Sesuaikan path import ini dengan struktur folder Anda
 import '../../core/storage/shared_prefs_helper.dart';
 import '../../config/api.dart';
+import '../../config/app_config.dart';
 import '../models/home_care_booking.dart';
 import '../models/validation_exception.dart';
 
@@ -19,6 +20,65 @@ class HomeCareService {
     String tanggal, {
     String? kodePoli,
   }) async {
+    if (AppConfig.demoMode) {
+      final List<Map<String, dynamic>> all = [
+        {
+          'kuota_sisa': 5,
+          'kuota_master': 8,
+          'master_jadwal': {
+            'jadwal_id': 101,
+            'kode_poli': 'POL-01',
+            'jam_mulai': '09:00',
+            'jam_selesai': '12:00',
+            'dokter': {
+              'nama': 'drg. Bagus Pratama',
+              'spesialisasi': 'Dokter Gigi Umum',
+              'spesialis': {'nama_spesialis': 'Dokter Gigi Umum'},
+            },
+            'poli': {'nama_poli': 'Poli Gigi Umum'},
+          },
+        },
+        {
+          'kuota_sisa': 6,
+          'kuota_master': 8,
+          'master_jadwal': {
+            'jadwal_id': 102,
+            'kode_poli': 'POL-01',
+            'jam_mulai': '13:00',
+            'jam_selesai': '16:00',
+            'dokter': {
+              'nama': 'drg. Ayu Lestari',
+              'spesialisasi': 'Dokter Gigi Umum',
+              'spesialis': {'nama_spesialis': 'Dokter Gigi Umum'},
+            },
+            'poli': {'nama_poli': 'Poli Gigi Umum'},
+          },
+        },
+        {
+          'kuota_sisa': 5,
+          'kuota_master': 6,
+          'master_jadwal': {
+            'jadwal_id': 103,
+            'kode_poli': 'POL-02',
+            'jam_mulai': '10:00',
+            'jam_selesai': '14:00',
+            'dokter': {
+              'nama': 'drg. Citra Dewi, Sp.Ort',
+              'spesialisasi': 'Ortodonti',
+              'spesialis': {'nama_spesialis': 'Ortodonti'},
+            },
+            'poli': {'nama_poli': 'Poli Ortodonti'},
+          },
+        },
+      ];
+      if (kodePoli == null || kodePoli.isEmpty || kodePoli == 'Semua') {
+        return all;
+      }
+      return all
+          .where((e) => e['master_jadwal']['kode_poli'] == kodePoli)
+          .toList();
+    }
+
     final token = await _getToken();
 
     String urlString = '${ApiEndpoint.homeCareJadwalMaster}?tanggal=$tanggal';
@@ -47,6 +107,14 @@ class HomeCareService {
 
   // 2. HITUNG ESTIMASI BIAYA
   Future<Map<String, dynamic>> calculateCost(double lat, double lng) async {
+    if (AppConfig.demoMode) {
+      return {
+        'jarak_km': 4.2,
+        'biaya_transport': 25000,
+        'biaya_reservasi': 50000,
+      };
+    }
+
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareCalculate);
 
@@ -91,6 +159,33 @@ class HomeCareService {
   }) async {
     if (keluhan.trim().isEmpty) throw Exception('Keluhan tidak boleh kosong');
     if (alamat.trim().isEmpty) throw Exception('Alamat tidak boleh kosong');
+
+    if (AppConfig.demoMode) {
+      return {
+        'booking': HomeCareBooking(
+          id: 999,
+          noPemeriksaan: 'DEMO-HC-${DateTime.now().millisecondsSinceEpoch}',
+          noAntrian: 'HC-01',
+          pasienId: rekamMedisId.toString(),
+          dokterId: 'DOK-01',
+          jadwalId: masterJadwalId,
+          tanggalPesan: tanggal,
+          waktuPesan: '09:00',
+          biayaTransport: 25000,
+          biayaReservasi: 50000,
+          pembayaranTotal: 75000,
+          metodePembayaran: metodePembayaran,
+          statusPembayaran: 'lunas',
+          snapToken: 'demo-snap-token',
+          redirectUrl: '',
+        ),
+        'payment_info': {
+          'snap_token': 'demo-snap-token',
+          'redirect_url': '',
+          'amount': 75000,
+        },
+      };
+    }
 
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareBook);
@@ -147,6 +242,19 @@ class HomeCareService {
 
   // 4. CEK STATUS PEMBAYARAN (POLLING) - [DIPERBAIKI]
   Future<Map<String, dynamic>> checkPaymentStatus(int bookingId) async {
+    if (AppConfig.demoMode) {
+      return {
+        'id': bookingId,
+        'status_reservasi': 'menunggu_dokter',
+        'status_pembayaran': 'lunas',
+        'status_pelunasan': 'lunas',
+        'total_biaya_tindakan': 150000,
+        'nama_dokter': 'drg. Bagus Pratama',
+        'jadwal_tanggal': DateTime.now().toIso8601String().split('T').first,
+        'jadwal_jam': '09:00 - 12:00',
+      };
+    }
+
     final token = await _getToken();
 
     // PERBAIKAN: Menyusun URL secara manual karena tidak ada di ApiEndpoint
@@ -173,6 +281,8 @@ class HomeCareService {
 
   // 5. VALIDASI TOKEN
   Future<bool> validateToken() async {
+    if (AppConfig.demoMode) return true;
+
     final token = await _getToken();
     if (token == null || token.isEmpty) return false;
 
@@ -193,6 +303,17 @@ class HomeCareService {
 
   // 6. TRACKING HISTORY
   Future<List<Map<String, dynamic>>> getTrackingHistory(int bookingId) async {
+    if (AppConfig.demoMode) {
+      return [
+        {
+          'id': 1,
+          'status': 'menunggu_dokter',
+          'keterangan': 'Booking diterima, menunggu dokter datang.',
+          'created_at': DateTime.now().toIso8601String(),
+        },
+      ];
+    }
+
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareTracking(bookingId));
     final headers = {'Content-Type': 'application/json'};
@@ -218,6 +339,8 @@ class HomeCareService {
 
   // 7. GET USER POINTS
   Future<int> getUserPoints(String userId) async {
+    if (AppConfig.demoMode) return 120;
+
     final token = await _getToken();
     final url = Uri.parse('${ApiEndpoint.homeCareUserPoints}?user_id=$userId');
 
@@ -240,6 +363,32 @@ class HomeCareService {
   Future<List<Map<String, dynamic>>> getPromos({
     String type = 'booking',
   }) async {
+    if (AppConfig.demoMode) {
+      return [
+        {
+          'id': 1,
+          'judul_promo': 'Gratis Konsultasi Pertama',
+          'deskripsi': 'Khusus pasien baru yang booking lewat aplikasi.',
+          'target_transaksi': 'booking',
+          'gambar_banner_url': 'assets/images/promo.png',
+        },
+        {
+          'id': 2,
+          'judul_promo': 'Diskon 20% Scaling',
+          'deskripsi': 'Berlaku untuk semua pasien Dental Home Care.',
+          'target_transaksi': 'semua',
+          'gambar_banner_url': 'assets/images/promo.png',
+        },
+        {
+          'id': 3,
+          'judul_promo': 'Cashback Pelunasan',
+          'deskripsi': 'Pelunasan lebih awal dapat cashback poin reward.',
+          'target_transaksi': 'pelunasan',
+          'gambar_banner_url': 'assets/images/promo.png',
+        },
+      ];
+    }
+
     final token = await _getToken();
     final url = Uri.parse('${ApiEndpoint.homeCarePromos}?type=$type');
 
@@ -268,6 +417,14 @@ class HomeCareService {
     int bookingId, {
     int? promoId,
   }) async {
+    if (AppConfig.demoMode) {
+      return {
+        'redirect_url': '',
+        'snap_token': 'demo-settlement-token',
+        'total_tagihan': 150000,
+      };
+    }
+
     final token = await _getToken();
     final url = Uri.parse(ApiEndpoint.homeCareSettlement);
 

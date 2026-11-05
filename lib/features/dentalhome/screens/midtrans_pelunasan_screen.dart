@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 import 'package:flutter_klinik_gigi/core/models/nota_model.dart';
 import 'package:flutter_klinik_gigi/core/services/home_care_service.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
@@ -94,6 +95,12 @@ class _MidtransPelunasanScreenState extends State<MidtransPelunasanScreen> {
       );
 
       final redirectUrl = result['redirect_url'];
+
+      // Mode demo: lewati Midtrans dan langsung tampilkan pembayaran berhasil.
+      if (AppConfig.demoMode) {
+        await _checkPaymentStatus();
+        return;
+      }
 
       if (redirectUrl != null) {
         bool isDesktop =

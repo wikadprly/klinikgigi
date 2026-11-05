@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/riwayat_model.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 
 class RiwayatService {
-  static const String baseUrl = "http://127.0.0.1:8000/api";
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   static Future<List<RiwayatModel>> fetchRiwayat() async {
     final token = await SharedPrefsHelper.getToken();

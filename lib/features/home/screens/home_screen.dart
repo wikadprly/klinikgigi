@@ -452,21 +452,37 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Stack(
                 children: [
                   imagePath.isNotEmpty
-                      ? Image.network(
-                          imagePath,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, _, __) => Container(
-                            color: Colors.white10,
-                            alignment: Alignment.center,
-                            child: const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.white24,
-                              size: 40,
-                            ),
-                          ),
-                        )
+                      ? (imagePath.startsWith('http')
+                            ? Image.network(
+                                imagePath,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, _, __) => Container(
+                                  color: Colors.white10,
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.white24,
+                                    size: 40,
+                                  ),
+                                ),
+                              )
+                            : Image.asset(
+                                imagePath,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, _, __) => Container(
+                                  color: Colors.white10,
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.white24,
+                                    size: 40,
+                                  ),
+                                ),
+                              ))
                       : Container(
                           color: Colors.white10,
                           alignment: Alignment.center,

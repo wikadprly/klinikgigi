@@ -2,12 +2,36 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/promo_model.dart';
 import '../../config/api.dart'; // Menggunakan file config utama
+import '../../config/app_config.dart';
 
 class PromoService {
   // Ambil URL dari ApiConfig
   final String _url = '$baseUrl/promo';
 
   Future<List<PromoModel>> fetchPromos() async {
+    if (AppConfig.demoMode) {
+      return [
+        PromoModel(
+          id: 1,
+          judulPromo: 'Gratis Konsultasi Pertama',
+          deskripsi: 'Khusus pasien baru yang booking lewat aplikasi.',
+          gambarBanner: 'assets/images/promo.png',
+        ),
+        PromoModel(
+          id: 2,
+          judulPromo: 'Diskon 20% Scaling',
+          deskripsi: 'Berlaku untuk semua pasien Dental Home Care.',
+          gambarBanner: 'assets/images/promo.png',
+        ),
+        PromoModel(
+          id: 3,
+          judulPromo: 'Cashback Pelunasan',
+          deskripsi: 'Pelunasan lebih awal dapat cashback poin reward.',
+          gambarBanner: 'assets/images/promo.png',
+        ),
+      ];
+    }
+
     try {
       final response = await http.get(Uri.parse(_url));
 

@@ -3,11 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/otp_request_response.dart';
 import '../models/otp_verify_response.dart';
+import '../../config/app_config.dart';
 
 class OtpService {
-  static const String baseUrl = "http://127.0.0.1:8000/api/auth";
+  static const String baseUrl = "${AppConfig.apiBaseUrl}/auth";
 
   Future<OtpRequestResponse> requestOtp(String email) async {
+    if (AppConfig.demoMode) {
+      return OtpRequestResponse(
+        success: true,
+        message: 'Kode OTP demo: 123456',
+      );
+    }
+
     final url = Uri.parse("$baseUrl/request-otp");
 
     final response = await http.post(
@@ -22,6 +30,20 @@ class OtpService {
   }
 
   Future<OtpVerifyResponse> verifyOtp(String email, String code) async {
+    if (AppConfig.demoMode) {
+      return OtpVerifyResponse(
+        success: true,
+        message: 'Verifikasi OTP demo berhasil',
+        data: {
+          'user_id': '2',
+          'nama_pengguna': 'Pasien Demo',
+          'email': email,
+          'token': 'demo-token',
+          'token_expires_in': 3600,
+        },
+      );
+    }
+
     final url = Uri.parse("$baseUrl/verify-otp");
 
     final response = await http.post(
@@ -36,6 +58,8 @@ class OtpService {
   }
   /// Request OTP RESET PASSWORD
   Future<bool> requestResetPassword(String email) async {
+    if (AppConfig.demoMode) return true;
+
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/request-reset-password"),
@@ -53,6 +77,14 @@ class OtpService {
 
   /// Verifikasi OTP RESET PASSWORD & dapatkan reset_token
   Future<OtpVerifyResponse> verifyResetPassword(String otp) async {
+    if (AppConfig.demoMode) {
+      return OtpVerifyResponse(
+        success: true,
+        message: 'Verifikasi OTP demo berhasil',
+        resetToken: 'demo-reset-token',
+      );
+    }
+
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/verify-reset-password"),
@@ -77,6 +109,8 @@ class OtpService {
     required String resetToken,
     required String password,
   }) async {
+    if (AppConfig.demoMode) return true;
+
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/reset-password"),

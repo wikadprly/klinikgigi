@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Import Provider & Helpers
 import '../../../../theme/colors.dart';
+import '../../../../config/app_config.dart';
 import '../../../core/storage/shared_prefs_helper.dart';
 import '../providers/home_care_provider.dart';
 import 'midtrans_webview_screen.dart';
@@ -116,6 +117,22 @@ class _MidtransHomeCareBookingScreenState
       );
 
       if (mounted) Navigator.pop(context);
+
+      // Mode demo: lewati Midtrans dan langsung ke halaman sukses.
+      if (result['success'] == true && AppConfig.demoMode) {
+        final bookingObj = result['data']?['booking'];
+        _currentBookingId = bookingObj?.id ?? 999;
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  PaymentSuccessScreen(bookingId: _currentBookingId),
+            ),
+          );
+        }
+        return;
+      }
 
       if (result['success'] == true) {
         final data = result['data'];
@@ -699,14 +716,7 @@ class PaymentSuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          image: DecorationImage(
-            image: AssetImage('assets/images/pattern_bg.png'),
-            fit: BoxFit.cover,
-            opacity: 0.05,
-          ),
-        ),
+        decoration: const BoxDecoration(color: AppColors.background),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),

@@ -6,9 +6,10 @@ import 'package:flutter_klinik_gigi/core/models/master_dokter_model.dart';
 import 'package:flutter_klinik_gigi/core/models/master_jadwal_model.dart';
 import 'package:flutter_klinik_gigi/core/models/reservasi_model.dart';
 import 'package:flutter_klinik_gigi/config/api.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 
 class ReservasiService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api'; 
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,6 +23,26 @@ class ReservasiService {
 
   // 1. Ambil Daftar Poli
   Future<List<MasterPoliModel>> getDaftarPoli() async {
+    if (AppConfig.demoMode) {
+      return [
+        MasterPoliModel(
+          kodePoli: 'POL-01',
+          namaPoli: 'Poli Gigi Umum',
+          keterangan: 'Pemeriksaan dan perawatan gigi umum',
+        ),
+        MasterPoliModel(
+          kodePoli: 'POL-02',
+          namaPoli: 'Poli Ortodonti',
+          keterangan: 'Perawatan behel dan susunan gigi',
+        ),
+        MasterPoliModel(
+          kodePoli: 'POL-03',
+          namaPoli: 'Poli Bedah Mulut',
+          keterangan: 'Tindakan bedah pada gigi dan mulut',
+        ),
+      ];
+    }
+
     final url = Uri.parse(ApiEndpoint.reservasiGetPoli);
     try {
       final headers = await _getHeaders();
@@ -42,6 +63,90 @@ class ReservasiService {
 
   // 2. Ambil Dokter by Poli
   Future<List<MasterDokterModel>> getDokterByPoli(String kodePoli) async {
+    if (AppConfig.demoMode) {
+      final dokter = <String, List<MasterDokterModel>>{
+        'POL-01': [
+          MasterDokterModel(
+            kodeDokter: 'DOK-01',
+            kodePoli: 'POL-01',
+            nama: 'Bagus Pratama',
+            gelar: 'drg.',
+            spesialisasi: 'Dokter Gigi Umum',
+            alamat: '-',
+            hp: '-',
+            tipe: '-',
+            dokterStr: '-',
+            dokterStrMulai: '-',
+            dokterStrExpire: '-',
+            dokterSip: '-',
+            dokterSipBerlaku: '-',
+            dokterSipExpired: '-',
+            inisial: 'BP',
+            poliNama: 'Poli Gigi Umum',
+          ),
+          MasterDokterModel(
+            kodeDokter: 'DOK-02',
+            kodePoli: 'POL-01',
+            nama: 'Ayu Lestari',
+            gelar: 'drg.',
+            spesialisasi: 'Dokter Gigi Umum',
+            alamat: '-',
+            hp: '-',
+            tipe: '-',
+            dokterStr: '-',
+            dokterStrMulai: '-',
+            dokterStrExpire: '-',
+            dokterSip: '-',
+            dokterSipBerlaku: '-',
+            dokterSipExpired: '-',
+            inisial: 'AL',
+            poliNama: 'Poli Gigi Umum',
+          ),
+        ],
+        'POL-02': [
+          MasterDokterModel(
+            kodeDokter: 'DOK-03',
+            kodePoli: 'POL-02',
+            nama: 'Citra Dewi',
+            gelar: 'drg., Sp.Ort',
+            spesialisasi: 'Ortodonti',
+            alamat: '-',
+            hp: '-',
+            tipe: '-',
+            dokterStr: '-',
+            dokterStrMulai: '-',
+            dokterStrExpire: '-',
+            dokterSip: '-',
+            dokterSipBerlaku: '-',
+            dokterSipExpired: '-',
+            inisial: 'CD',
+            poliNama: 'Poli Ortodonti',
+          ),
+        ],
+        'POL-03': [
+          MasterDokterModel(
+            kodeDokter: 'DOK-04',
+            kodePoli: 'POL-03',
+            nama: 'Dimas Saputra',
+            gelar: 'drg., Sp.BM',
+            spesialisasi: 'Bedah Mulut',
+            alamat: '-',
+            hp: '-',
+            tipe: '-',
+            dokterStr: '-',
+            dokterStrMulai: '-',
+            dokterStrExpire: '-',
+            dokterSip: '-',
+            dokterSipBerlaku: '-',
+            dokterSipExpired: '-',
+            inisial: 'DS',
+            poliNama: 'Poli Bedah Mulut',
+          ),
+        ],
+      };
+      return dokter[kodePoli] ?? [];
+    }
+
     final url = Uri.parse(ApiEndpoint.reservasiGetDokter);
     try {
       final headers = await _getHeaders();
@@ -68,6 +173,74 @@ class ReservasiService {
     String? kodeDokter,
     String? tanggalReservasi,
   }) async {
+    if (AppConfig.demoMode) {
+      final all = [
+        MasterJadwalModel(
+          id: 101,
+          kodeDokter: 'DOK-01',
+          kodePoli: 'POL-01',
+          hari: 'Senin',
+          jamMulai: '09:00',
+          jamSelesai: '12:00',
+          keterangan: 'Praktek pagi',
+          quota: 8,
+          kuotaTerpakai: 3,
+          sisaKuota: 5,
+          statusJadwal: 'Tersedia',
+          tanggalPilih: tanggalReservasi,
+        ),
+        MasterJadwalModel(
+          id: 102,
+          kodeDokter: 'DOK-02',
+          kodePoli: 'POL-01',
+          hari: 'Senin',
+          jamMulai: '13:00',
+          jamSelesai: '16:00',
+          keterangan: 'Praktek siang',
+          quota: 8,
+          kuotaTerpakai: 2,
+          sisaKuota: 6,
+          statusJadwal: 'Tersedia',
+          tanggalPilih: tanggalReservasi,
+        ),
+        MasterJadwalModel(
+          id: 103,
+          kodeDokter: 'DOK-03',
+          kodePoli: 'POL-02',
+          hari: 'Selasa',
+          jamMulai: '10:00',
+          jamSelesai: '14:00',
+          keterangan: 'Praktek ortodonti',
+          quota: 6,
+          kuotaTerpakai: 1,
+          sisaKuota: 5,
+          statusJadwal: 'Tersedia',
+          tanggalPilih: tanggalReservasi,
+        ),
+        MasterJadwalModel(
+          id: 104,
+          kodeDokter: 'DOK-04',
+          kodePoli: 'POL-03',
+          hari: 'Rabu',
+          jamMulai: '08:00',
+          jamSelesai: '11:00',
+          keterangan: 'Praktek bedah mulut',
+          quota: 4,
+          kuotaTerpakai: 0,
+          sisaKuota: 4,
+          statusJadwal: 'Tersedia',
+          tanggalPilih: tanggalReservasi,
+        ),
+      ];
+      return all.where((j) {
+        if (j.kodePoli != kodePoli) return false;
+        if (kodeDokter != null && kodeDokter != 'semua' && kodeDokter.isNotEmpty) {
+          return j.kodeDokter == kodeDokter;
+        }
+        return true;
+      }).toList();
+    }
+
     final url = Uri.parse(ApiEndpoint.reservasiGetJadwal);
     Map<String, dynamic> bodyRequest = {
       'kode_poli': kodePoli, 
@@ -103,6 +276,16 @@ class ReservasiService {
 
   // 4. Create Reservasi
   Future<Map<String, dynamic>?> createReservasi(Map<String, dynamic> reservasiData) async {
+    if (AppConfig.demoMode) {
+      return {
+        'no_pemeriksaan': 'DEMO-RSV-${DateTime.now().millisecondsSinceEpoch}',
+        'no_antrian': 'A-01',
+        'status_pembayaran': 'lunas',
+        'is_lunas': true,
+        'total': 50000,
+      };
+    }
+
     final url = Uri.parse(ApiEndpoint.reservasiCreate);
     try {
       final headers = await _getHeaders();
@@ -162,6 +345,17 @@ class ReservasiService {
 
   // 7. Create Reservasi with Payment (Midtrans)
   Future<Map<String, dynamic>?> createReservasiWithPayment(Map<String, dynamic> reservasiData) async {
+    if (AppConfig.demoMode) {
+      return {
+        'no_pemeriksaan': 'DEMO-RSV-${DateTime.now().millisecondsSinceEpoch}',
+        'no_antrian': 'A-01',
+        'redirect_url': '',
+        'status_pembayaran': 'lunas',
+        'is_lunas': true,
+        'total': 50000,
+      };
+    }
+
     final url = Uri.parse(ApiEndpoint.reservasiCreate);
     try {
       final headers = await _getHeaders();
@@ -186,6 +380,16 @@ class ReservasiService {
 
   // 8. Check Payment Status (for polling)
   Future<Map<String, dynamic>?> checkPaymentStatus(String noPemeriksaan) async {
+    if (AppConfig.demoMode) {
+      return {
+        'no_pemeriksaan': noPemeriksaan,
+        'no_antrian': 'A-01',
+        'status_pembayaran': 'lunas',
+        'is_lunas': true,
+        'total': 50000,
+      };
+    }
+
     final url = Uri.parse(ApiEndpoint.cekStatusPembayaran(noPemeriksaan)); // Updated to match Laravel route (param: {id})
     try {
       final headers = await _getHeaders();

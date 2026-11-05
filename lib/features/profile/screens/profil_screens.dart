@@ -4,7 +4,6 @@ import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_back.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/providers/profil_provider.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 String _formatTanggalLahir(String? tanggalLahir) {
@@ -127,9 +126,6 @@ class _ProfilePageState extends State<ProfilePage> {
       if (pickedFile != null) {
         print("File selected: ${pickedFile.path}");
 
-        // Normalize the file path to handle platform differences
-        String filePath = pickedFile.path.replaceAll('\\', '/');
-
         // Show loading indicator
         showDialog(
           context: context,
@@ -141,9 +137,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
         try {
           final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(File(filePath));
+          bool success = await provider.updateProfilePicture(pickedFile);
 
-          Navigator.pop(context); // Close loading
+          Navigator.pop(context);
 
           if (success) {
             _showSuccessMessage("Foto berhasil diunggah dari galeri");
@@ -182,9 +178,6 @@ class _ProfilePageState extends State<ProfilePage> {
       if (pickedFile != null) {
         print("Photo taken: ${pickedFile.path}");
 
-        // Normalize the file path to handle platform differences
-        String filePath = pickedFile.path.replaceAll('\\', '/');
-
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -195,7 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         try {
           final provider = Provider.of<ProfilProvider>(context, listen: false);
-          bool success = await provider.updateProfilePicture(File(filePath));
+          bool success = await provider.updateProfilePicture(pickedFile);
 
           Navigator.pop(context);
 

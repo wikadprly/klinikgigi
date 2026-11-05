@@ -2,13 +2,40 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../storage/shared_prefs_helper.dart';
 import '../models/reward_model.dart';
+import '../../config/app_config.dart';
+import 'package:flutter/material.dart';
 
 class RewardRepository {
-  // Gunakan 10.0.2.2 jika di Emulator, atau 127.0.0.1 jika di browser/Edge
-  final String baseUrl = 'http://127.0.0.1:8000/api';
+  final String baseUrl = AppConfig.apiBaseUrl;
 
   /// 1. MENGAMBIL DAFTAR PROMO
   Future<List<RewardModel>> fetchAllRewards() async {
+    if (AppConfig.demoMode) {
+      return [
+        RewardModel(
+          id: '1',
+          title: 'Voucher Scaling',
+          description: 'Tukar poin dengan voucher scaling gigi.',
+          requiredPoints: 100,
+          icon: Icons.local_offer,
+        ),
+        RewardModel(
+          id: '2',
+          title: 'Diskon 50%',
+          description: 'Diskon perawatan gigi untuk member aktif.',
+          requiredPoints: 250,
+          icon: Icons.diamond_outlined,
+        ),
+        RewardModel(
+          id: '3',
+          title: 'Free Dental Kit',
+          description: 'Paket sikat gigi dan pasta gigi eksklusif.',
+          requiredPoints: 75,
+          icon: Icons.star_outline,
+        ),
+      ];
+    }
+
     try {
       // PERBAIKAN: Gunakan /promo (tanpa 's') sesuai screenshot browser yang berhasil
       final response = await http.get(Uri.parse('$baseUrl/promo'));
@@ -30,6 +57,8 @@ class RewardRepository {
 
   /// 2. MENGAMBIL TOTAL POIN PENGGUNA
   Future<int> fetchUserPoints() async {
+    if (AppConfig.demoMode) return 120;
+
     try {
       final user = await SharedPrefsHelper.getUser();
       if (user == null) return 0;
@@ -55,6 +84,8 @@ class RewardRepository {
 
   /// 3. FUNGSI PENUKARAN
   Future<bool> redeemReward(int promoId) async {
+    if (AppConfig.demoMode) return true;
+
     try {
       final user = await SharedPrefsHelper.getUser();
       if (user == null) return false;

@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../core/services/profil_service.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
 
@@ -12,52 +12,84 @@ class ProfileProvider with ChangeNotifier {
   String? _noPeserta;
   String? _statusAktif;
   bool isLoading = false;
+  String? _errorMessage;
+
+  String? get errorMessage => _errorMessage;
 
   // =====================
   // Ambil profil user
   // =====================
   Future<void> fetchProfile(String token) async {
     isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    final result = await _profilService.getProfil(token);
-    if (result["success"] == true) {
-      user = result["data"]["user"];
-      rekamMedis = result["data"]["rekam_medis"];
-      _namaAsuransi = result["data"]["nama_asuransi"]?.toString();
-      _noPeserta = result["data"]["no_peserta"]?.toString();
-      _statusAktif = result["data"]["status_aktif"]?.toString();
+    try {
+      final result = await _profilService.getProfil(token);
+      if (result["success"] == true) {
+        final data = result["data"];
+        user = data["user"];
+        rekamMedis = data["rekam_medis"];
+        _namaAsuransi = data["nama_asuransi"]?.toString();
+        _noPeserta = data["no_peserta"]?.toString();
+        _statusAktif = data["status_aktif"]?.toString();
+      } else {
+        _errorMessage = result["message"]?.toString() ?? "Gagal memuat profil";
+      }
+    } catch (e) {
+      _errorMessage = "Gagal memuat profil: $e";
+      debugPrint("fetchProfile error: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   // =====================
   // Update data profil (tanpa foto)
   // =====================
   Future<bool> updateProfil(String token, Map<String, dynamic> data) async {
-    final result = await _profilService.updateProfil(token, data);
-    if (result["success"] == true) {
-      await fetchProfile(token);
-      return true;
+    try {
+      final result = await _profilService.updateProfil(token, data);
+      if (result["success"] == true) {
+        await fetchProfile(token);
+        return true;
+      }
+      _errorMessage = result["message"]?.toString() ?? "Gagal update profil";
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = "Gagal update profil: $e";
+      notifyListeners();
+      return false;
     }
-    return false;
   }
 
   // =====================
   // Upload / Ganti foto profil
   // =====================
-  Future<bool> updateProfilePicture(File file) async {
+  Future<bool> updateProfilePicture(XFile file) async {
     final token = await SharedPrefsHelper.getToken();
-    if (token == null) return false;
-
-    final result = await _profilService.updateProfilePicture(token, file);
-    if (result["success"] == true) {
-      await fetchProfile(token);
-      return true;
+    if (token == null) {
+      _errorMessage = "Sesi tidak ditemukan, silakan login ulang";
+      notifyListeners();
+      return false;
     }
-    return false;
+
+    try {
+      final result = await _profilService.updateProfilePicture(token, file);
+      if (result["success"] == true) {
+        await fetchProfile(token);
+        return true;
+      }
+      _errorMessage = result["message"]?.toString() ?? "Gagal mengunggah foto";
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = "Gagal mengunggah foto: $e";
+      notifyListeners();
+      return false;
+    }
   }
 
   // =====================
@@ -65,14 +97,26 @@ class ProfileProvider with ChangeNotifier {
   // =====================
   Future<bool> removeProfilePicture() async {
     final token = await SharedPrefsHelper.getToken();
-    if (token == null) return false;
-
-    final result = await _profilService.deleteProfilePicture(token);
-    if (result["success"] == true) {
-      await fetchProfile(token);
-      return true;
+    if (token == null) {
+      _errorMessage = "Sesi tidak ditemukan, silakan login ulang";
+      notifyListeners();
+      return false;
     }
-    return false;
+
+    try {
+      final result = await _profilService.deleteProfilePicture(token);
+      if (result["success"] == true) {
+        await fetchProfile(token);
+        return true;
+      }
+      _errorMessage = result["message"]?.toString() ?? "Gagal menghapus foto";
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = "Gagal menghapus foto: $e";
+      notifyListeners();
+      return false;
+    }
   }
 }
 
@@ -100,6 +144,4 @@ class ProfilProvider extends ProfileProvider {
   String? get namaAsuransi => _namaAsuransi;
   String? get noPeserta => _noPeserta;
   String? get statusAktif => _statusAktif;
-
-  String? get errorMessage => null;
 }

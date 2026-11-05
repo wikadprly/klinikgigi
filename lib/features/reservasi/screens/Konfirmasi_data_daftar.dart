@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 import 'package:flutter_klinik_gigi/providers/reservasi_provider.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/MidTransWebReservasi.dart';
 import 'package:flutter_klinik_gigi/features/reservasi/screens/tampilan_akhir_reservasi_midtrans.dart';
@@ -433,42 +436,69 @@ class _KonfirmasiReservasiSheetState extends State<KonfirmasiReservasiSheet> {
 
                     // C. Cek Hasil
                     if (result != null && context.mounted) {
+                      final noPemeriksaan = result['no_pemeriksaan'];
+
+                      // Mode demo: lewati Midtrans dan langsung tampilkan sukses.
+                      if (AppConfig.demoMode && noPemeriksaan != null) {
+                        _navigateToSuccessScreen(noPemeriksaan);
+                        return;
+                      }
+
                       Navigator.pop(context);
 
                       final redirectUrl = result['redirect_url'];
-                      final noPemeriksaan = result['no_pemeriksaan'];
 
                       if (redirectUrl != null && noPemeriksaan != null) {
-                        _startPollingStatus(noPemeriksaan);
-                        final paymentResult = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MidtransWebReservasi(
-                              url: redirectUrl,
-                              noPemeriksaan: noPemeriksaan,
-                            ),
-                          ),
-                        );
-                        _stopPolling();
-
-                        if (paymentResult == 'success') {
-                          final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
-                          if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
-                            _navigateToSuccessScreen(noPemeriksaan);
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Pembayaran sedang diproses atau gagal."),
-                                  backgroundColor: Colors.orange,
-                                ),
+                        if (kIsWeb) {
+                          _startPollingStatus(noPemeriksaan);
+                          final uri = Uri.parse(redirectUrl);
+                          final launched = await canLaunchUrl(uri) &&
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.externalApplication,
                               );
-                            }
+                          if (!launched && mounted) {
+                            _stopPolling();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text("Tidak dapat membuka link pembayaran"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           }
                         } else {
-                          final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
-                          if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
-                            _navigateToSuccessScreen(noPemeriksaan);
+                          _startPollingStatus(noPemeriksaan);
+                          final paymentResult = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MidtransWebReservasi(
+                                url: redirectUrl,
+                                noPemeriksaan: noPemeriksaan,
+                              ),
+                            ),
+                          );
+                          _stopPolling();
+
+                          if (paymentResult == 'success') {
+                            final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
+                            if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
+                              _navigateToSuccessScreen(noPemeriksaan);
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Pembayaran sedang diproses atau gagal."),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
+                            }
+                          } else {
+                            final finalStatus = await provider.checkPaymentStatus(noPemeriksaan);
+                            if (finalStatus != null && (finalStatus['is_lunas'] ?? false)) {
+                              _navigateToSuccessScreen(noPemeriksaan);
+                            }
                           }
                         }
                       } else {

@@ -46,20 +46,35 @@ class PromoDetailScreen extends StatelessWidget {
             right: 0,
             height: 300, // Fixed height for image area
             child: imageUrl != null && imageUrl.isNotEmpty
-                ? Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, _, __) => Container(
-                      color: Colors.grey[900],
-                      child: const Center(
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: Colors.white24,
-                          size: 50,
-                        ),
-                      ),
-                    ),
-                  )
+                ? (imageUrl.startsWith('http')
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, __) => Container(
+                            color: Colors.grey[900],
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.white24,
+                                size: 50,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Image.asset(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, __) => Container(
+                            color: Colors.grey[900],
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.white24,
+                                size: 50,
+                              ),
+                            ),
+                          ),
+                        ))
                 : Container(
                     color: Colors.grey[900],
                     child: const Center(

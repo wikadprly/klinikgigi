@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../widgets/riwayat_card.dart';
 import '../widgets/homecare_riwayat_card.dart';
 import 'package:flutter_klinik_gigi/core/storage/shared_prefs_helper.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
@@ -83,6 +84,48 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       errorMessage = null;
     });
     try {
+      if (AppConfig.demoMode) {
+        final demo = selectedCare == 'homecare'
+            ? {
+                "jenis_layanan": "homecare",
+                "no_pemeriksaan": "HC-2026-0002",
+                "dokter": "drg. Ayu Lestari",
+                "tanggal": "2026-02-14",
+                "jam_mulai": "09:00",
+                "jam_selesai": "10:00",
+                "pembayaran_total": "275000",
+                "biaya": "275000",
+                "metode_pembayaran": "Midtrans",
+                "status_reservasi": "selesai",
+                "nama": "Pasien Demo",
+                "rekam_medis": "RM-0002",
+                "keluhan": "Pembersihan karang gigi",
+              }
+            : {
+                "jenis_layanan": "poliklinik",
+                "no_pemeriksaan": "PK-2026-0012",
+                "dokter": "drg. Bagus Pratama",
+                "tanggal": "2026-01-28",
+                "poli": "Poli Gigi Umum",
+                "jam_mulai": "10:00",
+                "jam_selesai": "11:00",
+                "biaya": "150000",
+                "pembayaran_total": "150000",
+                "metode_pembayaran": "Tunai",
+                "status_reservasi": "selesai",
+                "status_pembayaran": "lunas",
+                "no_antrian": "A-07",
+                "nama": "Pasien Demo",
+                "rekam_medis": "RM-0002",
+                "keluhan": "Kontrol tambalan",
+              };
+        setState(() {
+          riwayatData = [demo];
+          isLoading = false;
+        });
+        return;
+      }
+
       // Ambil user (opsional) dan token dari SharedPreferences
       final user = await SharedPrefsHelper.getUser();
       final token = await SharedPrefsHelper.getToken();
@@ -112,7 +155,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       // Panggil API dengan token (API sekarang sudah terproteksi dengan auth:sanctum)
       // Append filter for jenis layanan (poliklinik/homecare)
       final uri = Uri.parse(
-        'http://127.0.0.1:8000/api/riwayat',
+        '${AppConfig.apiBaseUrl}/riwayat',
       ).replace(queryParameters: {'jenis': selectedCare});
 
       final response = await http.get(
