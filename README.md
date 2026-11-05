@@ -1,8 +1,16 @@
 # 3K Dental Care
 
-Aplikasi klinik gigi berbasis Flutter yang mencakup reservasi online, layanan
-dental home care, riwayat pemeriksaan, reward pasien, dan pembayaran Midtrans.
-Proyek ini juga dapat dibangun sebagai aplikasi web untuk portofolio.
+Aplikasi klinik gigi berbasis Flutter untuk reservasi online, dental home care,
+riwayat pemeriksaan, reward pasien, dan pembayaran Midtrans. Proyek ini adalah
+bagian client dari sistem 3K Dental Care; backend dan web admin ada di repo
+[admin_klinik_gigi](https://github.com/Sheva13/klinik_gigi).
+
+## Live Demo
+
+- Web demo: <https://klinikgigi-wika.netlify.app>
+- Mode demo memakai data contoh (`DEMO_MODE=true`) dan tidak memanggil backend.
+- Untuk demo integrasi penuh, jalankan backend Laravel lalu build ulang dengan
+  `DEMO_MODE=false`.
 
 ## Fitur
 
@@ -16,6 +24,22 @@ Proyek ini juga dapat dibangun sebagai aplikasi web untuk portofolio.
 - Profil pasien, unggah foto profil, ubah kata sandi, dan OTP.
 - Tampilan responsif: di layar lebar aplikasi ditampilkan dalam frame ponsel.
 
+## Arsitektur
+
+```text
+Flutter (Android/Web)
+        |
+        | HTTP JSON + token
+        v
+Laravel API (/api)  --->  MySQL
+        ^
+        |
+Web admin (/admin)
+```
+
+Flutter tidak mengakses database secara langsung. Semua data lewat REST API
+Laravel. Web admin dan aplikasi memakai database yang sama.
+
 ## Teknologi
 
 - Flutter 3.35 (Dart 3.9)
@@ -23,6 +47,7 @@ Proyek ini juga dapat dibangun sebagai aplikasi web untuk portofolio.
 - `http` untuk REST API
 - `shared_preferences` untuk sesi dan token
 - `image_picker`, `webview_flutter`, `url_launcher`, `intl`
+- Midtrans untuk pembayaran
 
 ## Mode Demo
 
@@ -36,6 +61,17 @@ Variabel yang tersedia (melalui `--dart-define`):
 | --- | --- | --- |
 | `DEMO_MODE` | `true` | `true` memakai data contoh, `false` memakai API asli |
 | `API_BASE_URL` | `http://127.0.0.1:8000/api` | Base URL backend Laravel |
+
+## Akun Demo Backend
+
+Jika backend sudah berjalan dan di-seed:
+
+| Role | Username / Email | Password |
+| --- | --- | --- |
+| Admin | `Farrel` | `admin123` |
+| Pasien | `farrelsheva@gmail.com` | `password123` |
+
+Ganti password default sebelum dipakai publik.
 
 ## Menjalankan
 
@@ -52,6 +88,12 @@ flutter run -d chrome \
   --dart-define=API_BASE_URL=https://domain-backend-anda.com/api
 ```
 
+Untuk development lokal:
+
+- Emulator Android: `http://10.0.2.2:8000/api`
+- HP fisik: `http://IP-LAN-PC:8000/api`
+- Production: gunakan HTTPS
+
 ## Build Web
 
 ```bash
@@ -67,7 +109,17 @@ tambahkan base href:
 flutter build web --release --base-href /nama-repo/ --dart-define=DEMO_MODE=true
 ```
 
-## Deploy
+## Build APK Terhubung ke API
+
+```bash
+flutter build apk --release \
+  --dart-define=DEMO_MODE=false \
+  --dart-define=API_BASE_URL=https://domain-backend-anda.com/api
+```
+
+Hasil build berada di `build/app/outputs/flutter-apk/app-release.apk`.
+
+## Deploy Web Demo
 
 ### Netlify Drop
 
@@ -107,10 +159,11 @@ Pastikan Flutter SDK tersedia pada environment build Vercel.
   pembayaran dicek melalui polling API.
 - Unggah foto profil memakai `XFile` sehingga tidak bergantung pada `dart:io`.
 - Tanpa backend, gunakan mode demo agar seluruh halaman tetap dapat ditampilkan.
+- Backend free tier bisa “sleep”; request pertama setelah idle mungkin lambat.
 
 ## Struktur Singkat
 
-```
+```text
 lib/
   config/           konfigurasi API dan mode demo
   core/             model, service, storage
@@ -119,3 +172,11 @@ lib/
   theme/            warna dan tipografi
 web/                konfigurasi dan aset web
 ```
+
+## Checklist Portofolio
+
+- [ ] Isi URL backend yang sudah live di README.
+- [ ] Sediakan akun demo dan data contoh.
+- [ ] Tambahkan screenshot aplikasi.
+- [ ] Tampilkan versi `DEMO_MODE=false` yang benar-benar terhubung ke API.
+- [ ] Jelaskan arsitektur Flutter + Laravel + MySQL di case study.
