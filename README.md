@@ -62,6 +62,10 @@ Variabel yang tersedia (melalui `--dart-define`):
 | --- | --- | --- |
 | `DEMO_MODE` | `true` | `true` memakai data contoh, `false` memakai API asli |
 | `API_BASE_URL` | `http://127.0.0.1:8000/api` | Base URL backend Laravel |
+| `OTP_DISABLED` | `false` | `true` membuat registrasi langsung aktif tanpa layar OTP |
+
+Set `OTP_DISABLED=true` saat build jika backend juga memakai
+`OTP_DISABLED=true` (mode demo tanpa email OTP).
 
 ## Akun Demo Backend
 
@@ -104,7 +108,8 @@ Production (terhubung API Railway):
 ```bash
 flutter build web --release \
   --dart-define=DEMO_MODE=false \
-  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api \
+  --dart-define=OTP_DISABLED=true
 ```
 
 Demo tanpa backend:
@@ -127,7 +132,8 @@ flutter build web --release --base-href /nama-repo/ --dart-define=DEMO_MODE=true
 ```bash
 flutter build apk --release \
   --dart-define=DEMO_MODE=false \
-  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api \
+  --dart-define=OTP_DISABLED=true
 ```
 
 Hasil build berada di `build/app/outputs/flutter-apk/app-release.apk`.
@@ -139,7 +145,8 @@ Hasil build berada di `build/app/outputs/flutter-apk/app-release.apk`.
 ```bash
 flutter build web --release \
   --dart-define=DEMO_MODE=false \
-  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api
+  --dart-define=API_BASE_URL=https://web-production-3e9a.up.railway.app/api \
+  --dart-define=OTP_DISABLED=true
 netlify deploy --prod --dir=build/web
 ```
 

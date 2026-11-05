@@ -8,4 +8,9 @@ class AppConfig {
     'DEMO_MODE',
     defaultValue: true,
   );
+
+  static const bool otpDisabled = bool.fromEnvironment(
+    'OTP_DISABLED',
+    defaultValue: false,
+  );
 }

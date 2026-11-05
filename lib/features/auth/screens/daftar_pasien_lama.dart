@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_klinik_gigi/features/auth/providers/auth_provider.dart';
+import 'package:flutter_klinik_gigi/config/app_config.dart';
 import 'package:flutter_klinik_gigi/theme/colors.dart';
 import 'package:flutter_klinik_gigi/theme/text_styles.dart';
 import 'package:flutter_klinik_gigi/features/auth/widgets/auth_button.dart';
@@ -159,16 +160,27 @@ class _DaftarPasienLamaPageState extends State<DaftarPasienLamaPage> {
                         );
 
                         if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Registrasi berhasil!"),
-                            ),
-                          );
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/otp_screen',
-                            arguments: emailController.text.trim(),
-                          );
+                          if (AppConfig.otpDisabled) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Registrasi berhasil! Akun aktif, silakan masuk.",
+                                ),
+                              ),
+                            );
+                            Navigator.pushReplacementNamed(context, '/masuk');
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Registrasi berhasil!"),
+                              ),
+                            );
+                            Navigator.pushReplacementNamed(
+                              context,
+                              '/otp_screen',
+                              arguments: emailController.text.trim(),
+                            );
+                          }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Registrasi gagal.")),
